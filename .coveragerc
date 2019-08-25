@@ -1,0 +1,7 @@
+[run]
+omit =
+    tests/*
+    __main__.py
+    setup.py
+    .tox/*
+    .git/*
