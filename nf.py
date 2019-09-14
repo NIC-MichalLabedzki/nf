@@ -16,7 +16,7 @@ import sys
 import pkgutil
 
 """
-./nf.py [optional options] command arg...
+./nf.py [optional options] command [arg...]
 """
 
 examples = '''
@@ -50,6 +50,17 @@ def main():
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
+    try:
+        import signal
+
+        def sigint_handler(signum, frame):
+            signal.signal(signal.SIGINT, signal.default_int_handler)
+            signal.signal(signal.SIGINT, sigint_handler)
+
+        signal.signal(signal.SIGINT, sigint_handler)
+    except:
+        pass
+
     dbus_session = None
     if not args.no_notify:
         try:
@@ -73,7 +84,15 @@ def main():
         notify__summary += ' (' + args.label + ')'
 
     time_start = datetime.datetime.now()
-    exit_code = os.system(cmdline)
+
+    if sys.version_info >= (3, 5):
+        import subprocess
+        exit_code = subprocess.run(cmdline, shell=True).returncode
+    else:
+        import subprocess
+        exit_code = subprocess.call(cmdline, shell=True)
+    # exit_code = os.system(cmdline) # works fine
+
     time_end = datetime.datetime.now()
 
     time_elapsed = datetime.datetime(1970, 1, 1, 0, 0, 0) +  (time_end - time_start)
