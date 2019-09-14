@@ -13,7 +13,6 @@ import argparse
 import datetime
 import os
 import sys
-import pkgutil
 
 """
 ./nf.py [optional options] command [arg...]
