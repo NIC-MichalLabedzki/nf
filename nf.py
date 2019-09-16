@@ -7,18 +7,19 @@
 # Source: https://github.com/NIC-MichalLabedzki/nf
 
 # for python2
-from __future__ import print_function
-
-import argparse
-import datetime
-import os
-import sys
+from __future__ import print_function as _print_function
 
 """
 ./nf.py [optional options] command [arg...]
 """
 
-examples = '''
+def main():
+    import argparse
+    import datetime
+    import os
+    import sys
+
+    examples = '''
 Examples:
  nf make
  nf ls
@@ -39,8 +40,6 @@ Examples:
  -----------------------------------------------------------
  '''
 
-
-def main():
     parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=examples, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-l', '--label', type=str, help='Add humn readable text to custom job identification')
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
