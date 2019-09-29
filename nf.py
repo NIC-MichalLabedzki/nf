@@ -59,6 +59,7 @@ Examples:
     except:
         pass
 
+    backend = 'stdout'
     dbus_session = None
     if not args.no_notify:
         try:
@@ -67,13 +68,34 @@ Examples:
         except:
             dbus_session = None
 
-    dbus_notification = None
-    if args.no_notify:
-        pass
-    elif dbus_session is None:
-        print("nf: WARNING: Could not get dbus session, notification will not work", file=sys.stderr)
-    else:
-        dbus_notification = dbus_session.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+        dbus_notification = None
+        if args.no_notify:
+            pass
+        elif dbus_session is not None:
+            backend = 'dbus'
+            dbus_notification = dbus_session.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+        else:
+            try:
+                import shutil
+
+                notify_send_app = shutil.which('notify-send')
+                if notify_send_app is not None:
+                    backend = 'notify-send'
+                else:
+                    termux_notification_app = shutil.which('termux-notification')
+                    if termux_notification_app is not None:
+                        backend = 'termux-notification'
+                    else:
+                        try:
+                            import win10toast
+                            backend = 'win10toast'
+                        except:
+                            pass
+            except:
+                pass
+
+            if backend == 'stdout':
+                print("nf: WARNING: Could not get dbus session, notification will not work", file=sys.stderr)
 
     notify__summary = args.cmd
 
@@ -95,24 +117,47 @@ Examples:
 
     time_elapsed = datetime.datetime(1970, 1, 1, 0, 0, 0) +  (time_end - time_start)
 
-    if dbus_notification:
-        notify__app_name = args.cmd
-        notify__replaces_id = dbus.UInt32()
-        notify__app_icon = "services"
-        notify__timeout = 0
-        notify__actions = dbus.Array(signature='s')
-        notify__hints = dbus.Dictionary(signature='sv')
-
     notify__body = '"' + os.getcwd() + "$ " + args.cmd + '"'
 
+    notify__app_name = args.cmd
+    notify__timeout = 0
     if exit_code != 0:
         notify__app_icon = "process-stop"
         notify__body += ' was exit with exit code = ' + str(exit_code)
     else:
+        notify__app_icon = "services"
         notify__body += ' finished work.'
 
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
-    if dbus_notification is None or args.print:
+
+    if backend == 'dbus':
+        notify__replaces_id = dbus.UInt32()
+        notify__actions = dbus.Array(signature='s')
+        notify__hints = dbus.Dictionary(signature='sv')
+
+        dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
+    elif backend == 'notify-send':
+        cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
+            summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
+        if sys.version_info >= (3, 5):
+            import subprocess
+            exit_code = subprocess.run(cmdline, shell=True).returncode
+        else:
+            import subprocess
+            exit_code = subprocess.call(cmdline, shell=True)
+    elif backend == 'termux-notification':
+        cmdline = "termux-notification --title {title} --content {content} --sound --vibrate 500,100,200".format(title=notify__summary, content=notify__body)
+        if sys.version_info >= (3, 5):
+            import subprocess
+            exit_code = subprocess.run(cmdline, shell=True).returncode
+        else:
+            import subprocess
+            exit_code = subprocess.call(cmdline, shell=True)
+    elif backend == 'win10toast':
+        toaster = win10toast.ToastNotifier()
+        toaster.show_toast(notify__summary, notify__body)
+
+    if backend == 'stdout' or args.print:
         columns = 10
         try:
             import shutil
@@ -126,8 +171,7 @@ Examples:
         print('-' * columns)
         if not args.no_notify:
             print('\a')
-    if dbus_notification:
-        dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
+
     sys.exit(exit_code)
 
 if __name__ == "__main__":
