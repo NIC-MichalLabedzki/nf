@@ -154,8 +154,11 @@ Examples:
             import subprocess
             exit_code = subprocess.call(cmdline, shell=True)
     elif backend == 'win10toast':
-        toaster = win10toast.ToastNotifier()
-        toaster.show_toast(notify__summary, notify__body)
+        try:
+            toaster = win10toast.ToastNotifier()
+            toaster.show_toast(notify__summary, notify__body)
+        except:
+            pass
 
     if backend == 'stdout' or args.print:
         columns = 10
