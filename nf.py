@@ -146,7 +146,7 @@ Examples:
             import subprocess
             exit_code = subprocess.call(cmdline, shell=True)
     elif backend == 'termux-notification':
-        cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action am start com.termux/.app.TermuxActivity".format(title=notify__summary, content=notify__body)
+        cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
         if sys.version_info >= (3, 5):
             import subprocess
             exit_code = subprocess.run(cmdline, shell=True).returncode
