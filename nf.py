@@ -131,7 +131,7 @@ Examples:
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
 
     if backend == 'dbus':
-        notify__replaces_id = dbus.UInt32()
+        notify__replaces_id = dbus.UInt32(datetime.datetime.timestamp(time_end))
         notify__actions = dbus.Array(signature='s')
         notify__hints = dbus.Dictionary(signature='sv')
 
