@@ -19,7 +19,7 @@ def main():
     import os
     import sys
 
-    examples = '''
+    EXAMPLES = '''
 Examples:
  nf make
  nf ls
@@ -40,10 +40,11 @@ Examples:
  -----------------------------------------------------------
  '''
 
-    parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=examples, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('-l', '--label', type=str, help='Add humn readable text to custom job identification')
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
+    parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -137,22 +138,22 @@ Examples:
 
         dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
     elif backend == 'notify-send':
-        cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
+        notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
             summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
         if sys.version_info >= (3, 5):
             import subprocess
-            exit_code = subprocess.run(cmdline, shell=True).returncode
+            notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
         else:
             import subprocess
-            exit_code = subprocess.call(cmdline, shell=True)
+            notify_exit_code = subprocess.call(notify_cmdline, shell=True)
     elif backend == 'termux-notification':
-        cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
+        notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
         if sys.version_info >= (3, 5):
             import subprocess
-            exit_code = subprocess.run(cmdline, shell=True).returncode
+            notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
         else:
             import subprocess
-            exit_code = subprocess.call(cmdline, shell=True)
+            notify_exit_code = subprocess.call(notify_cmdline, shell=True)
     elif backend == 'win10toast':
         try:
             toaster = win10toast.ToastNotifier()
@@ -174,6 +175,15 @@ Examples:
         print('-' * columns)
         if not args.no_notify:
             print('\a')
+
+    if args.save:
+        with open(".nf", 'a') as f:
+            print(cmdline, file=f)
+            print('Exit code: {}'.format(exit_code), file=f)
+            print('Start {}'.format(time_start.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+            print('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+            print('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
+            print('----------', file=f)
 
     sys.exit(exit_code)
 
