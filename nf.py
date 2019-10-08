@@ -18,6 +18,7 @@ def main():
     import datetime
     import os
     import sys
+    import time  # python 2 time.time() instead of datetime.datetime.timestamp()
 
     EXAMPLES = '''
 Examples:
@@ -130,9 +131,11 @@ Examples:
         notify__body += ' finished work.'
 
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
+    notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
 
     if backend == 'dbus':
-        notify__replaces_id = dbus.UInt32(datetime.datetime.timestamp(time_end))
+        notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
+        print('uuu', notify__replaces_id)
         notify__actions = dbus.Array(signature='s')
         notify__hints = dbus.Dictionary(signature='sv')
 
