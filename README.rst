@@ -2,6 +2,29 @@
 nf
 ==============
 
+.. image:: https://travis-ci.org/NIC-MichalLabedzki/nf.svg?branch=master
+   :target: https://travis-ci.org/NIC-MichalLabedzki/nf
+
+.. image:: https://badge.fury.io/py/nf.svg
+   :target: https://badge.fury.io/py/nf
+
+.. image:: https://img.shields.io/pypi/v/nf
+
+.. image:: https://img.shields.io/pypi/pyversions/nf.svg
+   :target: https://pypi.python.org/pypi/nf
+
+.. image:: https://img.shields.io/pypi/implementation/nf
+
+.. image:: https://img.shields.io/github/repo-size/NIC-MichalLabedzki/nf
+
+.. image:: https://img.shields.io/github/languages/code-size/NIC-MichalLabedzki/nf
+
+.. image:: https://img.shields.io/github/downloads/NIC-MichalLabedzki/nf/total
+
+.. image:: https://img.shields.io/pypi/l/nf
+
+.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.1.0
+
 IN SHORT
 --------
 
@@ -18,29 +41,29 @@ SCREENSHOTS
 
 1. Screenshot from KDE:
 
-.. image::  ./images/screenshot_1_kde.png
-   :target: ./images/screenshot_1_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_1_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_1_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 2. Screenshot from KDE:
 
-.. image::  ./images/screenshot_2_kde.png
-   :target: ./images/screenshot_2_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_2_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_2_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 3. Screenshot from KDE:
 
-.. image::  ./images/screenshot_3_kde.png
-   :target: ./images/screenshot_3_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_3_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_3_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 4. Screenshot from Android:
 
-.. image::  ./images/screenshot_4_android.png
-   :target: ./images/screenshot_4_android.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_4_android.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.0/images/screenshot_4_android.png
    :alt: Screenshot from Android
    :width: 200
 
