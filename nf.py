@@ -46,6 +46,8 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
+    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -58,25 +60,33 @@ Examples:
             signal.signal(signal.SIGINT, sigint_handler)
 
         signal.signal(signal.SIGINT, sigint_handler)
-    except:
-        pass
+    except Exception as e:
+        if args.debug is True:
+            print('DEBUG: ', e)
 
-    backend = 'stdout'
-    dbus_session = None
+    if args.backend is not None:
+        backend = args.backend
+    else:
+        backend = 'stdout'
+
     if not args.no_notify:
-        try:
-            import dbus
-            dbus_session = dbus.SessionBus()
-        except:
-            dbus_session = None
+        if backend in ['stdout', 'dbus'] and args.backend != 'stdout':
+            try:
+                import dbus
 
-        dbus_notification = None
-        if args.no_notify:
-            pass
-        elif dbus_session is not None:
-            backend = 'dbus'
-            dbus_notification = dbus_session.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
-        else:
+                dbus_session = dbus.SessionBus()
+                if dbus_session is not None:
+                    dbus_notification = dbus_session.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
+                    if dbus_notification is not None:
+                        backend = 'dbus'
+                    else:
+                        backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
+
+        if backend in ['stdout', 'notify-send'] and args.backend != 'stdout':
             try:
                 import shutil
 
@@ -84,20 +94,37 @@ Examples:
                 if notify_send_app is not None:
                     backend = 'notify-send'
                 else:
-                    termux_notification_app = shutil.which('termux-notification')
-                    if termux_notification_app is not None:
-                        backend = 'termux-notification'
-                    else:
-                        try:
-                            import win10toast
-                            backend = 'win10toast'
-                        except:
-                            pass
-            except:
-                pass
+                    backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
 
-            if backend == 'stdout':
-                print("nf: WARNING: Could not get dbus session, notification will not work", file=sys.stderr)
+        if backend in ['stdout', 'termux-notification'] and args.backend != 'stdout':
+            try:
+                import shutil
+
+                termux_notification_app = shutil.which('termux-notification')
+                if termux_notification_app is not None:
+                    backend = 'termux-notification'
+                else:
+                    backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
+
+        if backend in ['stdout', 'win10toast'] and args.backend != 'stdout':
+            try:
+                import win10toast
+                backend = 'win10toast'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
+
+        if backend == 'stdout' and args.backend != 'stdout':
+            print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
 
     notify__summary = args.cmd
 
@@ -135,7 +162,6 @@ Examples:
 
     if backend == 'dbus':
         notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
-        print('uuu', notify__replaces_id)
         notify__actions = dbus.Array(signature='s')
         notify__hints = dbus.Dictionary(signature='sv')
 
@@ -161,8 +187,9 @@ Examples:
         try:
             toaster = win10toast.ToastNotifier()
             toaster.show_toast(notify__summary, notify__body)
-        except:
-            pass
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: ', e)
 
     if backend == 'stdout' or args.print:
         columns = 10
@@ -170,8 +197,9 @@ Examples:
             import shutil
             sizes = shutil.get_terminal_size()
             columns = sizes.columns
-        except:
-            pass
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: ', e)
 
         print('-' * columns)
         print(notify__body)
