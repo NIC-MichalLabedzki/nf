@@ -23,6 +23,8 @@ nf
 
 .. image:: https://img.shields.io/pypi/l/nf
 
+.. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
+
 .. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.1.0
 
 IN SHORT
