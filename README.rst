@@ -148,6 +148,11 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
+    -b {dbus,notify-send,termux-notification,win10toast,stdout}, --backend {dbus,notify-send,termux-notification,win10toast,stdout}
+                          Notification backend
+    -d, --debug           More print debugging
+
+
 
     Examples:
     nf make
