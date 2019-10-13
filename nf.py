@@ -128,7 +128,7 @@ Examples:
 
     notify__summary = args.cmd
 
-    cmdline = args.cmd + ' ' + ' '.join(args.args)
+    cmdline = args.cmd + (' ' if len(args.args) > 0 else '') + ' '.join(args.args)
     if args.label is not None:
         notify__summary += ' (' + args.label + ')'
 
