@@ -224,13 +224,13 @@ def test_main_module_all_mock_backend(backend):
         sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
-@pytest.mark.parametrize("backend", ['dbus', 'notify-send', 'termux-notification', 'win10toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_backend(backend):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--backend={}'.format(backend), 'ls']
 
     module_backup = {}
-    modules = ['dbus', 'win10toast', 'shutil']
+    modules = ['dbus', 'win10toast', 'shutil', 'plyer']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 

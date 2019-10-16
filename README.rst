@@ -2,6 +2,8 @@
 nf
 ==============
 
+.. |NF_VERSION| replace:: v1.2.0
+
 .. image:: https://travis-ci.org/NIC-MichalLabedzki/nf.svg?branch=master
    :target: https://travis-ci.org/NIC-MichalLabedzki/nf
 
@@ -25,7 +27,7 @@ nf
 
 .. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
 
-.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.1.1
+.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.2.0
 
 IN SHORT
 --------
@@ -43,29 +45,29 @@ SCREENSHOTS
 
 1. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_1_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_1_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_1_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_1_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 2. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_2_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_2_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_2_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_2_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 3. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_3_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_3_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_3_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_3_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 4. Screenshot from Android:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_4_android.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.1.1/images/screenshot_4_android.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_4_android.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_4_android.png
    :alt: Screenshot from Android
    :width: 200
 
@@ -150,11 +152,9 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {dbus,notify-send,termux-notification,win10toast,stdout}, --backend {dbus,notify-send,termux-notification,win10toast,stdout}
+    -b {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
                           Notification backend
     -d, --debug           More print debugging
-
-
 
     Examples:
     nf make

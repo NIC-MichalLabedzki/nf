@@ -46,7 +46,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
@@ -123,6 +123,17 @@ Examples:
                     print('DEBUG: ', e)
                 backend = 'stdout'
 
+        if backend in ['stdout', 'plyer', 'plyer_toast'] and args.backend != 'stdout':
+            try:
+                import plyer
+                if args.backend == 'plyer' or args.backend == 'plyer_toast':
+                    backend = args.backend
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
+
+
         if backend == 'stdout' and args.backend != 'stdout':
             print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
 
@@ -161,11 +172,15 @@ Examples:
     notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
 
     if backend == 'dbus':
-        notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
-        notify__actions = dbus.Array(signature='s')
-        notify__hints = dbus.Dictionary(signature='sv')
+        try:
+            notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
+            notify__actions = dbus.Array(signature='s')
+            notify__hints = dbus.Dictionary(signature='sv')
 
-        dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
+            dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: ', e)
     elif backend == 'notify-send':
         notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
             summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
@@ -187,6 +202,18 @@ Examples:
         try:
             toaster = win10toast.ToastNotifier()
             toaster.show_toast(notify__summary, notify__body)
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: ', e)
+    elif backend == 'plyer':
+        try:
+            plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout)
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: ', e)
+    elif backend == 'plyer_toast':
+        try:
+            plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
         except Exception as e:
             if args.debug is True:
                 print('DEBUG: ', e)
