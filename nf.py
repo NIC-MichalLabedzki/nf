@@ -81,6 +81,8 @@ Examples:
                         backend = 'dbus'
                     else:
                         backend = 'stdout'
+                else:
+                    backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
                     print('DEBUG: ', e)
@@ -171,52 +173,40 @@ Examples:
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
     notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
 
-    if backend == 'dbus':
-        try:
+    try:
+        if backend == 'dbus':
             notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
             notify__actions = dbus.Array(signature='s')
             notify__hints = dbus.Dictionary(signature='sv')
 
             dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
-        except Exception as e:
-            if args.debug is True:
-                print('DEBUG: ', e)
-    elif backend == 'notify-send':
-        notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
-            summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
-        if sys.version_info >= (3, 5):
-            import subprocess
-            notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
-        else:
-            import subprocess
-            notify_exit_code = subprocess.call(notify_cmdline, shell=True)
-    elif backend == 'termux-notification':
-        notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
-        if sys.version_info >= (3, 5):
-            import subprocess
-            notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
-        else:
-            import subprocess
-            notify_exit_code = subprocess.call(notify_cmdline, shell=True)
-    elif backend == 'win10toast':
-        try:
+        elif backend == 'notify-send':
+            notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
+                summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
+            if sys.version_info >= (3, 5):
+                import subprocess
+                notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
+            else:
+                import subprocess
+                notify_exit_code = subprocess.call(notify_cmdline, shell=True)
+        elif backend == 'termux-notification':
+            notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
+            if sys.version_info >= (3, 5):
+                import subprocess
+                notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
+            else:
+                import subprocess
+                notify_exit_code = subprocess.call(notify_cmdline, shell=True)
+        elif backend == 'win10toast':
             toaster = win10toast.ToastNotifier()
             toaster.show_toast(notify__summary, notify__body)
-        except Exception as e:
-            if args.debug is True:
-                print('DEBUG: ', e)
-    elif backend == 'plyer':
-        try:
+        elif backend == 'plyer':
             plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout)
-        except Exception as e:
-            if args.debug is True:
-                print('DEBUG: ', e)
-    elif backend == 'plyer_toast':
-        try:
+        elif backend == 'plyer_toast':
             plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
-        except Exception as e:
-            if args.debug is True:
-                print('DEBUG: ', e)
+    except Exception as e:
+        if args.debug is True:
+            print('DEBUG: backend={}:'.format(backend), e)
 
     if backend == 'stdout' or args.print:
         columns = 10
