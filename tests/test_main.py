@@ -207,6 +207,9 @@ def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--backend={}'.format(backend), 'ls']
 
+    if sys.version_info < (3,5) and python_version >= (3,5):
+        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
+
     sys_version_info = sys.version_info
     sys.version_info = python_version
 
@@ -235,6 +238,9 @@ def test_main_module_all_mock_backend(backend, python_version):
 def test_main_module_all_mock_bad_import_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--backend={}'.format(backend), 'ls']
+
+    if sys.version_info < (3,5) and python_version >= (3,5):
+        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
 
     sys_version_info = sys.version_info
     sys.version_info = python_version
@@ -297,6 +303,8 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--backend={}'.format(backend), 'ls']
 
+    if sys.version_info < (3,5) and python_version >= (3,5):
+        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
     sys_version_info = sys.version_info
     sys.version_info = python_version
 
