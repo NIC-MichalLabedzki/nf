@@ -164,6 +164,69 @@ def test_main_module_all_mock():
     sys.argv = sys_argv
 
 
+def test_main_module_all_mock_ctrl_c():
+    sys_argv = sys.argv
+    sys.argv = ['nf', '-p', 'sleep 2']
+
+    import os
+    import signal
+    import time
+    import threading
+
+    pid = os.getpid()
+
+    def trigger_signal():
+        time.sleep(1)
+        os.kill(pid, signal.SIGINT)
+
+    thread = threading.Thread(target=trigger_signal)
+    thread.start()
+
+    with pytest.raises(SystemExit):
+        import nf
+        nf.main()
+
+    sys.argv = sys_argv
+
+
+def test_main_module_all_mock_ctrl_c_mock_signal():
+    sys_argv = sys.argv
+    sys.argv = ['nf', '-p', '-d', 'sleep 2']
+
+    import os
+    import signal
+    import time
+    import threading
+
+    pid = os.getpid()
+
+    def trigger_signal():
+        time.sleep(1)
+        os.kill(pid, signal.SIGINT)
+
+    thread = threading.Thread(target=trigger_signal)
+    thread.start()
+
+    module_backup = {}
+    modules = ['signal']
+    for module_name in modules:
+        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+        module_mock = mock.MagicMock()
+        setattr(module_mock, '__spec__', module_mock)
+
+        sys.modules[module_name] = None
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.main()
+    assert exit_e.value.code == 0
+
+    for module_name in modules:
+        sys.modules[module_name] = module_backup[module_name]
+    sys.argv = sys_argv
+
+
 def test_main_module_all_mock_save():
     with open('.nf', 'w'):
         pass
@@ -250,9 +313,6 @@ def test_main_module_all_mock_bad_import_backend(backend, python_version):
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-        #module_mock = mock.MagicMock()
-        #setattr(module_mock, '__spec__', module_mock)
-
         sys.modules[module_name] = None
 
     with pytest.raises(SystemExit) as exit_e:
@@ -285,16 +345,16 @@ def get_method_mocks():
     win10toast.ToastNotifier.return_value.show_toast.side_effect = Exception()
 
     return [
-    ('dbus', dbus_session_bus),
-    ('dbus', dbus_session_bus_get_object),
-    ('notify-send', shutil_which_none),
-    ('notify-send', shutil_which_found),
-    ('termux-notification', shutil_which_none),
-    ('termux-notification', shutil_which_found),
-    ('win10toast', win10toast),
-    ('plyer', plyer),
-    ('plyer_toast', plyer),
-    ('stdout', mock.MagicMock())
+        ('dbus', dbus_session_bus),
+        ('dbus', dbus_session_bus_get_object),
+        ('notify-send', shutil_which_none),
+        ('notify-send', shutil_which_found),
+        ('termux-notification', shutil_which_none),
+        ('termux-notification', shutil_which_found),
+        ('win10toast', win10toast),
+        ('plyer', plyer),
+        ('plyer_toast', plyer),
+        ('stdout', mock.MagicMock())
     ]
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
