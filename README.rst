@@ -36,7 +36,7 @@ IN SHORT
 
 SPDX-License-Identifier: 0BSD
 
-Project name: jsonfromschema
+Project name: nf
 License: 0BSD / Free Public License 1.0.0
 More information about license: https://opensource.org/licenses/0BSD
 
