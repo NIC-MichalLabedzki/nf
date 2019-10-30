@@ -46,7 +46,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout', 'ssh'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
@@ -134,7 +134,43 @@ Examples:
                 if args.debug is True:
                     print('DEBUG: ', e)
                 backend = 'stdout'
+        if backend in ['stdout', 'ssh'] and args.backend != 'stdout':
+            if 'SSH_CONNECTION' in os.environ:
+                print('Found SSH_CONNECTION', )
+                ssh_connection = os.environ['SSH_CONNECTION'].split(' ')
+                ssh_ip = ssh_connection[0]
+                ssh_port = ssh_connection[1]
 
+                import subprocess
+                process = subprocess.Popen(["ssh", ssh_ip, '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                # TODO: check for ssh and exceptions
+                # TODO: send host notification text
+                process.stdout.readline()  # expect password prompt # TODO: what if ssh is password-less
+
+                with open(__file__, 'r') as f:
+                    myself = f.read()
+                outs, errs = process.communicate(b"python - ls <<'EOF'\n" + myself.encode() + b"\nEOF\n", timeout=5)
+
+                #process.stdin.write(b"python - ls <<'EOF'\n")
+                #process.stdin.write(myself.encode())
+                #process.stdin.write(b'\n')
+                #process.stdin.write(b'EOF\n')
+                #process.stdin.flush()
+
+                #process.stdin.write(b'exit\n')
+                #process.stdin.flush()
+
+                #process.stdin.close()
+                #process.stdout.close()
+                #process.stderr.close()
+                #print(process.stdout.read())
+                #print(process.stderr.read())
+
+                process.terminate()
+                print('Finished')
+
+            else:
+                print('WARNING: No $SSH_CONNECTION, backend SSH will not work')
 
         if backend == 'stdout' and args.backend != 'stdout':
             print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
