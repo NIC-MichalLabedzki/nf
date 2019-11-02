@@ -48,6 +48,7 @@ Examples:
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
     parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout', 'ssh'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
+    parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -70,6 +71,26 @@ Examples:
         backend = 'stdout'
 
     if not args.no_notify:
+        if backend in ['stdout', 'ssh'] and args.backend != 'stdout':
+            try:
+                if 'SSH_CLIENT' in os.environ:
+                    ssh_connection = os.environ['SSH_CLIENT'].split(' ')
+                    ssh_ip = ssh_connection[0]
+                    ssh_port = ssh_connection[2]
+
+                    import subprocess
+                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                    ssh_process.stdout.readline()  # NOTE: expect password prompt
+                    backend = 'ssh'
+                else:
+                    if args.backend == 'ssh':
+                        print('WARNING: No $SSH_CLIENT, backend SSH will not work')
+                    backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: ', e)
+                backend = 'stdout'
+
         if backend in ['stdout', 'dbus'] and args.backend != 'stdout':
             try:
                 import dbus
@@ -134,43 +155,6 @@ Examples:
                 if args.debug is True:
                     print('DEBUG: ', e)
                 backend = 'stdout'
-        if backend in ['stdout', 'ssh'] and args.backend != 'stdout':
-            if 'SSH_CONNECTION' in os.environ:
-                print('Found SSH_CONNECTION', )
-                ssh_connection = os.environ['SSH_CONNECTION'].split(' ')
-                ssh_ip = ssh_connection[0]
-                ssh_port = ssh_connection[1]
-
-                import subprocess
-                process = subprocess.Popen(["ssh", ssh_ip, '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                # TODO: check for ssh and exceptions
-                # TODO: send host notification text
-                process.stdout.readline()  # expect password prompt # TODO: what if ssh is password-less
-
-                with open(__file__, 'r') as f:
-                    myself = f.read()
-                outs, errs = process.communicate(b"python - ls <<'EOF'\n" + myself.encode() + b"\nEOF\n", timeout=5)
-
-                #process.stdin.write(b"python - ls <<'EOF'\n")
-                #process.stdin.write(myself.encode())
-                #process.stdin.write(b'\n')
-                #process.stdin.write(b'EOF\n')
-                #process.stdin.flush()
-
-                #process.stdin.write(b'exit\n')
-                #process.stdin.flush()
-
-                #process.stdin.close()
-                #process.stdout.close()
-                #process.stderr.close()
-                #print(process.stdout.read())
-                #print(process.stderr.read())
-
-                process.terminate()
-                print('Finished')
-
-            else:
-                print('WARNING: No $SSH_CONNECTION, backend SSH will not work')
 
         if backend == 'stdout' and args.backend != 'stdout':
             print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
@@ -209,6 +193,9 @@ Examples:
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
     notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
 
+    if args.custom_notification_text:
+        notify__body = args.custom_notification_text
+
     try:
         if backend == 'dbus':
             notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
@@ -240,6 +227,21 @@ Examples:
             plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout)
         elif backend == 'plyer_toast':
             plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
+        elif backend == 'ssh':
+            with open(__file__, 'r') as f:
+                for i in range(10):
+                    f.readline()
+                myself = f.read()
+            custom_notification_text = notify__body
+            cmd = "python - -b termux-notification --custom_notification_text=\"{}\" echo << 'EOF'".format(custom_notification_text.replace("\"", "\\\"")).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+            if sys.version_info >= (3, 3):
+                output, stderr_output = ssh_process.communicate(cmd, timeout=5)
+            else:
+                output, stderr_output = ssh_process.communicate(cmd)
+            if args.debug is True:
+                print('DEBUG: stdout', output)
+                print('DEBUG: stderr', stderr_output)
+            ssh_process.terminate()
     except Exception as e:
         if args.debug is True:
             print('DEBUG: backend={}:'.format(backend), e)

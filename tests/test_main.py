@@ -14,7 +14,15 @@ def test_main_no_args():
         nf.main()
     assert exit_e.value.code == 2
 
+
 def test_main_ls():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', 'ls']
     with pytest.raises(SystemExit) as exit_e:
@@ -22,8 +30,18 @@ def test_main_ls():
         nf.main()
     assert exit_e.value.code == 0
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
-def test_main_ls():
+
+def test_main_ls_not_exist():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', 'ls not_exist']
     with pytest.raises(SystemExit) as exit_e:
@@ -31,8 +49,18 @@ def test_main_ls():
         nf.main()
     assert exit_e.value.code != 0
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
+
 
 def test_main_ls_print():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'ls']
     with pytest.raises(SystemExit) as exit_e:
@@ -40,8 +68,18 @@ def test_main_ls_print():
         nf.main()
     assert exit_e.value.code == 0
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
+
 
 def test_main_ls_label():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-l', 'this is label', 'ls']
     with pytest.raises(SystemExit) as exit_e:
@@ -49,9 +87,18 @@ def test_main_ls_label():
         nf.main()
     assert exit_e.value.code == 0
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_ls_no_notify():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-n', 'ls']
     with pytest.raises(SystemExit) as exit_e:
@@ -59,9 +106,18 @@ def test_main_ls_no_notify():
         nf.main()
     assert exit_e.value.code == 0
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_no_module_dbus():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', 'ls']
     type(sys.modules)
@@ -76,9 +132,18 @@ def test_main_no_module_dbus():
     assert exit_e.value.code == 0
     sys.modules[module_name] = module_backup
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_no_module_shutil():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'ls']
 
@@ -92,9 +157,17 @@ def test_main_no_module_shutil():
     assert exit_e.value.code == 0
     sys.modules[module_name] = module_backup
     sys.argv = sys_argv
-
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 def test_main_module_shutil_cannot_get_terminal_size():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'ls']
 
@@ -115,9 +188,18 @@ def test_main_module_shutil_cannot_get_terminal_size():
     assert exit_e.value.code == 0
     sys.modules[module_name] = module_backup
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_module_dbus_error():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'ls']
 
@@ -138,9 +220,18 @@ def test_main_module_dbus_error():
     assert exit_e.value.code == 0
     sys.modules[module_name] = module_backup
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_module_all_mock():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'ls']
 
@@ -162,9 +253,18 @@ def test_main_module_all_mock():
     for module_name in modules:
         sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_module_all_mock_ctrl_c():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', 'sleep 2']
 
@@ -187,9 +287,18 @@ def test_main_module_all_mock_ctrl_c():
         nf.main()
 
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_module_all_mock_ctrl_c_mock_signal():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     sys_argv = sys.argv
     sys.argv = ['nf', '-p', '-d', 'sleep 2']
 
@@ -225,9 +334,18 @@ def test_main_module_all_mock_ctrl_c_mock_signal():
     for module_name in modules:
         sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 def test_main_module_all_mock_save():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
     with open('.nf', 'w'):
         pass
 
@@ -261,7 +379,8 @@ def test_main_module_all_mock_save():
         assert line[3][:6] =='Stop  '
         assert line[4][:6] =='Diff  '
         assert line[5] =='----------'
-
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
