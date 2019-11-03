@@ -152,7 +152,7 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+    -b {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
                           Notification backend
     -d, --debug           More print debugging
 
@@ -187,7 +187,8 @@ FEATURES
 3. Option to print notification on stdout.
 4. Option to save full command line and stat to file into working directory.
 5. Support whole python implementations/versions (at least not crash and print on stdout)
+6. Case SSH: If you are over SSH send notification over backward-SSH connection to your native system (force password)
 
 TODO
 ----
-1. Test Windows support
+1. Support for Paramiko (Python SSH)

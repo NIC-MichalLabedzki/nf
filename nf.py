@@ -46,7 +46,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-b', '--backend', type=str, choices=['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout', 'ssh'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('cmd')
