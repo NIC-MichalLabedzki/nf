@@ -15,6 +15,7 @@ def test_main_no_args():
     assert exit_e.value.code == 2
 
 
+@pytest.mark.real
 def test_main_ls():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -34,6 +35,7 @@ def test_main_ls():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_ls_not_exist():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -53,6 +55,7 @@ def test_main_ls_not_exist():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_ls_print():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -72,6 +75,7 @@ def test_main_ls_print():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_ls_label():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -91,6 +95,7 @@ def test_main_ls_label():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_ls_no_notify():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -110,6 +115,7 @@ def test_main_ls_no_notify():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_no_module_dbus():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -136,6 +142,7 @@ def test_main_no_module_dbus():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_no_module_shutil():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -160,6 +167,8 @@ def test_main_no_module_shutil():
     if ssh_client:
         os.environ['SSH_CLIENT'] = ssh_client
 
+
+@pytest.mark.real
 def test_main_module_shutil_cannot_get_terminal_size():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -192,6 +201,7 @@ def test_main_module_shutil_cannot_get_terminal_size():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.real
 def test_main_module_dbus_error():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -384,10 +394,10 @@ def test_main_module_all_mock_save():
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-@pytest.mark.parametrize("backend", ['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--label', 'test_label', '--backend={}'.format(backend), 'ls']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -405,10 +415,23 @@ def test_main_module_all_mock_backend(backend, python_version):
 
         sys.modules[module_name] = module_mock
 
+    if backend == 'ssh':
+        import os
+        if 'SSH_CLIENT' in os.environ:
+            ssh_client = os.environ['SSH_CLIENT']
+        else:
+            ssh_client = None
+        os.environ['SSH_CLIENT'] = '127.0.0.1 1234 5678'
+
     with pytest.raises(SystemExit) as exit_e:
         import nf
         nf.main()
     # assert exit_e.value.code == 0  # there is a mock (subprocess), so check this is useless
+
+    if backend == 'ssh':
+        del os.environ['SSH_CLIENT']
+        if ssh_client:
+            os.environ['SSH_CLIENT'] = ssh_client
 
     for module_name in modules:
         sys.modules[module_name] = module_backup[module_name]
@@ -419,7 +442,7 @@ def test_main_module_all_mock_backend(backend, python_version):
 @pytest.mark.parametrize("backend", ['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label', '--backend={}'.format(backend), 'ls']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -480,7 +503,7 @@ def get_method_mocks():
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
 def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label', '--backend={}'.format(backend), 'ls']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -497,10 +520,23 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
 
         sys.modules[module_name] = module_mock
 
+    if backend == 'ssh':
+        import os
+        if 'SSH_CLIENT' in os.environ:
+            ssh_client = os.environ['SSH_CLIENT']
+        else:
+            ssh_client = None
+        os.environ['SSH_CLIENT'] = '127.0.0.1 1234 5678'
+
     with pytest.raises(SystemExit) as exit_e:
         import nf
         nf.main()
     assert exit_e.value.code == 0
+
+    if backend == 'ssh':
+        del os.environ['SSH_CLIENT']
+        if ssh_client:
+            os.environ['SSH_CLIENT'] = ssh_client
 
     for module_name in modules:
         sys.modules[module_name] = module_backup[module_name]
