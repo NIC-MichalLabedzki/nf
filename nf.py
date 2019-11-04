@@ -239,7 +239,7 @@ Examples:
                     line = f.readline()
                 myself = f.read()
             custom_notification_text = notify__body
-            cmd = "python - --custom_notification_text=\"{}\" echo << 'EOF'".format(custom_notification_text.replace("\"", "\\\"")).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+            cmd = "unset SSH_CLIENT; python - --custom_notification_text=\"{}\" echo << 'EOF'".format(custom_notification_text.replace("\"", "\\\"")).encode() + b"\n" + myself.encode() + b"\nEOF\n"
             if sys.version_info >= (3, 3):
                 output, stderr_output = ssh_process.communicate(cmd, timeout=5)
             else:
@@ -247,7 +247,6 @@ Examples:
             if args.debug is True:
                 print('DEBUG: stdout', output)
                 print('DEBUG: stderr', stderr_output)
-            ssh_process.terminate()
     except Exception as e:
         if args.debug is True:
             print('DEBUG: backend={}:'.format(backend), e)
