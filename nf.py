@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+#
 # SPDX-License-Identifier: 0BSD
-
+#
 # Original author: Michał Łabędzki
+# Author email: michal.tomasz.labedzki@gmail.com
+#
+# Project name/application name: nf
 # Source: https://github.com/NIC-MichalLabedzki/nf
+#
+##
 
 # for python2
 from __future__ import print_function as _print_function
@@ -229,8 +234,9 @@ Examples:
             plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
         elif backend == 'ssh':
             with open(__file__, 'r') as f:
-                for i in range(10):
-                    f.readline()
+                line = f.readline()
+                while line != '##\n':
+                    line = f.readline()
                 myself = f.read()
             custom_notification_text = notify__body
             cmd = "python - --custom_notification_text=\"{}\" echo << 'EOF'".format(custom_notification_text.replace("\"", "\\\"")).encode() + b"\n" + myself.encode() + b"\nEOF\n"
