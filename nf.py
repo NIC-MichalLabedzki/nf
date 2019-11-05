@@ -54,6 +54,8 @@ Examples:
     parser.add_argument('-b', '--backend', type=str, choices=['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
+    parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
+    parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -188,6 +190,10 @@ Examples:
 
     notify__app_name = args.cmd
     notify__timeout = 0
+
+    if args.custom_notification_exit_code is not None:
+        exit_code = args.custom_notification_exit_code
+
     if exit_code != 0:
         notify__app_icon = "process-stop"
         notify__body += ' was exit with exit code = ' + str(exit_code)
@@ -197,6 +203,9 @@ Examples:
 
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
     notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
+
+    if args.custom_notification_title:
+        notify__summary = args.custom_notification_title
 
     if args.custom_notification_text:
         notify__body = args.custom_notification_text
@@ -238,8 +247,8 @@ Examples:
                 while line != '##\n':
                     line = f.readline()
                 myself = f.read()
-            custom_notification_text = notify__body
-            cmd = "unset SSH_CLIENT; python - --custom_notification_text=\"{}\" echo << 'EOF'".format(custom_notification_text.replace("\"", "\\\"")).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+
+            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__summary, notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
             if sys.version_info >= (3, 3):
                 output, stderr_output = ssh_process.communicate(cmd, timeout=5)
             else:
