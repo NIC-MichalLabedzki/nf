@@ -86,7 +86,7 @@ Examples:
                     ssh_port = ssh_connection[2]
 
                     import subprocess
-                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no', '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                     ssh_process.stdout.readline()  # NOTE: expect password prompt
                     backend = 'ssh'
                 else:
