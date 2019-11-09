@@ -88,7 +88,10 @@ Examples:
                     import subprocess
                     ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                     ssh_process.stdout.readline()  # NOTE: expect password prompt
-                    backend = 'ssh'
+                    if ssh_process.poll():
+                        backend = 'stdout'
+                    else:
+                        backend = 'ssh'
                 else:
                     if args.backend == 'ssh':
                         print('WARNING: No $SSH_CLIENT, backend SSH will not work')
