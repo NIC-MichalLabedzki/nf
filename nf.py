@@ -51,7 +51,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-b', '--backend', type=str, choices=['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
@@ -78,7 +78,29 @@ Examples:
         backend = 'stdout'
 
     if not args.no_notify:
-        if backend in ['stdout', 'ssh'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'paramiko'] and args.backend == None) or args.backend == 'paramiko':
+            try:
+                if 'SSH_CLIENT' in os.environ:
+                    ssh_connection = os.environ['SSH_CLIENT'].split(' ')
+                    ssh_ip = ssh_connection[0]
+                    ssh_port = ssh_connection[2]
+
+                    import paramiko
+                    import getpass
+                    ssh_client = paramiko.SSHClient()
+                    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    password = getpass.getpass()
+                    ssh_client.connect(hostname=ssh_ip, port=ssh_port, password=password, timeout=2)
+                else:
+                    if args.backend == 'paramiko':
+                        print('WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
+                    backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: backend={}'.format('paramiko'), e)
+                backend = 'stdout'
+
+        if (backend in ['stdout', 'ssh'] and args.backend == None) or args.backend == 'ssh':
             try:
                 if 'SSH_CLIENT' in os.environ:
                     ssh_connection = os.environ['SSH_CLIENT'].split(' ')
@@ -86,7 +108,7 @@ Examples:
                     ssh_port = ssh_connection[2]
 
                     import subprocess
-                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                     ssh_process.stdout.readline()  # NOTE: expect password prompt
                     if ssh_process.poll():
                         backend = 'stdout'
@@ -98,10 +120,10 @@ Examples:
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('ssh'), e)
                 backend = 'stdout'
 
-        if backend in ['stdout', 'dbus'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'dbus'] and args.backend == None) or args.backend == 'dbus':
             try:
                 import dbus
 
@@ -116,10 +138,10 @@ Examples:
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('dbus'), e)
                 backend = 'stdout'
 
-        if backend in ['stdout', 'notify-send'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'notify-send'] and args.backend == None) or args.backend == 'notify-send':
             try:
                 import shutil
 
@@ -130,10 +152,10 @@ Examples:
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('notify-send'), e)
                 backend = 'stdout'
 
-        if backend in ['stdout', 'termux-notification'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'termux-notification'] and args.backend == None) or args.backend == 'termux-notification':
             try:
                 import shutil
 
@@ -144,26 +166,26 @@ Examples:
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('termux-notification'), e)
                 backend = 'stdout'
 
-        if backend in ['stdout', 'win10toast'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
             try:
                 import win10toast
                 backend = 'win10toast'
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('win10toast'), e)
                 backend = 'stdout'
 
-        if backend in ['stdout', 'plyer', 'plyer_toast'] and args.backend != 'stdout':
+        if (backend in ['stdout', 'plyer', 'plyer_toast'] and args.backend == None) or args.backend == 'plyer' or args.backend == 'plyer_toast':
             try:
                 import plyer
                 if args.backend == 'plyer' or args.backend == 'plyer_toast':
                     backend = args.backend
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: ', e)
+                    print('DEBUG: backend={}'.format('plyer'), e)
                 backend = 'stdout'
 
         if backend == 'stdout' and args.backend != 'stdout':
@@ -258,6 +280,18 @@ Examples:
             if args.debug is True:
                 print('DEBUG: stdout', output)
                 print('DEBUG: stderr', stderr_output)
+        elif backend == 'paramiko':
+            with open(__file__, 'r') as f:
+                line = f.readline()
+                while line != '##\n':
+                    line = f.readline()
+                myself = f.read()
+            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__summary.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+            stdin, output, stderr_output = stdin, output, stderr_output = ssh_client.exec_command(cmd)
+            if args.debug is True:
+                print('DEBUG: stdout', output.read().decode())
+                print('DEBUG: stderr', stderr_output.read().decode())
+            ssh_client.close()
     except Exception as e:
         if args.debug is True:
             print('DEBUG: backend={}:'.format(backend), e)
