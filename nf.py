@@ -86,11 +86,30 @@ Examples:
                     ssh_port = ssh_connection[2]
 
                     import paramiko
-                    import getpass
                     ssh_client = paramiko.SSHClient()
                     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    password = getpass.getpass()
-                    ssh_client.connect(hostname=ssh_ip, port=ssh_port, password=password, timeout=2)
+                    try:
+                        ssh_client.load_system_host_keys()
+                    except Exception as e:
+                        if args.debug is True:
+                            print('DEBUG: backend={}'.format('paramiko'), e)
+                    try:
+                        ssh_client.connect(hostname=ssh_ip, port=ssh_port, timeout=2)
+                    except Exception as e:
+                        exc_info = sys.exc_info()
+                        if args.debug is True:
+                            print('DEBUG: {line} backend={backend}'.format(line=exc_info[-1].tb_lineno, backend='paramiko'), e)
+                            import traceback
+                            traceback.print_exception(*exc_info)
+                            print('DEBUG end ----')
+                        try:
+                            import getpass
+                            password = getpass.getpass()
+                            ssh_client.connect(hostname=ssh_ip, port=ssh_port, password=password, timeout=2)
+                        except Exception as e:
+                            if args.debug is True:
+                                print('DEBUG: backend={}'.format('paramiko'), e)
+                            backend = 'stdout'
                 else:
                     if args.backend == 'paramiko':
                         print('WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
@@ -109,7 +128,7 @@ Examples:
 
                     import subprocess
                     ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                    ssh_process.stdout.readline()  # NOTE: expect password prompt
+                    ssh_process.stdout.readline()  # BUG: expect password prompt, hang if nothing
                     if ssh_process.poll():
                         backend = 'stdout'
                     else:
