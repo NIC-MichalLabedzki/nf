@@ -127,8 +127,17 @@ Examples:
                     ssh_port = ssh_connection[2]
 
                     import subprocess
-                    ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                    ssh_process.stdout.readline()  # BUG: expect password prompt, hang if nothing
+
+                    try:
+                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=publickey', '-o', 'PubkeyAuthentication=yes'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                        time.sleep(1)
+                        if ssh_process.poll() != None:
+                            raise Exception('Public key not working')
+                    except Exception as e:
+                        if args.debug is True:
+                            print('DEBUG: backend={}'.format('ssh'), e)
+                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                        ssh_process.stdout.readline()  # expect password prompt
                     if ssh_process.poll():
                         backend = 'stdout'
                     else:
