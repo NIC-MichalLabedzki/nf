@@ -40,6 +40,13 @@ Project name: nf
 License: 0BSD / Free Public License 1.0.0
 More information about license: https://opensource.org/licenses/0BSD
 
+CHANGELOG
+---------
+
+From 1.1.1:
+    1. Add ssh/paramiko backends to open backward ssh channel to provide notification on the local machine (based on $SSH_CLIENT environment variable)
+    2. Add multiplatform notification backends: plyer, plyer_toast (for Android but who knows)
+
 SCREENSHOTS
 -----------
 
@@ -152,7 +159,7 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+    -b {paramiko, ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko, ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
                           Notification backend
     -d, --debug           More print debugging
 
@@ -188,7 +195,9 @@ FEATURES
 4. Option to save full command line and stat to file into working directory.
 5. Support whole python implementations/versions (at least not crash and print on stdout)
 6. Case SSH: If you are over SSH send notification over backward-SSH connection to your native system (force password)
+7. Supported notification backends: paramiko (ssh), ssh, dbus, notify-send, termux-notification (Android), win10toast (Windows),plyer, plyer_toast, stdout
 
 TODO
 ----
-1. Support for Paramiko (Python SSH)
+1. Konsole terminal (tab) title name
+2. Yakuake terminal (tab) title name
