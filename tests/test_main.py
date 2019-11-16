@@ -394,7 +394,7 @@ def test_main_module_all_mock_save():
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-@pytest.mark.parametrize("backend", ['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--label', 'test_label', '--backend={}'.format(backend), 'ls']
@@ -406,7 +406,7 @@ def test_main_module_all_mock_backend(backend, python_version):
     sys.version_info = python_version
 
     module_backup = {}
-    modules = ['dbus', 'win10toast', 'subprocess']
+    modules = ['dbus', 'win10toast', 'subprocess', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -415,7 +415,7 @@ def test_main_module_all_mock_backend(backend, python_version):
 
         sys.modules[module_name] = module_mock
 
-    if backend == 'ssh':
+    if backend == 'ssh' or backend == 'paramiko':
         import os
         if 'SSH_CLIENT' in os.environ:
             ssh_client = os.environ['SSH_CLIENT']
@@ -428,7 +428,7 @@ def test_main_module_all_mock_backend(backend, python_version):
         nf.main()
     # assert exit_e.value.code == 0  # there is a mock (subprocess), so check this is useless
 
-    if backend == 'ssh':
+    if backend == 'ssh' or backend == 'paramiko':
         del os.environ['SSH_CLIENT']
         if ssh_client:
             os.environ['SSH_CLIENT'] = ssh_client
@@ -451,7 +451,7 @@ def test_main_module_all_mock_bad_import_backend(backend, python_version):
     sys.version_info = python_version
 
     module_backup = {}
-    modules = ['dbus', 'win10toast', 'shutil', 'plyer']
+    modules = ['dbus', 'win10toast', 'shutil', 'plyer', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -496,6 +496,8 @@ def get_method_mocks():
         ('win10toast', win10toast),
         ('plyer', plyer),
         ('plyer_toast', plyer),
+        ('ssh', shutil_which_none),
+        ('ssh', shutil_which_found),
         ('stdout', mock.MagicMock())
     ]
 
@@ -511,7 +513,7 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     sys.version_info = python_version
 
     module_backup = {}
-    modules = ['dbus', 'win10toast', 'shutil', 'plyer']
+    modules = ['dbus', 'win10toast', 'shutil', 'plyer', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -520,7 +522,7 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
 
         sys.modules[module_name] = module_mock
 
-    if backend == 'ssh':
+    if backend == 'ssh' or backend == 'paramiko':
         import os
         if 'SSH_CLIENT' in os.environ:
             ssh_client = os.environ['SSH_CLIENT']
@@ -533,7 +535,7 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
         nf.main()
     assert exit_e.value.code == 0
 
-    if backend == 'ssh':
+    if backend == 'ssh' or backend == 'paramiko':
         del os.environ['SSH_CLIENT']
         if ssh_client:
             os.environ['SSH_CLIENT'] = ssh_client
