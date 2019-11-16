@@ -21,8 +21,6 @@ nf
 
 .. image:: https://img.shields.io/github/languages/code-size/NIC-MichalLabedzki/nf
 
-.. image:: https://img.shields.io/github/downloads/NIC-MichalLabedzki/nf/total
-
 .. image:: https://img.shields.io/pypi/l/nf
 
 .. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
