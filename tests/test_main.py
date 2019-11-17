@@ -267,6 +267,117 @@ def test_main_module_all_mock():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+def test_main_module_all_mock_custom_notification_title(capsys):
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
+    sys_argv = sys.argv
+    my_text = 'my text'
+    sys.argv = ['nf', '-p', '--custom_notification_title', my_text, 'ls']
+
+    module_backup = {}
+    modules = ['dbus']
+    for module_name in modules:
+        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+        module_mock = mock.MagicMock()
+        setattr(module_mock, '__spec__', module_mock)
+
+        sys.modules[module_name] = module_mock
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.main()
+    assert exit_e.value.code == 0
+
+    captured = capsys.readouterr()
+
+    for module_name in modules:
+        sys.modules[module_name] = module_backup[module_name]
+    sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
+
+    stdout = captured.out.split('\n')
+    assert stdout[1] == my_text
+
+def test_main_module_all_mock_custom_notification_text(capsys):
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
+    sys_argv = sys.argv
+    my_text = 'my text'
+    sys.argv = ['nf', '-p', '--custom_notification_text', my_text, 'ls']
+
+    module_backup = {}
+    modules = ['dbus']
+    for module_name in modules:
+        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+        module_mock = mock.MagicMock()
+        setattr(module_mock, '__spec__', module_mock)
+
+        sys.modules[module_name] = module_mock
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.main()
+    assert exit_e.value.code == 0
+
+    captured = capsys.readouterr()
+
+    for module_name in modules:
+        sys.modules[module_name] = module_backup[module_name]
+    sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
+
+    stdout = captured.out.split('\n')
+    assert stdout[2] == my_text
+
+
+def test_main_module_all_mock_custom_notification_exit_code():
+    import os
+    if 'SSH_CLIENT' in os.environ:
+        ssh_client = os.environ['SSH_CLIENT']
+        del os.environ['SSH_CLIENT']
+    else:
+        ssh_client = None
+
+    sys_argv = sys.argv
+    my_exit_code = 13
+    sys.argv = ['nf', '-p', '--custom_notification_exit_code', str(my_exit_code), 'ls']
+
+    module_backup = {}
+    modules = ['dbus']
+    for module_name in modules:
+        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+        module_mock = mock.MagicMock()
+        setattr(module_mock, '__spec__', module_mock)
+
+        sys.modules[module_name] = module_mock
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.main()
+    assert exit_e.value.code == my_exit_code
+
+    for module_name in modules:
+        sys.modules[module_name] = module_backup[module_name]
+    sys.argv = sys_argv
+    if ssh_client:
+        os.environ['SSH_CLIENT'] = ssh_client
+
+
 def test_main_module_all_mock_ctrl_c():
     import os
     if 'SSH_CLIENT' in os.environ:

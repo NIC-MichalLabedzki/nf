@@ -219,11 +219,11 @@ Examples:
         if backend == 'stdout' and args.backend != 'stdout':
             print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
 
-    notify__summary = args.cmd
+    notify__title = args.cmd
 
     cmdline = args.cmd + (' ' if len(args.args) > 0 else '') + ' '.join(args.args)
     if args.label is not None:
-        notify__summary += ' (' + args.label + ')'
+        notify__title += ' (' + args.label + ')'
 
     time_start = datetime.datetime.now()
 
@@ -257,10 +257,10 @@ Examples:
     notify__body += "\n\nStart time:   " + time_start.strftime("%H:%M.%S") + "\n" + "End time:     " + time_end.strftime("%H:%M.%S") + "\n" + "Elapsed time: " + time_elapsed.strftime("%H:%M.%S")
     notify__body += "\nTimestamp: " + str(time.time())  # Observation: in KDE the same notification body results in replace notification(s) so you can run 5 nf and see only 2 notifications
 
-    if args.custom_notification_title:
-        notify__summary = args.custom_notification_title
+    if args.custom_notification_title is not None:
+        notify__title = args.custom_notification_title
 
-    if args.custom_notification_text:
+    if args.custom_notification_text is not None:
         notify__body = args.custom_notification_text
 
     try:
@@ -269,10 +269,10 @@ Examples:
             notify__actions = dbus.Array(signature='s')
             notify__hints = dbus.Dictionary(signature='sv')
 
-            dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__summary, notify__body, notify__actions, notify__hints, notify__timeout)
+            dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
         elif backend == 'notify-send':
             notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
-                summary=notify__summary, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
+                summary=notify__title, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
             if sys.version_info >= (3, 5):
                 import subprocess
                 notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
@@ -280,7 +280,7 @@ Examples:
                 import subprocess
                 notify_exit_code = subprocess.call(notify_cmdline, shell=True)
         elif backend == 'termux-notification':
-            notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__summary, content=notify__body)
+            notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__title, content=notify__body)
             if sys.version_info >= (3, 5):
                 import subprocess
                 notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
@@ -289,18 +289,18 @@ Examples:
                 notify_exit_code = subprocess.call(notify_cmdline, shell=True)
         elif backend == 'win10toast':
             toaster = win10toast.ToastNotifier()
-            toaster.show_toast(notify__summary, notify__body)
+            toaster.show_toast(notify__title, notify__body)
         elif backend == 'plyer':
-            plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout)
+            plyer.notification.notify(title=notify__title, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout)
         elif backend == 'plyer_toast':
-            plyer.notification.notify(title=notify__summary, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
+            plyer.notification.notify(title=notify__title, message=notify__body, app_name=notify__app_name, app_icon=notify__app_icon,timeout=notify__timeout, toast=True)
         elif backend == 'ssh':
             with open(__file__, 'r') as f:
                 line = f.readline()
                 while line != '##\n':
                     line = f.readline()
                 myself = f.read()
-            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__summary.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
             if sys.version_info >= (3, 3):
                 output, stderr_output = ssh_process.communicate(cmd, timeout=5)
             else:
@@ -314,7 +314,7 @@ Examples:
                 while line != '##\n':
                     line = f.readline()
                 myself = f.read()
-            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__summary.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+            cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
             stdin, output, stderr_output = stdin, output, stderr_output = ssh_client.exec_command(cmd)
             if args.debug is True:
                 print('DEBUG: stdout', output.read().decode())
@@ -335,6 +335,8 @@ Examples:
                 print('DEBUG: ', e)
 
         print('-' * columns)
+        if notify__title is not '':
+            print(notify__title)
         print(notify__body)
         print('-' * columns)
         if not args.no_notify:
