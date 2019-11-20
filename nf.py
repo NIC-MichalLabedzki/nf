@@ -227,12 +227,40 @@ Examples:
 
     time_start = datetime.datetime.now()
 
+    import shlex
+    import subprocess
+
+    run_cmd = cmdline
+    cmdline_args = shlex.split(run_cmd)
+    system_shell = True
+
+    try:
+        import psutil
+
+        shell = psutil.Process(os.getppid()).exe()
+        known_shells = ['bash', 'zsh', 'fish', 'csh', 'sh']
+        detected_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell)]
+        detected_win_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell + '.exe')]
+        print('pp', detected_shell, detected_win_shell)
+        if detected_shell or detected_win_shell or shell.endswith('cmd.exe'):
+            if shell.endswith('cmd.exe'):
+                c = '\c'
+            else:
+                c = '-c'
+            run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=cmdline.replace('"', '\\"'))
+            cmdline_args = shlex.split(run_cmd)
+            system_shell = False
+    except Exception as e:
+        if args.debug is True:
+            print('DEBUG: backend={} cmd run'.format(backend), e)
+    if args.debug is True:
+        print('DEBUG: detected_shell={} use_system_shell={} cmdline={}'.format(shell, system_shell, run_cmd))
+
     if sys.version_info >= (3, 5):
-        import subprocess
-        exit_code = subprocess.run(cmdline, shell=True).returncode
+        exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
     else:
         import subprocess
-        exit_code = subprocess.call(cmdline, shell=True)
+        exit_code = subprocess.call(cmdline_args, shell=system_shell)
     # exit_code = os.system(cmdline) # works fine
 
     time_end = datetime.datetime.now()

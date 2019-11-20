@@ -44,6 +44,7 @@ CHANGELOG
 From 1.1.1:
     1. Add ssh/paramiko backends to open backward ssh channel to provide notification on the local machine (based on $SSH_CLIENT environment variable)
     2. Add multiplatform notification backends: plyer, plyer_toast (for Android but who knows)
+    3. Use parent process as shell if it is a shell instead of system shell
 
 SCREENSHOTS
 -----------
