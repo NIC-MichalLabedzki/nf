@@ -233,6 +233,7 @@ Examples:
     run_cmd = cmdline
     cmdline_args = shlex.split(run_cmd)
     system_shell = True
+    shell = None
 
     try:
         import psutil
