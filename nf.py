@@ -231,18 +231,29 @@ Examples:
     import subprocess
 
     run_cmd = cmdline
-    cmdline_args = shlex.split(run_cmd)
+    cmdline_args = cmdline
     system_shell = True
     shell = None
+    shell_cmdline = None
 
     try:
         import psutil
 
-        shell = psutil.Process(os.getppid()).exe()
+        parent_process_info = psutil.Process(os.getppid())
+        shell = parent_process_info.exe()
+        shell_cmdline = parent_process_info.cmdline()
+
         known_shells = ['bash', 'zsh', 'fish', 'csh', 'sh']
         detected_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell)]
         detected_win_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell + '.exe')]
-        if detected_shell or detected_win_shell or shell.endswith('cmd.exe'):
+        detected_xonsh = 1 if 'xonsh' in parent_process_info.cmdline()[-1] else 0
+        if detected_xonsh == 1:
+            if sys.version_info >= (3, 8):
+                shell = shlex.join(shell_cmdline)
+            else:
+                shell = ' '.join([shlex.quote(arg) for arg in shell_cmdline])
+        if detected_shell or detected_win_shell or shell.endswith('cmd.exe') or detected_xonsh:
+
             if shell.endswith('cmd.exe'):
                 c = '\\c'
             else:
@@ -254,7 +265,7 @@ Examples:
         if args.debug is True:
             print('DEBUG: backend={} cmd run'.format(backend), e)
     if args.debug is True:
-        print('DEBUG: detected_shell={} use_system_shell={} cmdline={}'.format(shell, system_shell, run_cmd))
+        print('DEBUG: detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
 
     if sys.version_info >= (3, 5):
         exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
