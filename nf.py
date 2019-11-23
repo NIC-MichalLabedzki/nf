@@ -242,10 +242,9 @@ Examples:
         known_shells = ['bash', 'zsh', 'fish', 'csh', 'sh']
         detected_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell)]
         detected_win_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell + '.exe')]
-        print('pp', detected_shell, detected_win_shell)
         if detected_shell or detected_win_shell or shell.endswith('cmd.exe'):
             if shell.endswith('cmd.exe'):
-                c = '\c'
+                c = '\\c'
             else:
                 c = '-c'
             run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=cmdline.replace('"', '\\"'))
