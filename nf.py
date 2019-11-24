@@ -112,7 +112,7 @@ Examples:
                             backend = 'stdout'
                 else:
                     if args.backend == 'paramiko':
-                        print('WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
+                        print('nf: WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
@@ -144,7 +144,7 @@ Examples:
                         backend = 'ssh'
                 else:
                     if args.backend == 'ssh':
-                        print('WARNING: No $SSH_CLIENT, backend SSH will not work')
+                        print('nf: WARNING: No $SSH_CLIENT, backend SSH will not work')
                     backend = 'stdout'
             except Exception as e:
                 if args.debug is True:
