@@ -19,6 +19,7 @@ from __future__ import print_function as _print_function
 """
 
 def main():
+    VERSION = '1.2.0'
     import argparse
     import datetime
     import os
@@ -53,6 +54,7 @@ Examples:
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
+    parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
