@@ -2,7 +2,7 @@
 nf
 ==============
 
-.. |NF_VERSION| replace:: v1.2.0
+.. |NF_VERSION| replace:: v1.3.0
 
 .. image:: https://travis-ci.org/NIC-MichalLabedzki/nf.svg?branch=master
    :target: https://travis-ci.org/NIC-MichalLabedzki/nf
@@ -25,7 +25,7 @@ nf
 
 .. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
 
-.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.2.0
+.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.3.0
 
 IN SHORT
 --------
@@ -41,39 +41,37 @@ More information about license: https://opensource.org/licenses/0BSD
 CHANGELOG
 ---------
 
-From 1.1.1:
-    1. Add ssh/paramiko backends to open backward ssh channel to provide notification on the local machine (based on $SSH_CLIENT environment variable)
-    2. Add multiplatform notification backends: plyer, plyer_toast (for Android but who knows)
-    3. Use parent process as shell if it is a shell instead of system shell
+From 1.2.0:
+    1. Add support for `yakuake` and `konsole` terminal tab name (to fast find notification source)
 
 SCREENSHOTS
 -----------
 
 1. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_1_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_1_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_1_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_1_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 2. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_2_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_2_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_2_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_2_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 3. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_3_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_3_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_3_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_3_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 4. Screenshot from Android:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_4_android.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.2.0/images/screenshot_4_android.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_4_android.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.0/images/screenshot_4_android.png
    :alt: Screenshot from Android
    :width: 200
 
@@ -195,8 +193,8 @@ FEATURES
 5. Support whole python implementations/versions (at least not crash and print on stdout)
 6. Case SSH: If you are over SSH send notification over backward-SSH connection to your native system (force password)
 7. Supported notification backends: paramiko (ssh), ssh, dbus, notify-send, termux-notification (Android), win10toast (Windows),plyer, plyer_toast, stdout
+8. Yakuake/Konsole terminal tab name in label
 
 TODO
 ----
-1. Konsole terminal (tab) title name
-2. Yakuake terminal (tab) title name
+1. "psutil" on Lionux using /proc instead of any dependancies

@@ -19,7 +19,7 @@ from __future__ import print_function as _print_function
 """
 
 def main():
-    VERSION = '1.2.0'
+    VERSION = '1.3.0'
     import argparse
     import datetime
     import os
@@ -242,6 +242,58 @@ Examples:
         import psutil
 
         parent_process_info = psutil.Process(os.getppid())
+
+        process_info = psutil.Process(os.getpid())
+        parents = process_info.parents()
+        parent_names = [parent.name() for parent in parents]
+        if args.debug is True:
+            print('DEBUG: shell parents', parent_names)
+        konsole_app_index = parent_names.index('konsole') if 'konsole' in parent_names else None
+        yakuake_app_index = parent_names.index('yakuake') if 'yakuake' in parent_names else None
+        if args.debug is True:
+            print('DEBUG: detect konsole {} yakuake {}'.format(konsole_app_index, yakuake_app_index))
+        if yakuake_app_index is not None and konsole_app_index is not None:
+            if konsole_app_index < yakuake_app_index:
+                gui_app = 'konsole'
+            elif konsole_app_index > yakuake_app_index:
+                gui_app = 'yakuake'
+        elif konsole_app_index:
+            gui_app = 'konsole'
+        elif yakuake_app_index:
+            gui_app ='yakuake'
+        else:
+             gui_app = 'unknown'
+        if args.debug is True:
+            print('DEBUG: gui_app {}'.format(gui_app))
+
+        gui_app_tab_name = None
+        if gui_app == 'yakuake':
+            # SESSION_ID=$(qdbus org.kde.yakuake /yakuake/sessions activeSessionId)
+            # qdbus org.kde.yakuake /yakuake/tabs tabTitle ${SESSION_ID}
+            try:
+                import dbus
+                dbus_session = dbus.SessionBus()
+                if dbus_session is not None:
+                    dbus_object = dbus_session.get_object('org.kde.yakuake', '/yakuake/sessions')
+                    if dbus_object is not None:
+                        session_id = dbus_object.activeSessionId()
+                        dbus_object = dbus_session.get_object('org.kde.yakuake', '/yakuake/tabs')
+                        gui_app_tab_name = dbus_object.tabTitle(session_id)
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: yakuake get tab name'.format(backend), e)
+        elif gui_app == 'konsole':
+            # $KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION title 1
+            import dbus
+            dbus_session = dbus.SessionBus()
+            if dbus_session is not None:
+                dbus_object = dbus_session.get_object(os.environ['KONSOLE_DBUS_SERVICE'], os.environ['KONSOLE_DBUS_SESSION'])
+                gui_app_tab_name = dbus_object.title(1)
+
+        if args.debug is True:
+            print('DEBUG: gui_app_tab_name', gui_app_tab_name)
+            notify__title += ' [{}]'.format(gui_app_tab_name)
+
         shell = parent_process_info.exe()
         shell_cmdline = parent_process_info.cmdline()
 
