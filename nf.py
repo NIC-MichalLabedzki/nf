@@ -366,7 +366,7 @@ Examples:
 
                 dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
             elif backend == 'notify-send':
-                notify_cmdline = 'notify-send {summary} "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
+                notify_cmdline = 'notify-send "{summary}" "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
                     summary=notify__title, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
                 if sys.version_info >= (3, 5):
                     import subprocess
