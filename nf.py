@@ -292,6 +292,7 @@ Examples:
 
         if args.debug is True:
             print('DEBUG: gui_app_tab_name', gui_app_tab_name)
+        if gui_app_tab_name is not None:
             notify__title += ' [{}]'.format(gui_app_tab_name)
 
         shell = parent_process_info.exe()
