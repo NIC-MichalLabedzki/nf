@@ -241,10 +241,32 @@ Examples:
     try:
         import psutil
 
-        parent_process_info = psutil.Process(os.getppid())
-
         process_info = psutil.Process(os.getpid())
         parents = process_info.parents()
+
+        parent_process_info = psutil.Process(os.getppid())
+        parent_process_info_exe = parent_process_info.exe()
+        parent_process_info_cmdline = parent_process_info.cmdline()
+    except Exception as e:
+        if args.debug is True:
+            print('DEBUG: psutil failed'.format(backend), e)
+        parents = []
+        parent_process_info_exe = ''
+        parent_process_info_cmdline = ['']
+
+        try:
+            parent_process_info_exe = os.readlink('/proc/{}/exe'.format(os.getppid()))
+            if args.debug is True:
+                print('DEBUG: exe', parent_process_info_exe)
+
+            with open('/proc/{}/cmdline'.format(os.getpid())) as f:
+                parent_process_info_cmdline = f.read()[0:-1].split('\0')
+                if args.debug is True:
+                    print('DEBUG: cmdline', parent_process_info_cmdline)
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: usinng /proc failed'.format(backend), e)
+    try:
         parent_names = [parent.name() for parent in parents]
         if args.debug is True:
             print('DEBUG: shell parents', parent_names)
@@ -295,13 +317,13 @@ Examples:
         if gui_app_tab_name is not None:
             notify__title += ' [{}]'.format(gui_app_tab_name)
 
-        shell = parent_process_info.exe()
-        shell_cmdline = parent_process_info.cmdline()
+        shell = parent_process_info_exe
+        shell_cmdline = parent_process_info_cmdline
 
         known_shells = ['bash', 'zsh', 'fish', 'csh', 'sh']
         detected_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell)]
         detected_win_shell = [known_shell for known_shell in known_shells if shell.endswith(known_shell + '.exe')]
-        detected_xonsh = 1 if 'xonsh' in parent_process_info.cmdline()[-1] else 0
+        detected_xonsh = 1 if 'xonsh' in parent_process_info_cmdline[-1] else 0
         if detected_xonsh == 1:
             if sys.version_info >= (3, 8):
                 shell = shlex.join(shell_cmdline)
