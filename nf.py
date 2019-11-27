@@ -238,13 +238,16 @@ Examples:
     shell = None
     shell_cmdline = None
 
+    ppid = os.getppid()
+    parent_names = []
     try:
         import psutil
 
         process_info = psutil.Process(os.getpid())
         parents = process_info.parents()
+        parent_names = [parent.name() for parent in parents]
 
-        parent_process_info = psutil.Process(os.getppid())
+        parent_process_info = psutil.Process(ppid)
         parent_process_info_exe = parent_process_info.exe()
         parent_process_info_cmdline = parent_process_info.cmdline()
     except Exception as e:
@@ -255,19 +258,26 @@ Examples:
         parent_process_info_cmdline = ['']
 
         try:
-            parent_process_info_exe = os.readlink('/proc/{}/exe'.format(os.getppid()))
+            parent_process_info_exe = os.readlink('/proc/{}/exe'.format(ppid))
             if args.debug is True:
                 print('DEBUG: exe', parent_process_info_exe)
 
-            with open('/proc/{}/cmdline'.format(os.getpid())) as f:
+            with open('/proc/{}/cmdline'.format(ppid)) as f:
                 parent_process_info_cmdline = f.read()[0:-1].split('\0')
                 if args.debug is True:
                     print('DEBUG: cmdline', parent_process_info_cmdline)
+
+            pid = ppid
+            while pid != 1:
+                pid_exe = os.readlink('/proc/{}/exe'.format(pid))
+                parent_names.append(os.path.basename(pid_exe))
+                with open('/proc/{}/stat'.format(pid)) as f:
+                    other_process_info_stat = f.read().split(' ')
+                    pid = int(other_process_info_stat[3])
         except Exception as e:
             if args.debug is True:
                 print('DEBUG: usinng /proc failed'.format(backend), e)
     try:
-        parent_names = [parent.name() for parent in parents]
         if args.debug is True:
             print('DEBUG: shell parents', parent_names)
         konsole_app_index = parent_names.index('konsole') if 'konsole' in parent_names else None
