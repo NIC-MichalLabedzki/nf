@@ -108,6 +108,7 @@ Examples:
                             import getpass
                             password = getpass.getpass()
                             ssh_client.connect(hostname=ssh_ip, port=ssh_port, password=password, timeout=2)
+                            del password
                         except Exception as e:
                             if args.debug is True:
                                 print('DEBUG: backend={}'.format('paramiko'), e)
