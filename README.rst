@@ -197,4 +197,26 @@ FEATURES
 
 TODO
 ----
-1. "psutil" on Lionux using /proc instead of any dependancies
+1. tmux session name:
+    tmux rename-session sesja
+    tmux list-sessions -F "#{session_name}"
+2. tmux window name:
+    tmux rename-window okno
+    tmux list-window -F "#{window_name} #{window_active}"
+3. tmux pane name:
+    printf '\033]2;%s\033\\' 'this is a title'
+    tmux list-pane -F "#{pane_title} #{pane_active}"
+
+4. screen sessions:
+    screen -list
+    There are screens on:
+            7842.pts-30.nic (Attached)
+            6981.pts-25.nic (Attached)
+    2 Sockets in /tmp/screens/S-nic.
+
+5. screen window title
+    screen -S 6981.pts-25.nic -Q title
+    bashffferee
+6. screen windows:
+    screen -S 6981.pts-25.nic -Q windows
+    0* bashffferee  1 bash  2 bash  3- bash

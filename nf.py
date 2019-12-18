@@ -278,6 +278,8 @@ Examples:
         except Exception as e:
             if args.debug is True:
                 print('DEBUG: usinng /proc failed'.format(backend), e)
+
+    # GUI: yakuake, konsole
     try:
         if args.debug is True:
             print('DEBUG: shell parents', parent_names)
@@ -325,8 +327,76 @@ Examples:
 
         if args.debug is True:
             print('DEBUG: gui_app_tab_name', gui_app_tab_name)
+
+
+        # text multiplexers: tmux, screen
+        screen_app_index = parent_names.index('screen') if 'screen' in parent_names else None
+        tmux_app_index = parent_names.index('tmux') if 'tmux' in parent_names else None
+        if tmux_app_index is None:
+            tmux_app_index = parent_names.index('tmux: server') if 'tmux: server' in parent_names else None
+        if args.debug is True:
+            print('DEBUG: detect tmux {} screen {}'.format(tmux_app_index, screen_app_index))
+
+        if tmux_app_index is not None and screen_app_index is not None:
+            if screen_app_index < tmux_app_index:
+                multiplexer_app = 'screen'
+            elif screen_app_index > tmux_app_index:
+                multiplexer_app = 'tmux'
+        elif screen_app_index:
+            multiplexer_app = 'screen'
+        elif tmux_app_index:
+            multiplexer_app ='tmux'
+        else:
+             multiplexer_app = 'unknown'
+        if args.debug is True:
+            print('DEBUG: multiplexer_app {}'.format(multiplexer_app))
+
+        multiplexer_window_name = None
+        multiplexer_pane_name = None
+        if multiplexer_app == 'screen':
+            sty = os.environ['STY']
+            if args.debug is True:
+                print('DEBUG: multiplexer_app {} STY {}'.format(multiplexer_app, sty))
+            screen_cmdline = 'screen -q -Q title'
+            import subprocess
+            screen_output = subprocess.check_output(screen_cmdline, shell=True)
+            multiplexer_window_name = screen_output.decode()
+            if multiplexer_window_name == '':
+                multiplexer_window_name = None
+            if args.debug is True:
+                print('DEBUG: multiplexer_app {} title {}'.format(multiplexer_app, multiplexer_window_name))
+        if multiplexer_app == 'tmux':
+            tmux_cmdline = 'tmux list-window -F "#{window_name} #{window_active}"'
+            tmux_output = subprocess.check_output(tmux_cmdline, shell=True)
+            tmux_windows = tmux_output.decode()[0:-1].split('\n')
+            [multiplexer_window_name] = [tmux_window[0:-2] for tmux_window in tmux_windows if tmux_window[-1] == '1']
+            if multiplexer_window_name == '':
+                multiplexer_window_name = None
+            if args.debug is True:
+                print('DEBUG: multiplexer_app {} window {}'.format(multiplexer_app, multiplexer_window_name))
+
+            tmux_cmdline = 'tmux list-pane -F "#{pane_title} #{pane_active}"'
+            tmux_output = subprocess.check_output(tmux_cmdline, shell=True)
+            tmux_panes = tmux_output.decode()[0:-1].split('\n')
+            [multiplexer_pane_name] = [tmux_pane[0:-2] for tmux_pane in tmux_panes if tmux_pane[-1] == '1']
+            if args.debug is True:
+                print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
+
+        console_names = []
         if gui_app_tab_name is not None:
-            notify__title += ' [{}]'.format(gui_app_tab_name)
+            console_names.append(gui_app_tab_name)
+        if multiplexer_window_name is not None:
+            console_names.append(multiplexer_window_name)
+        if multiplexer_pane_name is not None:
+            console_names.append(multiplexer_pane_name)
+
+        if len(console_names) > 2:
+            names = ' -> '.join(console_names)
+        else:
+            names = console_names[0]
+
+        if len(console_names) > 0:
+            notify__title += ' [{}]'.format(names)
 
         shell = parent_process_info_exe
         shell_cmdline = parent_process_info_cmdline
@@ -352,6 +422,7 @@ Examples:
     except Exception as e:
         if args.debug is True:
             print('DEBUG: backend={} cmd run'.format(backend), e)
+
     if args.debug is True:
         print('DEBUG: detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
 
