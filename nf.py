@@ -372,35 +372,36 @@ Examples:
             sty = os.environ['STY']
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} STY {}'.format(multiplexer_app, sty))
-            screen_cmdline = 'screen -q -Q title'
+            screen_cmdline = ['screen', '-q', '-Q', 'title']
             import subprocess
-            screen_output = subprocess.check_output(screen_cmdline, shell=True)
+            screen_output = subprocess.check_output(screen_cmdline)
             multiplexer_window_name = screen_output.decode()
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} title {}'.format(multiplexer_app, multiplexer_window_name))
         if multiplexer_app == 'tmux':
-            tmux_cmdline = 'tmux list-window -F "#{window_name} #{window_active}"'
-            tmux_output = subprocess.check_output(tmux_cmdline, shell=True)
+            tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
+            tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_windows = tmux_output.decode()[0:-1].split('\n')
-            [multiplexer_window_name] = [tmux_window[0:-2] for tmux_window in tmux_windows if tmux_window[-1] == '1']
+            print('iii', tmux_windows)
+            [multiplexer_window_name] = [tmux_window[1:-2] for tmux_window in tmux_windows if tmux_window[-2] == '1']
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} window {}'.format(multiplexer_app, multiplexer_window_name))
 
-            tmux_cmdline = 'tmux list-pane -F "#{pane_title} #{pane_active}"'
-            tmux_output = subprocess.check_output(tmux_cmdline, shell=True)
+            tmux_cmdline = ['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"']
+            tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_panes = tmux_output.decode()[0:-1].split('\n')
-            [multiplexer_pane_name] = [tmux_pane[0:-2] for tmux_pane in tmux_panes if tmux_pane[-1] == '1']
+            [multiplexer_pane_name] = [tmux_pane[1:-2] for tmux_pane in tmux_panes if tmux_pane[-2] == '1']
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
 
-            tmux_cmdline = 'tmux display-message -p "#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"'
-            multiplexer_way = subprocess.check_output(tmux_cmdline, shell=True).decode().strip()
+            tmux_cmdline = ['tmux', 'display-message', '-p', '"#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"']
+            multiplexer_way = subprocess.check_output(tmux_cmdline).decode()[1:-2].strip()
             if args.debug is True:
-                print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_way))
+                print('DEBUG: multiplexer_app {} way {}'.format(multiplexer_app, multiplexer_way))
 
         console_names = []
         if gui_app_tab_name is not None:
@@ -493,22 +494,21 @@ Examples:
 
                 dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
             elif backend == 'notify-send':
-                notify_cmdline = 'notify-send "{summary}" "`echo -en "{body}"`" --expire-time={timeout} --icon="{icon}" --app-name={app_name}'.format(
-                    summary=notify__title, body=notify__body, app_name=notify__app_name, icon=notify__app_icon, timeout=notify__timeout)
+                notify_cmdline = ['notify-send', notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name]
                 if sys.version_info >= (3, 5):
                     import subprocess
-                    notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
+                    notify_exit_code = subprocess.run(notify_cmdline).returncode
                 else:
                     import subprocess
-                    notify_exit_code = subprocess.call(notify_cmdline, shell=True)
+                    notify_exit_code = subprocess.call(notify_cmdline)
             elif backend == 'termux-notification':
-                notify_cmdline = "termux-notification --title '{title}' --content '{content}' --sound --vibrate 500,100,200 --action 'am start com.termux/.app.TermuxActivity'".format(title=notify__title, content=notify__body)
+                notify_cmdline = ['termux-notification', '--title', notify__title, '--content', notify__body, '--sound', '--vibrate', '500,100,200', '--action', '"am start com.termux/.app.TermuxActivity"']
                 if sys.version_info >= (3, 5):
                     import subprocess
-                    notify_exit_code = subprocess.run(notify_cmdline, shell=True).returncode
+                    notify_exit_code = subprocess.run(notify_cmdline).returncode
                 else:
                     import subprocess
-                    notify_exit_code = subprocess.call(notify_cmdline, shell=True)
+                    notify_exit_code = subprocess.call(notify_cmdline)
             elif backend == 'win10toast':
                 toaster = win10toast.ToastNotifier()
                 toaster.show_toast(notify__title, notify__body)
