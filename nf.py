@@ -18,7 +18,7 @@ from __future__ import print_function as _print_function
 ./nf.py [optional options] command [arg...]
 """
 
-def main():
+def nf(argv=None):
     VERSION = '1.3.0'
     import argparse
     import datetime
@@ -60,7 +60,7 @@ Examples:
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     try:
         import signal
@@ -578,6 +578,9 @@ Examples:
             print('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
             print('----------', file=f)
 
+def main():
+    import sys
+    exit_code = nf()
     sys.exit(exit_code)
 
 if __name__ == "__main__":

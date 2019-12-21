@@ -194,6 +194,8 @@ FEATURES
 6. Case SSH: If you are over SSH send notification over backward-SSH connection to your native system (force password)
 7. Supported notification backends: paramiko (ssh), ssh, dbus, notify-send, termux-notification (Android), win10toast (Windows),plyer, plyer_toast, stdout
 8. Yakuake/Konsole terminal tab name in label
+9. screen/tmux session/window/pane title/name in label
+10. python module aka library interface "import nf;nf.nf(['ls'])"
 
 TODO
 ----
