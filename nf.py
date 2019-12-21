@@ -247,6 +247,14 @@ Examples:
         process_info = psutil.Process(os.getpid())
         parents = process_info.parents()
         parent_names = [parent.name() for parent in parents]
+        if 'tmux: server' in parent_names:
+            tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
+            multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
+            if args.debug is True:
+                print('DEBUG: tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
+            tmux_process_info = psutil.Process(multiplexer_client_pid)
+            tmux_parents = tmux_process_info.parents()
+            parent_names.extend([parent.name() for parent in tmux_parents])
 
         parent_process_info = psutil.Process(ppid)
         parent_process_info_exe = parent_process_info.exe()
@@ -271,7 +279,14 @@ Examples:
             pid = ppid
             while pid != 1:
                 pid_exe = os.readlink('/proc/{}/exe'.format(pid))
-                parent_names.append(os.path.basename(pid_exe))
+                parent_name = os.path.basename(pid_exe)
+                if 'tmux: server' == parent_name:
+                    tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
+                    multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
+                    if args.debug is True:
+                        print('DEBUG: tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
+                    pid = multiplexer_client_pid
+                parent_names.append(parent_name)
                 with open('/proc/{}/stat'.format(pid)) as f:
                     other_process_info_stat = f.read().split(' ')
                     pid = int(other_process_info_stat[3])
@@ -328,10 +343,9 @@ Examples:
         if args.debug is True:
             print('DEBUG: gui_app_tab_name', gui_app_tab_name)
 
-
         # text multiplexers: tmux, screen
+        tmux_app_index = parent_names.index('tmux: server') if 'tmux: server' in parent_names else None
         screen_app_index = parent_names.index('screen') if 'screen' in parent_names else None
-        tmux_app_index = parent_names.index('tmux') if 'tmux' in parent_names else None
         if tmux_app_index is None:
             tmux_app_index = parent_names.index('tmux: server') if 'tmux: server' in parent_names else None
         if args.debug is True:
@@ -353,6 +367,7 @@ Examples:
 
         multiplexer_window_name = None
         multiplexer_pane_name = None
+        multiplexer_way = None
         if multiplexer_app == 'screen':
             sty = os.environ['STY']
             if args.debug is True:
@@ -382,17 +397,25 @@ Examples:
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
 
+            tmux_cmdline = 'tmux display-message -p "#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"'
+            multiplexer_way = subprocess.check_output(tmux_cmdline, shell=True).decode().strip()
+            if args.debug is True:
+                print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_way))
+
         console_names = []
         if gui_app_tab_name is not None:
             console_names.append(gui_app_tab_name)
-        if multiplexer_window_name is not None:
-            console_names.append(multiplexer_window_name)
-        if multiplexer_pane_name is not None:
-            console_names.append(multiplexer_pane_name)
-
-        if len(console_names) > 2:
-            names = ' -> '.join(console_names)
+        if multiplexer_way is not None:
+            console_names.append(multiplexer_way)
         else:
+            if multiplexer_window_name is not None:
+                console_names.append(multiplexer_window_name)
+            if multiplexer_pane_name is not None:
+                console_names.append(multiplexer_pane_name)
+
+        if len(console_names) > 1:
+            names = ' -> '.join(console_names)
+        elif len(console_names) == 1:
             names = console_names[0]
 
         if len(console_names) > 0:
@@ -539,7 +562,7 @@ Examples:
                 print('DEBUG: ', e)
 
         print('-' * columns)
-        if notify__title is not '':
+        if notify__title != '':
             print(notify__title)
         print(notify__body)
         print('-' * columns)

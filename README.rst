@@ -206,17 +206,19 @@ TODO
 3. tmux pane name:
     printf '\033]2;%s\033\\' 'this is a title'
     tmux list-pane -F "#{pane_title} #{pane_active}"
+4. client pid to get parent (for example: yakuake)
+    tmux display-message -p "#{client_pid}"
 
-4. screen sessions:
+5. screen sessions:
     screen -list
     There are screens on:
             7842.pts-30.nic (Attached)
             6981.pts-25.nic (Attached)
     2 Sockets in /tmp/screens/S-nic.
 
-5. screen window title
+6. screen window title
     screen -S 6981.pts-25.nic -Q title
     bashffferee
-6. screen windows:
+7. screen windows:
     screen -S 6981.pts-25.nic -Q windows
     0* bashffferee  1 bash  2 bash  3- bash
