@@ -384,7 +384,7 @@ Examples:
             tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_windows = tmux_output.decode()[0:-1].split('\n')
-            print('iii', tmux_windows)
+
             [multiplexer_window_name] = [tmux_window[1:-2] for tmux_window in tmux_windows if tmux_window[-2] == '1']
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
