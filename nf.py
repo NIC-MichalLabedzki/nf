@@ -577,6 +577,7 @@ Examples:
             print('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
             print('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
             print('----------', file=f)
+    return exit_code
 
 def main():
     import sys
