@@ -300,6 +300,7 @@ Examples:
             print('DEBUG: shell parents', parent_names)
         konsole_app_index = parent_names.index('konsole') if 'konsole' in parent_names else None
         yakuake_app_index = parent_names.index('yakuake') if 'yakuake' in parent_names else None
+
         if args.debug is True:
             print('DEBUG: detect konsole {} yakuake {}'.format(konsole_app_index, yakuake_app_index))
         if yakuake_app_index is not None and konsole_app_index is not None:
@@ -311,6 +312,8 @@ Examples:
             gui_app = 'konsole'
         elif yakuake_app_index:
             gui_app ='yakuake'
+        elif 'KONSOLE_VERSION' in os.environ:
+            gui_app = 'konsole'
         else:
              gui_app = 'unknown'
         if args.debug is True:
@@ -360,8 +363,13 @@ Examples:
             multiplexer_app = 'screen'
         elif tmux_app_index:
             multiplexer_app ='tmux'
+        elif 'TMUX' in os.environ:
+            multiplexer_app = 'tmux'
+        elif 'STY' in os.environ:
+            multiplexer_app = 'screen'
         else:
              multiplexer_app = 'unknown'
+
         if args.debug is True:
             print('DEBUG: multiplexer_app {}'.format(multiplexer_app))
 
