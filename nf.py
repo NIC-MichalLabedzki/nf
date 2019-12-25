@@ -177,6 +177,8 @@ Examples:
                 import shutil
 
                 notify_send_app = shutil.which('notify-send')
+                if args.debug is True:
+                    print('DEBUG: backend={}'.format('notify-send'), notify_send_app)
                 if notify_send_app is not None:
                     backend = 'notify-send'
                 else:
@@ -502,7 +504,7 @@ Examples:
 
                 dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
             elif backend == 'notify-send':
-                notify_cmdline = ['notify-send', notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name]
+                notify_cmdline = [notify_send_app, notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name]
                 if sys.version_info >= (3, 5):
                     import subprocess
                     notify_exit_code = subprocess.run(notify_cmdline).returncode
@@ -510,7 +512,7 @@ Examples:
                     import subprocess
                     notify_exit_code = subprocess.call(notify_cmdline)
             elif backend == 'termux-notification':
-                notify_cmdline = ['termux-notification', '--title', notify__title, '--content', notify__body, '--sound', '--vibrate', '500,100,200', '--action', '"am start com.termux/.app.TermuxActivity"']
+                notify_cmdline = [termux_notification_app, '--title', notify__title, '--content', notify__body, '--sound', '--vibrate', '500,100,200', '--action', '"am start com.termux/.app.TermuxActivity"']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     notify_exit_code = subprocess.run(notify_cmdline).returncode
