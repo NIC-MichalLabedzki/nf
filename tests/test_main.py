@@ -1,3 +1,5 @@
+from __future__ import print_function as _print_function
+
 import mock
 import pytest
 import sys
@@ -661,6 +663,154 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
 
     sys.argv = sys_argv
     sys.version_info = sys_version_info
+
+
+def test_yakuaku_support():
+    # TODO
+    pass
+
+
+def test_konsole_support():
+    # TODO
+    pass
+
+
+def test_screen_support(capsys):
+    import os
+    environ_backup = []
+    modules = []
+    module_backup = {}
+
+    def prepare():
+        modules = ['psutil']
+        for module_name in modules:
+            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            process_mock.exe.return_value = "exe_text"
+            process_mock.cmdline.return_value = "cmdline_text"
+            process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        environ_backup = os.environ.copy()
+        os.environ['STY'] = '/dev/null'
+        if 'KONSOLE_VERSION' in os.environ:
+            del os.environ['KONSOLE_VERSION']
+        tmp_fake_apps = 'tests/tmp_fake_apps'
+        if os.path.exists(tmp_fake_apps):
+            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(tmp_fake_apps)
+        os.mkdir(tmp_fake_apps)
+        tmux_app = os.path.join(tmp_fake_apps, 'screen')
+        with open(tmux_app, 'w') as f:
+            f.write('''#!/usr/bin/env python
+import sys
+if sys.argv[1:] == ['-q', '-Q', 'title']:
+    print('screen_window_title')
+else:
+    sys.exit(2)
+''')
+        os.chmod(tmux_app, 0o777)
+
+        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+    def post():
+        os.environ.update(environ_backup)
+
+        for module_name in modules:
+            sys.modules[module_name] = module_backup[module_name]
+
+    prepare()
+
+    import nf
+    nf.nf(['-np', 'echo'])
+
+    captured = capsys.readouterr()
+
+    stdout = captured.out.split('\n')
+    print(stdout)
+    assert stdout[1] == 'echo [screen_window_title]'
+
+    post()
+
+
+def test_tmux_support(capsys):
+    import os
+    environ_backup = []
+    modules = []
+    module_backup = {}
+
+    def prepare():
+        modules = ['psutil']
+        for module_name in modules:
+            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            process_mock.exe.return_value = "exe_text"
+            process_mock.cmdline.return_value = "cmdline_text"
+            process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        environ_backup = os.environ.copy()
+        os.environ['TMUX'] = '/dev/null'
+        if 'KONSOLE_VERSION' in os.environ:
+            del os.environ['KONSOLE_VERSION']
+        tmp_fake_apps = 'tests/tmp_fake_apps'
+        if os.path.exists(tmp_fake_apps):
+            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(tmp_fake_apps)
+        os.mkdir(tmp_fake_apps)
+        tmux_app = os.path.join(tmp_fake_apps, 'tmux')
+        with open(tmux_app, 'w') as f:
+            f.write('''#!/usr/bin/env python
+import sys
+if sys.argv[1] == 'list-window':
+    print('window 1')
+elif sys.argv[1] == 'list-pane':
+    print('pane 1')
+elif sys.argv[1] == 'display-message':
+    print('session -> 1 window -> 1 pane')
+else:
+    sys.exit(2)
+''')
+        os.chmod(tmux_app, 0o777)
+
+        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+    def post():
+        os.environ.update(environ_backup)
+
+        for module_name in modules:
+            sys.modules[module_name] = module_backup[module_name]
+
+    prepare()
+
+    import nf
+    nf.nf(['-np', 'echo'])
+
+    captured = capsys.readouterr()
+
+    stdout = captured.out.split('\n')
+    assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
+
+    post()
+
 
 @pytest.mark.slow
 def test_readme_rst():

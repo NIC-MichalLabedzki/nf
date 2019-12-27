@@ -257,7 +257,6 @@ Examples:
             tmux_process_info = psutil.Process(multiplexer_client_pid)
             tmux_parents = tmux_process_info.parents()
             parent_names.extend([parent.name() for parent in tmux_parents])
-
         parent_process_info = psutil.Process(ppid)
         parent_process_info_exe = parent_process_info.exe()
         parent_process_info_cmdline = parent_process_info.cmdline()
@@ -302,7 +301,6 @@ Examples:
             print('DEBUG: shell parents', parent_names)
         konsole_app_index = parent_names.index('konsole') if 'konsole' in parent_names else None
         yakuake_app_index = parent_names.index('yakuake') if 'yakuake' in parent_names else None
-
         if args.debug is True:
             print('DEBUG: detect konsole {} yakuake {}'.format(konsole_app_index, yakuake_app_index))
         if yakuake_app_index is not None and konsole_app_index is not None:
@@ -385,7 +383,7 @@ Examples:
             screen_cmdline = ['screen', '-q', '-Q', 'title']
             import subprocess
             screen_output = subprocess.check_output(screen_cmdline)
-            multiplexer_window_name = screen_output.decode()
+            multiplexer_window_name = screen_output.decode().strip('\n')
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
             if args.debug is True:
@@ -394,8 +392,7 @@ Examples:
             tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_windows = tmux_output.decode()[0:-1].split('\n')
-
-            [multiplexer_window_name] = [tmux_window[1:-2] for tmux_window in tmux_windows if tmux_window[-2] == '1']
+            [multiplexer_window_name] = [tmux_window.strip('"')[0:-2] for tmux_window in tmux_windows if tmux_window.strip('"')[-1] == '1']
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
             if args.debug is True:
@@ -404,12 +401,12 @@ Examples:
             tmux_cmdline = ['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_panes = tmux_output.decode()[0:-1].split('\n')
-            [multiplexer_pane_name] = [tmux_pane[1:-2] for tmux_pane in tmux_panes if tmux_pane[-2] == '1']
+            [multiplexer_pane_name] = [tmux_pane.strip('"')[0:-2] for tmux_pane in tmux_panes if tmux_pane.strip('"')[-1] == '1']
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
 
             tmux_cmdline = ['tmux', 'display-message', '-p', '"#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"']
-            multiplexer_way = subprocess.check_output(tmux_cmdline).decode()[1:-2].strip()
+            multiplexer_way = subprocess.check_output(tmux_cmdline).decode()[0:-1].strip('"').strip()
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} way {}'.format(multiplexer_app, multiplexer_way))
 
