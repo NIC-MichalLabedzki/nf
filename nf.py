@@ -249,6 +249,7 @@ Examples:
         process_info = psutil.Process(os.getpid())
         parents = process_info.parents()
         parent_names = [parent.name() for parent in parents]
+
         if 'tmux: server' in parent_names:
             tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
             multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))

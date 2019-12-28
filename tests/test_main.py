@@ -731,18 +731,19 @@ else:
     prepare()
 
     import nf
-    nf.nf(['-np', 'echo'])
+    nf.nf(['-ndp', 'echo'])
 
     captured = capsys.readouterr()
 
-    stdout = captured.out.split('\n')
-    print(stdout)
+    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    print(captured.out)
     assert stdout[1] == 'echo [screen_window_title]'
 
     post()
 
 
-def test_tmux_support(capsys):
+@pytest.mark.parametrize("is_case_ppid", [False, True])
+def test_tmux_support(capsys, is_case_ppid):
     import os
     environ_backup = []
     modules = []
@@ -755,9 +756,21 @@ def test_tmux_support(capsys):
 
             module_mock = mock.MagicMock()
             process_mock = mock.MagicMock()
-            process_mock.exe.return_value = "exe_text"
-            process_mock.cmdline.return_value = "cmdline_text"
-            process_mock.name.return_value = 'name_text'
+            if is_case_ppid:
+                parent_process_mock = mock.MagicMock()
+
+                parent_process_mock.exe.return_value = 'exe_text'
+                parent_process_mock.cmdline.return_value = 'cmdline_text'
+                parent_process_mock.name.return_value = 'tmux: server'
+
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'nf_text'
+                process_mock.parents.return_value = [parent_process_mock]
+            else:
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'name_text'
             module_mock.Process.return_value = process_mock
 
             setattr(module_mock, '__spec__', module_mock)
@@ -785,6 +798,8 @@ if sys.argv[1] == 'list-window':
     print('window 1')
 elif sys.argv[1] == 'list-pane':
     print('pane 1')
+elif sys.argv[1:] == ['display-message', '-p', '"#{client_pid}"']:
+    print('0')
 elif sys.argv[1] == 'display-message':
     print('session -> 1 window -> 1 pane')
 else:
@@ -802,11 +817,12 @@ else:
     prepare()
 
     import nf
-    nf.nf(['-np', 'echo'])
+    nf.nf(['-ndp', 'echo'])
 
     captured = capsys.readouterr()
 
-    stdout = captured.out.split('\n')
+    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    print(captured.out)
     assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
 
     post()
