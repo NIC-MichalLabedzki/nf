@@ -309,9 +309,9 @@ Examples:
                 gui_app = 'konsole'
             elif konsole_app_index > yakuake_app_index:
                 gui_app = 'yakuake'
-        elif konsole_app_index:
+        elif konsole_app_index is not None:
             gui_app = 'konsole'
-        elif yakuake_app_index:
+        elif yakuake_app_index is not None:
             gui_app ='yakuake'
         elif 'KONSOLE_VERSION' in os.environ:
             gui_app = 'konsole'
@@ -360,9 +360,9 @@ Examples:
                 multiplexer_app = 'screen'
             elif screen_app_index > tmux_app_index:
                 multiplexer_app = 'tmux'
-        elif screen_app_index:
+        elif screen_app_index is not None:
             multiplexer_app = 'screen'
-        elif tmux_app_index:
+        elif tmux_app_index is not None:
             multiplexer_app ='tmux'
         elif 'TMUX' in os.environ:
             multiplexer_app = 'tmux'

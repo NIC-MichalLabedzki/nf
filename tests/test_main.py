@@ -665,14 +665,134 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     sys.version_info = sys_version_info
 
 
-def test_yakuaku_support():
-    # TODO
-    pass
+def test_yakuake_support(capsys):
+    import os
+    environ_backup = []
+    modules = []
+    module_backup = {}
+
+    def prepare():
+        modules = ['psutil', 'dbus']
+        for module_name in modules:
+            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+
+            if module_name == 'psutil':
+                parent_process_mock = mock.MagicMock()
+
+                parent_process_mock.exe.return_value = 'exe_text'
+                parent_process_mock.cmdline.return_value = 'cmdline_text'
+                parent_process_mock.name.return_value = 'yakuake'
+
+                process_mock = mock.MagicMock()
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'nf_text'
+                process_mock.parents.return_value = [parent_process_mock]
+
+                module_mock.Process.return_value = process_mock
+            elif module_name == 'dbus':
+                module_mock.SessionBus.return_value.get_object.return_value.tabTitle.return_value = 'yakuake_tab_title'
+                pass
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        environ_backup = os.environ.copy()
+        if 'KONSOLE_VERSION' in os.environ:
+            del os.environ['KONSOLE_VERSION']
+        if 'STY' in os.environ:
+            del os.environ['STY']
+        if 'TMUX' in os.environ:
+            del os.environ['TMUX']
+
+    def post():
+        os.environ.update(environ_backup)
+
+        for module_name in modules:
+            print('TEST_DEBUG: ', module_name, sys.modules[module_name].mock_calls)
+            sys.modules[module_name] = module_backup[module_name]
+
+    prepare()
+
+    import nf
+    nf.nf(['-ndp', 'echo'])
+
+    captured = capsys.readouterr()
+
+    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    print(captured.out)
+    assert stdout[1] == 'echo [yakuake_tab_title]'
+
+    post()
 
 
-def test_konsole_support():
-    # TODO
-    pass
+def test_konsole_support(capsys):
+    import os
+    environ_backup = []
+    modules = []
+    module_backup = {}
+
+    def prepare():
+        modules = ['psutil', 'dbus']
+        for module_name in modules:
+            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+
+            if module_name == 'psutil':
+                parent_process_mock = mock.MagicMock()
+
+                parent_process_mock.exe.return_value = 'exe_text'
+                parent_process_mock.cmdline.return_value = 'cmdline_text'
+                parent_process_mock.name.return_value = 'konsole'
+
+                process_mock = mock.MagicMock()
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'nf_text'
+                process_mock.parents.return_value = [parent_process_mock]
+
+                module_mock.Process.return_value = process_mock
+            elif module_name == 'dbus':
+                module_mock.SessionBus.return_value.get_object.return_value.title.return_value = 'konsole_tab_title'
+                pass
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        environ_backup = os.environ.copy()
+        if 'KONSOLE_VERSION' in os.environ:
+            del os.environ['KONSOLE_VERSION']
+        if 'STY' in os.environ:
+            del os.environ['STY']
+        if 'TMUX' in os.environ:
+            del os.environ['TMUX']
+
+    def post():
+        os.environ.update(environ_backup)
+
+        for module_name in modules:
+            print('TEST_DEBUG: ', module_name, sys.modules[module_name].mock_calls)
+            sys.modules[module_name] = module_backup[module_name]
+
+    prepare()
+
+    import nf
+    nf.nf(['-ndp', 'echo'])
+
+    captured = capsys.readouterr()
+
+    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    print(captured.out)
+    assert stdout[1] == 'echo [konsole_tab_title]'
+
+    post()
+
+
 
 
 def test_screen_support(capsys):
@@ -698,9 +818,15 @@ def test_screen_support(capsys):
             sys.modules[module_name] = module_mock
 
         environ_backup = os.environ.copy()
-        os.environ['STY'] = '/dev/null'
         if 'KONSOLE_VERSION' in os.environ:
             del os.environ['KONSOLE_VERSION']
+        if 'STY' in os.environ:
+            del os.environ['STY']
+        if 'TMUX' in os.environ:
+            del os.environ['TMUX']
+
+        os.environ['STY'] = '/dev/null'
+
         tmp_fake_apps = 'tests/tmp_fake_apps'
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
