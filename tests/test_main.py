@@ -510,7 +510,7 @@ def test_main_module_all_mock_save():
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--label', 'test_label1', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'ls']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -519,7 +519,7 @@ def test_main_module_all_mock_backend(backend, python_version):
     sys.version_info = python_version
 
     module_backup = {}
-    modules = ['dbus', 'win10toast', 'subprocess', 'getpass']
+    modules = ['dbus', 'win10toast', 'subprocess', 'getpass', 'paramiko']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -552,7 +552,7 @@ def test_main_module_all_mock_backend(backend, python_version):
     sys.version_info = sys_version_info
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-@pytest.mark.parametrize("backend", ['dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--label', 'test_label2', '--backend={}'.format(backend), 'ls']
@@ -611,6 +611,7 @@ def get_method_mocks():
         ('plyer_toast', plyer),
         ('ssh', shutil_which_none),
         ('ssh', shutil_which_found),
+        ('paramiko', mock.MagicMock()),
         ('stdout', mock.MagicMock())
     ]
 

@@ -100,10 +100,10 @@ Examples:
                     except Exception as e:
                         exc_info = sys.exc_info()
                         if args.debug is True:
-                            print('DEBUG: {line} backend={backend}'.format(line=exc_info[-1].tb_lineno, backend='paramiko'), e)
+                            print('DEBUG: traceback {line} backend={backend}'.format(line=exc_info[-1].tb_lineno, backend='paramiko'), e)
                             import traceback
                             traceback.print_exception(*exc_info)
-                            print('DEBUG end ----')
+                            print('DEBUG: end ----')
                         try:
                             import getpass
                             password = getpass.getpass()
