@@ -702,8 +702,13 @@ def test_yakuake_support(capsys):
             sys.modules[module_name] = module_mock
 
         environ_backup = os.environ.copy()
+
         if 'KONSOLE_VERSION' in os.environ:
             del os.environ['KONSOLE_VERSION']
+        if 'KONSOLE_DBUS_SERVICE' in os.environ:
+            del os.environ['KONSOLE_DBUS_SERVICE']
+        if 'KONSOLE_DBUS_SESSION' in os.environ:
+            del os.environ['KONSOLE_DBUS_SESSION']
         if 'STY' in os.environ:
             del os.environ['STY']
         if 'TMUX' in os.environ:
@@ -730,16 +735,17 @@ def test_yakuake_support(capsys):
     post()
 
 
-def test_konsole_support(capsys):
+@pytest.mark.parametrize("is_case_ppid", [False, True])
+def test_konsole_support(capsys, is_case_ppid):
     import os
-    environ_backup = []
-    modules = []
-    module_backup = {}
 
     def prepare():
-        modules = ['psutil', 'dbus']
-        for module_name in modules:
-            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+        test_environment = {'environ_backup': [],
+                            'modules': ['psutil', 'dbus'],
+                            'module_backup': {}}
+
+        for module_name in test_environment['modules']:
+            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
             module_mock = mock.MagicMock()
 
@@ -748,7 +754,10 @@ def test_konsole_support(capsys):
 
                 parent_process_mock.exe.return_value = 'exe_text'
                 parent_process_mock.cmdline.return_value = 'cmdline_text'
-                parent_process_mock.name.return_value = 'konsole'
+                if is_case_ppid:
+                    parent_process_mock.name.return_value = 'konsole'
+                else:
+                    parent_process_mock.name.return_value = 'fake_parent'
 
                 process_mock = mock.MagicMock()
                 process_mock.exe.return_value = 'exe_text'
@@ -765,22 +774,33 @@ def test_konsole_support(capsys):
 
             sys.modules[module_name] = module_mock
 
-        environ_backup = os.environ.copy()
+        test_environment['environ_backup'] = os.environ.copy()
+
         if 'KONSOLE_VERSION' in os.environ:
             del os.environ['KONSOLE_VERSION']
+        if 'KONSOLE_DBUS_SERVICE' in os.environ:
+            del os.environ['KONSOLE_DBUS_SERVICE']
+        if 'KONSOLE_DBUS_SESSION' in os.environ:
+            del os.environ['KONSOLE_DBUS_SESSION']
         if 'STY' in os.environ:
             del os.environ['STY']
         if 'TMUX' in os.environ:
             del os.environ['TMUX']
 
-    def post():
-        os.environ.update(environ_backup)
+        os.environ['KONSOLE_VERSION'] = 'mock'
+        os.environ['KONSOLE_DBUS_SERVICE'] = 'mock'
+        os.environ['KONSOLE_DBUS_SESSION'] = 'mock'
 
-        for module_name in modules:
+        return test_environment
+
+    def post(test_environment):
+        os.environ.update(test_environment['environ_backup'])
+
+        for module_name in test_environment['modules']:
             print('TEST_DEBUG: ', module_name, sys.modules[module_name].mock_calls)
-            sys.modules[module_name] = module_backup[module_name]
+            sys.modules[module_name] = test_environment['module_backup'][module_name]
 
-    prepare()
+    test_environment = prepare()
 
     import nf
     nf.nf(['-ndp', 'echo'])
@@ -789,9 +809,10 @@ def test_konsole_support(capsys):
 
     stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
     print(captured.out)
+
     assert stdout[1] == 'echo [konsole_tab_title]'
 
-    post()
+    post(test_environment)
 
 
 
@@ -819,8 +840,13 @@ def test_screen_support(capsys):
             sys.modules[module_name] = module_mock
 
         environ_backup = os.environ.copy()
+
         if 'KONSOLE_VERSION' in os.environ:
             del os.environ['KONSOLE_VERSION']
+        if 'KONSOLE_DBUS_SERVICE' in os.environ:
+            del os.environ['KONSOLE_DBUS_SERVICE']
+        if 'KONSOLE_DBUS_SESSION' in os.environ:
+            del os.environ['KONSOLE_DBUS_SESSION']
         if 'STY' in os.environ:
             del os.environ['STY']
         if 'TMUX' in os.environ:
@@ -905,9 +931,20 @@ def test_tmux_support(capsys, is_case_ppid):
             sys.modules[module_name] = module_mock
 
         environ_backup = os.environ.copy()
-        os.environ['TMUX'] = '/dev/null'
+
         if 'KONSOLE_VERSION' in os.environ:
             del os.environ['KONSOLE_VERSION']
+        if 'KONSOLE_DBUS_SERVICE' in os.environ:
+            del os.environ['KONSOLE_DBUS_SERVICE']
+        if 'KONSOLE_DBUS_SESSION' in os.environ:
+            del os.environ['KONSOLE_DBUS_SESSION']
+        if 'STY' in os.environ:
+            del os.environ['STY']
+        if 'TMUX' in os.environ:
+            del os.environ['TMUX']
+
+        os.environ['TMUX'] = '/dev/null'
+
         tmp_fake_apps = 'tests/tmp_fake_apps'
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
