@@ -815,8 +815,6 @@ def test_konsole_support(capsys, is_case_ppid):
     post(test_environment)
 
 
-
-
 def test_screen_support(capsys):
     import os
     environ_backup = []
@@ -990,6 +988,126 @@ else:
     assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
 
     post()
+
+
+@pytest.mark.parametrize("python_version", [(2, 7), (3,3)])
+@pytest.mark.parametrize("ssh_script_index", [0, 1, 2])
+def test_backend_ssh(capsys, ssh_script_index, python_version):
+    import os
+    environ_backup = []
+    modules = []
+    module_backup = {}
+
+    ssh_script = []
+
+    ssh_script.append('''#!/usr/bin/env python
+import sys
+sys.exit(2)
+''')
+
+    ssh_script.append('''#!/usr/bin/env python
+import time
+
+time.sleep(2)
+''')
+
+    ssh_script.append('''#!/usr/bin/env python
+import sys
+
+if 'PreferredAuthentications=publickey' in sys.argv[1:]:
+    sys.exit(2)
+else:
+    print('password')
+    import time
+    time.sleep(2)
+''')
+
+
+
+    def prepare():
+        test_environment = {}
+        modules = ['psutil']
+        for module_name in modules:
+            module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            process_mock.exe.return_value = "exe_text"
+            process_mock.cmdline.return_value = "cmdline_text"
+            process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        environ_backup = os.environ.copy()
+
+        if 'KONSOLE_VERSION' in os.environ:
+            del os.environ['KONSOLE_VERSION']
+        if 'KONSOLE_DBUS_SERVICE' in os.environ:
+            del os.environ['KONSOLE_DBUS_SERVICE']
+        if 'KONSOLE_DBUS_SESSION' in os.environ:
+            del os.environ['KONSOLE_DBUS_SESSION']
+        if 'STY' in os.environ:
+            del os.environ['STY']
+        if 'TMUX' in os.environ:
+            del os.environ['TMUX']
+        if 'SSH_CLIENT' in os.environ:
+            test_environment['ssh_client'] = os.environ['SSH_CLIENT']
+            del os.environ['SSH_CLIENT']
+
+        os.environ['SSH_CLIENT'] = '127.0.0.1 5555 6666'
+
+        tmp_fake_apps = 'tests/tmp_fake_apps'
+        if os.path.exists(tmp_fake_apps):
+            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(tmp_fake_apps)
+        os.mkdir(tmp_fake_apps)
+        tmux_app = os.path.join(tmp_fake_apps, 'ssh')
+        with open(tmux_app, 'w') as f:
+            f.write(ssh_script[ssh_script_index])
+        os.chmod(tmux_app, 0o777)
+
+        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+
+        if sys.version_info < python_version:
+            pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
+
+        test_environment['sys_version_info'] = sys.version_info
+        sys.version_info = python_version
+
+        return test_environment
+
+    def post(test_environment):
+        os.environ.update(environ_backup)
+
+        if 'ssh_client' in test_environment:
+            os.environ['SSH_CLIENT'] = test_environment['ssh_client']
+        else:
+            del os.environ['SSH_CLIENT']
+
+        for module_name in modules:
+            sys.modules[module_name] = module_backup[module_name]
+
+        sys.version_info = test_environment['sys_version_info']
+
+    test_environment = prepare()
+
+    import nf
+    nf.nf(['-dp', '--backend', 'ssh', 'echo'])
+
+    captured = capsys.readouterr()
+
+    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    print(captured.out)
+    assert stdout[1] == 'echo'
+
+    post(test_environment)
 
 
 @pytest.mark.slow
