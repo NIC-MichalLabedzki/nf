@@ -507,8 +507,7 @@ def test_main_module_all_mock_save():
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-# TODO: add 'paramiko', cause hangs on python2.7
-@pytest.mark.parametrize("backend", ['ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'ls']
@@ -526,6 +525,9 @@ def test_main_module_all_mock_backend(backend, python_version):
 
         module_mock = mock.MagicMock()
         setattr(module_mock, '__spec__', module_mock)
+
+        if module_name == 'paramiko':
+            module_mock.SSHClient.return_value.exec_command.return_value = (mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
 
         sys.modules[module_name] = module_mock
 
@@ -696,7 +698,6 @@ def test_yakuake_support(capsys):
                 module_mock.Process.return_value = process_mock
             elif module_name == 'dbus':
                 module_mock.SessionBus.return_value.get_object.return_value.tabTitle.return_value = 'yakuake_tab_title'
-                pass
 
             setattr(module_mock, '__spec__', module_mock)
 
@@ -769,7 +770,6 @@ def test_konsole_support(capsys, is_case_ppid):
                 module_mock.Process.return_value = process_mock
             elif module_name == 'dbus':
                 module_mock.SessionBus.return_value.get_object.return_value.title.return_value = 'konsole_tab_title'
-                pass
 
             setattr(module_mock, '__spec__', module_mock)
 
@@ -1031,6 +1031,9 @@ def fixture_python_version(request):
 @pytest.mark.parametrize("ssh_script_index", [0, 1, 2])
 @pytest.mark.parametrize("python_version", [(2, 7), (3,3)])
 def test_backend_ssh(capsys, fixture_environment, fixture_python_version, ssh_script_index, python_version):
+    import sys
+    if sys.version_info < (3, 0):
+        pytest.skip("Test unfortunately does not work with python < 3.0, python hangs anf this is related to sys.exit() in fake app script".format((3, 0), sys.version_info))
     fixture_python_version(python_version)
     import os
     modules = []
@@ -1039,30 +1042,28 @@ def test_backend_ssh(capsys, fixture_environment, fixture_python_version, ssh_sc
     ssh_script = []
 
     ssh_script.append('''#!/usr/bin/env python
-#import sys
-#sys.exit(2)
-
-return 2     # python2 exit python process and hangs in new process (infinity); python3 works good (as expected)
+import sys
+sys.exit(2)
 ''')
 
     ssh_script.append('''#!/usr/bin/env python
 import time
-
+import sys
+print('password')
 time.sleep(2)
-
-return 2
+sys.exit(0)
 ''')
 
     ssh_script.append('''#!/usr/bin/env python
 import sys
 
 if 'PreferredAuthentications=publickey' in sys.argv[1:]:
-    return 2
+    sys.exit(2)
 else:
     print('password')
     import time
     time.sleep(2)
-    return 0
+    sys.exit(0)
 ''')
 
     def prepare():
@@ -1112,7 +1113,6 @@ else:
     captured = capsys.readouterr()
     stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
     print(captured.out)
-
     assert stdout[1] == 'echo'
 
     post(test_environment)

@@ -464,6 +464,8 @@ Examples:
         import subprocess
         exit_code = subprocess.call(cmdline_args, shell=system_shell)
     # exit_code = os.system(cmdline) # works fine
+    if args.debug is True:
+        print('DEBUG: cmdline={} system_shell={} exit code={}'.format(cmdline_args, system_shell, exit_code))
 
     time_end = datetime.datetime.now()
 
@@ -547,7 +549,7 @@ Examples:
                             line = f.readline()
                         myself = f.read()
                     cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
-                    stdin, output, stderr_output = stdin, output, stderr_output = ssh_client.exec_command(cmd)
+                    stdin, output, stderr_output = ssh_client.exec_command(cmd)
                     if args.debug is True:
                         print('DEBUG: stdout', output.read().decode())
                         print('DEBUG: stderr', stderr_output.read().decode())
@@ -555,6 +557,10 @@ Examples:
         except Exception as e:
             if args.debug is True:
                 print('DEBUG: engine error, backend={}:'.format(backend), e)
+                exc_info = sys.exc_info()
+                print('DEBUG: traceback line: {line} ; '.format(line=exc_info[-1].tb_lineno), e)
+                import traceback
+                traceback.print_exception(*exc_info)
     else:
         if backend != 'stdout':
             backend = 'stdout'
