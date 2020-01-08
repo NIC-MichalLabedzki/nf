@@ -1127,6 +1127,27 @@ def test_ssh_no_ssh_environment_variable(fixture_environment, backend):
     nf.nf(['-dp', '--backend', backend, 'echo'])
 
 
+def test_no_psutil(fixture_environment):
+    import sys
+    module_name = 'psutil'
+    module_backup = {}
+    if module_name in sys.modules:
+        module_backup[module_name] = sys.modules[module_name]
+        del sys.modules[module_name]
+        sys.modules[module_name] = None
+    else:
+        module_backup[module_name] = None
+        sys.modules[module_name] = None
+
+# TODO: stubs for: os.readlink, open, f.read(), and tmux fake app
+
+    import nf
+    nf.nf(['-dp', '--backend', 'stdout', 'echo'])
+
+    if module_backup[module_name] is not None:
+        sys.modules[module_name] = module_backup[module_name]
+
+
 @pytest.mark.slow
 def test_readme_rst():
     import rstcheck
