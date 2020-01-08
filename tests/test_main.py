@@ -1117,6 +1117,16 @@ else:
 
     post(test_environment)
 
+
+@pytest.mark.parametrize("backend", ['paramiko', 'ssh'])
+def test_ssh_no_ssh_environment_variable(fixture_environment, backend):
+    # below is done by: fixture_environment
+    # import os
+    # del os.environ['SSH_CLIENT']
+    import nf
+    nf.nf(['-dp', '--backend', backend, 'echo'])
+
+
 @pytest.mark.slow
 def test_readme_rst():
     import rstcheck
