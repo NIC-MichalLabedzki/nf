@@ -4,7 +4,10 @@ nf
 
 .. |NF_VERSION| replace:: v1.3.0
 
-.. image:: https://travis-ci.org/NIC-MichalLabedzki/nf.svg?branch=master
+.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/v1.2.0?label=latest%20stable%20build
+   :target: https://travis-ci.org/NIC-MichalLabedzki/nf
+
+.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/master?label=latest%20development%20build
    :target: https://travis-ci.org/NIC-MichalLabedzki/nf
 
 .. image:: https://badge.fury.io/py/nf.svg
