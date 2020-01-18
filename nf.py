@@ -241,12 +241,12 @@ Examples:
     shell = None
     shell_cmdline = None
 
-    ppid = os.getppid()
     parent_names = []
     try:
         import psutil
 
         process_info = psutil.Process(os.getpid())
+        ppid = process_info.ppid()
         parents = process_info.parents()
         parent_names = [parent.name() for parent in parents]
 
@@ -269,6 +269,7 @@ Examples:
         parent_process_info_cmdline = ['']
 
         try:
+            ppid = os.getppid()
             parent_process_info_exe = os.readlink('/proc/{}/exe'.format(ppid))
             if args.debug is True:
                 print('DEBUG: exe', parent_process_info_exe)
