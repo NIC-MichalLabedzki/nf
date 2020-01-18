@@ -15,34 +15,41 @@ jobs:
     - name: "Python 2.7.17 on macOS"
       os: osx
       osx_image: xcode11.2
-      language: shell       # 'language: python' is an error on Travis CI macOS
+      language: shell
     - name: "Python 2.7.17 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
+      os: windows
+      language: shell
       before_install:
         - choco install python2 --version 2.7.17
         - python -m pip install --upgrade pip
       env:
         - PATH=/c/Python27:/c/Python27/Scripts:$PATH
-        - PYTHONIOENCODING=utf8
-    - name: "Python 3.7.6 on Windows"
+    - name: "Python 3.5.4 on Windows"
       os: windows
       language: shell
-      before_install:
-        - choco install python --version 3.7.6
-        - python -m pip install --upgrade pip
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
-        - PYTHONIOENCODING=cp1252
-    - name: "Python 3.8.0 on Windows"
-      os: windows
-      language: shell
+        - PATH=/c/Python35:/c/Python35/Scripts:$PATH
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
+    - name: "Python 3.7.6 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PYTHONIOENCODING=cp1252
+      before_install:
+        - choco install python --version 3.7.6
+        - python -m pip install --upgrade pip
+    - name: "Python 3.8.0 on Windows"
+      os: windows
+      language: shell
       env:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHONIOENCODING=utf8
+      before_install:
+        - choco install python --version 3.8.0
+        - python -m pip install --upgrade pip
   allow_failures:
     - python: "nightly"
     - os: osx
