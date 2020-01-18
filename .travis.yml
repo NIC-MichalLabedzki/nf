@@ -30,7 +30,7 @@ jobs:
       env:
         - PATH=/c/Python35:/c/Python35/Scripts:$PATH
       before_install:
-        - choco install python --version 3.8.0
+        - choco install python --version 3.5.4
         - python -m pip install --upgrade pip
     - name: "Python 3.7.6 on Windows"
       os: windows

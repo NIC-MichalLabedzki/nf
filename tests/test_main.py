@@ -380,6 +380,7 @@ def test_main_module_all_mock_custom_notification_exit_code():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_main_module_all_mock_ctrl_c():
     import os
     if 'SSH_CLIENT' in os.environ:
@@ -414,6 +415,7 @@ def test_main_module_all_mock_ctrl_c():
         os.environ['SSH_CLIENT'] = ssh_client
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_main_module_all_mock_ctrl_c_mock_signal():
     import os
     if 'SSH_CLIENT' in os.environ:
