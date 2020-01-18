@@ -5,5 +5,8 @@ pytest-progress==1.2.1
 twine==1.13.0
 rstcheck==3.3.1
 
+# nf optional dependencies need for Windows
+psutil==5.6.7
+
 # legacy python 2
 mock==3.0.5

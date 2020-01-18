@@ -29,7 +29,8 @@ jobs:
       language: shell
       env:
         - PATH=/c/Python35:/c/Python35/Scripts:$PATH
-        - PYTHONLEGACYWINDOWSSTDIO=1
+        - PYTHONIOENCODING=utf8
+        - PYTHONUTF8=1 # availability: unix? no, it works for Windows!
       before_install:
         - choco install python --version 3.5.4
         - python -m pip install --upgrade pip
@@ -38,7 +39,8 @@ jobs:
       language: shell
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
-        - PYTHONLEGACYWINDOWSFSENCODING=1
+        - PYTHONIOENCODING=utf8
+        - PYTHONUTF8=1 # availability: unix? no, it works for Windows!
       before_install:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
@@ -48,7 +50,7 @@ jobs:
       env:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHONIOENCODING=utf8
-        - PYTHONUTF8=1
+        - PYTHONUTF8=1 # availability: unix? no, it works for Windows!
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
