@@ -864,8 +864,8 @@ def test_screen_support(capsys):
                     os.rmdir(os.path.join(root, name))
             os.rmdir(tmp_fake_apps)
         os.mkdir(tmp_fake_apps)
-        tmux_app = os.path.join(tmp_fake_apps, 'screen')
-        with open(tmux_app, 'w') as f:
+        screen_app = os.path.join(tmp_fake_apps, 'screen')
+        with open(screen_app, 'w') as f:
             f.write('''#!/usr/bin/env python
 import sys
 if sys.argv[1:] == ['-q', '-Q', 'title']:
@@ -873,11 +873,16 @@ if sys.argv[1:] == ['-q', '-Q', 'title']:
 else:
     sys.exit(2)
 ''')
-        os.chmod(tmux_app, 0o777)
+        os.chmod(screen_app, 0o777)
         if sys.platform == "win32":
-            tmux_app = os.path.join(tmp_fake_apps, 'screen.bat')
-            with open(tmux_app, 'w') as f:
-                f.write('''python {}'''.format(tmux_app))
+            tmux_appx = os.path.join(tmp_fake_apps, 'screen.bat')
+            with open(screen_app, 'w') as f:
+                f.write('''python {}'''.format(tmux_appx))
+
+            import subprocess
+            out = subprocess.check_output('python -m py2exe.build_exe --dest {} {}'.format(tmp_fake_apps, screen_app), shell=True).decode()
+            print('DEBUG: out ', out)
+
 
         os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
     def post():
