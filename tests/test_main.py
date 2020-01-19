@@ -877,7 +877,7 @@ else:
         if sys.platform == "win32":
             tmux_app = os.path.join(tmp_fake_apps, 'screen.bat')
             with open(tmux_app, 'w') as f:
-                f.write('''python {app}'''.format(tmux_app))
+                f.write('''python {}'''.format(tmux_app))
 
         os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
     def post():
