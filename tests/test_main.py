@@ -873,6 +873,15 @@ if sys.argv[1:] == ['-q', '-Q', 'title']:
 else:
     sys.exit(2)
 ''')
+        screen_app_py = os.path.join(tmp_fake_apps, 'screen.py')
+        with open(screen_app, 'w') as f:
+            f.write('''#!/usr/bin/env python
+import sys
+if sys.argv[1:] == ['-q', '-Q', 'title']:
+    print('screen_window_title')
+else:
+    sys.exit(2)
+''')
         os.chmod(screen_app, 0o777)
         if sys.platform == "win32":
             tmux_appx = os.path.join(tmp_fake_apps, 'screen.bat')
@@ -880,9 +889,8 @@ else:
                 f.write('''python {}'''.format(tmux_appx))
 
             import subprocess
-            out = subprocess.check_output('python -m py2exe.build_exe --dest {} {}'.format(tmp_fake_apps, screen_app), shell=True).decode()
+            out = subprocess.check_output('build_exe -d {} {}'.format(tmp_fake_apps, screen_app_py), shell=True).decode()
             print('DEBUG: out ', out)
-
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
         else:
