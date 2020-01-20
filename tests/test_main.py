@@ -884,9 +884,9 @@ else:
             print('DEBUG: out ', out)
 
 
-            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
-        else:
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
+        else:
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
     def post():
         os.environ.update(environ_backup)
 
