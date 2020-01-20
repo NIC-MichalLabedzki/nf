@@ -874,7 +874,7 @@ else:
     sys.exit(2)
 ''')
         screen_app_py = os.path.join(tmp_fake_apps, 'screen.py')
-        with open(screen_app, 'w') as f:
+        with open(screen_app_py, 'w') as f:
             f.write('''#!/usr/bin/env python
 import sys
 if sys.argv[1:] == ['-q', '-Q', 'title']:
