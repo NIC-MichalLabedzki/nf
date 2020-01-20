@@ -7,7 +7,6 @@ rstcheck==3.3.1
 
 # nf optional dependencies need for Windows
 psutil==5.6.7
-py2exe==0.9.2.0
 
 # legacy python 2
 mock==3.0.5

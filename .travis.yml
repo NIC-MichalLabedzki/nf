@@ -24,36 +24,28 @@ jobs:
         - python -m pip install --upgrade pip
       env:
         - PATH=/c/Python27:/c/Python27/Scripts:$PATH
-#    - name: "Python 3.5.4 on Windows"
-#      os: windows
-#      language: shell
-#      env:
-#        - PATH=/c/Python35:/c/Python35/Scripts:$PATH
-#        - PYTHONIOENCODING=utf8
-#        - PYTHONUTF8=1 # does not wok for python < 3.7
-#      before_install:
-#        - choco install python --version 3.5.4
-#        - python -m pip install --upgrade pip
     - name: "Python 3.7.6 on Windows"
       os: windows
       language: shell
       env:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
         - PYTHONIOENCODING=utf8
-        - PYTHONUTF8=1 # availability: unix? no, it works for Windows!
+        - PYTHONUTF8=1
       before_install:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
+        - python -m pip install py2exe==0.9.2.0
     - name: "Python 3.8.0 on Windows"
       os: windows
       language: shell
       env:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHONIOENCODING=utf8
-        - PYTHONUTF8=1 # availability: unix? no, it works for Windows!
+        - PYTHONUTF8=1
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
+        - python -m pip install py2exe==0.9.2.0
   allow_failures:
     - python: "nightly"
     - os: osx

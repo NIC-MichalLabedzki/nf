@@ -855,7 +855,7 @@ def test_screen_support(capsys):
 
         os.environ['STY'] = '/dev/null'
 
-        tmp_fake_apps = 'tests/tmp_fake_apps'
+        tmp_fake_apps = os.path.join('tests', 'tmp_fake_apps')
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
                 for name in files:
@@ -884,7 +884,9 @@ else:
             print('DEBUG: out ', out)
 
 
-        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+        else:
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
     def post():
         os.environ.update(environ_backup)
 
