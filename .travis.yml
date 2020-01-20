@@ -34,7 +34,7 @@ jobs:
       before_install:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
-        - python -m pip install py2exe==0.9.2.0
+        - python -m pip install PyInstaller==3.6
     - name: "Python 3.8.0 on Windows"
       os: windows
       language: shell
@@ -45,7 +45,7 @@ jobs:
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip
-        - python -m pip install py2exe==0.9.2.0
+        - python -m pip install PyInstaller==3.6
   allow_failures:
     - python: "nightly"
     - os: osx
