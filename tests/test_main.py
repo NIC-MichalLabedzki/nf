@@ -304,7 +304,7 @@ def test_main_module_all_mock_custom_notification_title(capsys):
     if ssh_client:
         os.environ['SSH_CLIENT'] = ssh_client
 
-    stdout = captured.out.split('\n')
+    stdout = captured.out.splitlines()
     assert stdout[1] == my_text
 
 def test_main_module_all_mock_custom_notification_text(capsys):
@@ -342,7 +342,7 @@ def test_main_module_all_mock_custom_notification_text(capsys):
     if ssh_client:
         os.environ['SSH_CLIENT'] = ssh_client
 
-    stdout = captured.out.split('\n')
+    stdout = captured.out.splitlines()
     assert stdout[2] == my_text
 
 
@@ -497,7 +497,7 @@ def test_main_module_all_mock_save():
     sys.argv = sys_argv
 
     with open('.nf') as f:
-        line = f.read().split('\n')
+        line = f.read().splitlines()
         assert line[0] == 'ls'
         assert line[1] =='Exit code: 0'
         assert line[2][:6] =='Start '
@@ -732,7 +732,7 @@ def test_yakuake_support(capsys):
 
     captured = capsys.readouterr()
 
-    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
     assert stdout[1] == 'echo [yakuake_tab_title]'
 
@@ -810,7 +810,7 @@ def test_konsole_support(capsys, is_case_ppid):
 
     captured = capsys.readouterr()
 
-    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
 
     assert stdout[1] == 'echo [konsole_tab_title]'
@@ -855,6 +855,14 @@ def test_screen_support(capsys):
 
         os.environ['STY'] = '/dev/null'
 
+        my_app = '''#!/usr/bin/env python
+import sys
+if sys.argv[1:] == ['-q', '-Q', 'title']:
+    print('screen_window_title')
+else:
+    sys.exit(2)
+'''
+
         tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
@@ -864,36 +872,26 @@ def test_screen_support(capsys):
                     os.rmdir(os.path.join(root, name))
             os.rmdir(tmp_fake_apps)
         os.mkdir(tmp_fake_apps)
-        screen_app = os.path.join(tmp_fake_apps, 'screen')
-        with open(screen_app, 'w') as f:
-            f.write('''#!/usr/bin/env python
-import sys
-if sys.argv[1:] == ['-q', '-Q', 'title']:
-    print('screen_window_title')
-else:
-    sys.exit(2)
-''')
-        screen_app_py = os.path.abspath(os.path.join(tmp_fake_apps, 'screen.py'))
-        with open(screen_app_py, 'w') as f:
-            f.write('''#!/usr/bin/env python
-import sys
-if sys.argv[1:] == ['-q', '-Q', 'title']:
-    print('screen_window_title')
-else:
-    sys.exit(2)
-''')
-        os.chmod(screen_app, 0o777)
+
+        test_app_name = 'screen'
         if sys.platform == "win32":
-            tmux_appx = os.path.join(tmp_fake_apps, 'screen.bat')
-            with open(screen_app, 'w') as f:
-                f.write('''python {}'''.format(tmux_appx))
+            app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
+            with open(app_py, 'w') as f:
+                f.write(my_app)
 
             import PyInstaller.__main__
-            PyInstaller.__main__.run(['--name=%s' % 'screen', '--onefile', '--distpath=%s' % tmp_fake_apps, screen_app_py])
+            PyInstaller.__main__.run(['--name=%s' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
         else:
+            app = os.path.join(tmp_fake_apps, test_app_name)
+            with open(app, 'w') as f:
+                f.write(my_app)
+            os.chmod(app, 0o777)
+
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
+
     def post():
         os.environ.update(environ_backup)
 
@@ -907,7 +905,7 @@ else:
 
     captured = capsys.readouterr()
 
-    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
     assert stdout[1] == 'echo [screen_window_title]'
 
@@ -964,7 +962,7 @@ def test_tmux_support(capsys, is_case_ppid):
 
         os.environ['TMUX'] = '/dev/null'
 
-        tmp_fake_apps = 'tests/tmp_fake_apps'
+        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
                 for name in files:
@@ -973,9 +971,8 @@ def test_tmux_support(capsys, is_case_ppid):
                     os.rmdir(os.path.join(root, name))
             os.rmdir(tmp_fake_apps)
         os.mkdir(tmp_fake_apps)
-        tmux_app = os.path.join(tmp_fake_apps, 'tmux')
-        with open(tmux_app, 'w') as f:
-            f.write('''#!/usr/bin/env python
+
+        my_app = '''#!/usr/bin/env python
 import sys
 if sys.argv[1] == 'list-window':
     print('window 1')
@@ -987,10 +984,26 @@ elif sys.argv[1] == 'display-message':
     print('session -> 1 window -> 1 pane')
 else:
     sys.exit(2)
-''')
-        os.chmod(tmux_app, 0o777)
 
-        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+'''
+        test_app_name = 'tmux'
+        if sys.platform == "win32":
+            app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
+            with open(app_py, 'w') as f:
+                f.write(my_app)
+
+            import PyInstaller.__main__
+            PyInstaller.__main__.run(['--name=%s' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
+
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
+        else:
+            app = os.path.join(tmp_fake_apps, test_app_name)
+            with open(app, 'w') as f:
+                f.write(my_app)
+            os.chmod(app, 0o777)
+
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
     def post():
         os.environ.update(environ_backup)
 
@@ -1004,7 +1017,7 @@ else:
 
     captured = capsys.readouterr()
 
-    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
     assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
 
@@ -1131,7 +1144,7 @@ else:
     nf.nf(['-dp', '--backend', 'ssh', 'echo'])
 
     captured = capsys.readouterr()
-    stdout = [log for log in captured.out.split('\n') if not log.startswith('DEBUG')]
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
     assert stdout[1] == 'echo'
 
