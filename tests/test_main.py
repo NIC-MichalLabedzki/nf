@@ -855,7 +855,7 @@ def test_screen_support(capsys):
 
         os.environ['STY'] = '/dev/null'
 
-        tmp_fake_apps = os.path.join('tests', 'tmp_fake_apps')
+        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
                 for name in files:
@@ -873,7 +873,7 @@ if sys.argv[1:] == ['-q', '-Q', 'title']:
 else:
     sys.exit(2)
 ''')
-        screen_app_py = os.path.join(tmp_fake_apps, 'screen.py')
+        screen_app_py = os.path.abspath(os.path.join(tmp_fake_apps, 'screen.py'))
         with open(screen_app_py, 'w') as f:
             f.write('''#!/usr/bin/env python
 import sys
