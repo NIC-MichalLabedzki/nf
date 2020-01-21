@@ -385,7 +385,7 @@ Examples:
             screen_cmdline = ['screen', '-q', '-Q', 'title']
             import subprocess
             screen_output = subprocess.check_output(screen_cmdline)
-            multiplexer_window_name = screen_output.decode().strip('\n')
+            multiplexer_window_name = screen_output.decode().rstrip('\n\r')
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
             if args.debug is True:
@@ -393,7 +393,7 @@ Examples:
         if multiplexer_app == 'tmux':
             tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
-            tmux_windows = tmux_output.decode()[0:-1].split('\n')
+            tmux_windows = tmux_output.decode()[0:-1].splitlines()
             [multiplexer_window_name] = [tmux_window.strip('"')[0:-2] for tmux_window in tmux_windows if tmux_window.strip('"')[-1] == '1']
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
@@ -402,7 +402,7 @@ Examples:
 
             tmux_cmdline = ['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
-            tmux_panes = tmux_output.decode()[0:-1].split('\n')
+            tmux_panes = tmux_output.decode()[0:-1].splitlines()
             [multiplexer_pane_name] = [tmux_pane.strip('"')[0:-2] for tmux_pane in tmux_panes if tmux_pane.strip('"')[-1] == '1']
             if args.debug is True:
                 print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
