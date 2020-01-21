@@ -889,7 +889,7 @@ else:
                 f.write('''python {}'''.format(tmux_appx))
 
             import PyInstaller.__main__
-            PyInstaller.__main__.run(['--name=%s' % 'screen', '--distpath=%s' % tmp_fake_apps, screen_app_py])
+            PyInstaller.__main__.run(['--name=%s' % 'screen', '--onefile', '--distpath=%s' % tmp_fake_apps, screen_app_py])
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
         else:
