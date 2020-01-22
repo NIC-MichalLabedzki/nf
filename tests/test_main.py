@@ -633,7 +633,8 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
     sys_version_info = sys.version_info
-    sys.version_info = python_version
+    sys.version_info.major = python_version[0]
+    sys.version_info.minor = python_version[1]
 
     import os
     path_backup = os.environ['PATH']
