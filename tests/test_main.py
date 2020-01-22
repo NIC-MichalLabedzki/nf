@@ -254,6 +254,10 @@ def test_main_module_all_mock():
 
         module_mock = mock.MagicMock()
         setattr(module_mock, '__spec__', module_mock)
+        if module_name == 'shutil':
+            from collections import namedtuple
+            size = namedtuple("terminal_size", "columns lines")
+            module_mock.get_terminal_size.return_value = size(80, 20)
 
         sys.modules[module_name] = module_mock
 

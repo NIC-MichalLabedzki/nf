@@ -24,6 +24,10 @@ jobs:
         homebrew:
           packages:
            - python3
+      before_install:
+       - which python3
+       - type python3
+       - alias python=/usr/local/bin/python3
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
