@@ -16,6 +16,14 @@ jobs:
       os: osx
       osx_image: xcode11.2
       language: shell
+    - name: "Python 3 on macOS"
+      os: osx
+      osx_image: xcode11.2
+      language: shell
+      addons:
+        homebrew:
+          packages:
+           - python3
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
