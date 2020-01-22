@@ -28,6 +28,7 @@ jobs:
        - which python3
        - type python3
        - alias python=/usr/local/bin/python3
+       - alias pip=/usr/local/bin/pip3
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
