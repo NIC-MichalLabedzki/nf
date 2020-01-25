@@ -25,10 +25,14 @@ jobs:
           packages:
            - python3
       before_install:
-       - which python3
        - type python3
-       - alias python=/usr/local/bin/python3
-       - alias pip=/usr/local/bin/pip3
+       - type python
+       - type pip3
+       - type pip
+       - mkdir fake_bin
+       - ln -s $(type -p python3) fake_bin/python
+       - ln -s $(type -p pip3) fake_bin/pip
+       - PATH=$(readlink fake_bin -fn):$PATH
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
