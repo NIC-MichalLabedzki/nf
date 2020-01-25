@@ -585,6 +585,7 @@ def test_main_module_all_mock_bad_import_backend(backend, python_version):
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
         if sys_version_info.major == 3 and sys_version_info.minor == 9 and module_name == 'shutil':
+            # TODO: better solution?
             pass
         else:
             sys.modules[module_name] = None
@@ -657,10 +658,13 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-        module_mock=  method_mock
-        setattr(module_mock, '__spec__', module_mock)
-
-        sys.modules[module_name] = module_mock
+        if sys_version_info.major == 3 and sys_version_info.minor == 9 and module_name == 'shutil':
+            # TODO: better solution?
+            pass
+        else:
+            module_mock = method_mock
+            setattr(module_mock, '__spec__', module_mock)
+            sys.modules[module_name] = module_mock
 
     if backend == 'ssh' or backend == 'paramiko':
         if 'SSH_CLIENT' in os.environ:
