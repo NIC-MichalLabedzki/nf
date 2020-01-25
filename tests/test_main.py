@@ -584,7 +584,7 @@ def test_main_module_all_mock_bad_import_backend(backend, python_version):
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-        if sys_version_info == (3,9) and module_name == 'shutil':
+        if sys_version_info.major == 3 and sys_version_info.minor == 9 and module_name == 'shutil':
             pass
         else:
             sys.modules[module_name] = None
