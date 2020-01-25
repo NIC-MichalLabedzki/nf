@@ -32,8 +32,8 @@ jobs:
        - mkdir fake_bin
        - ln -s $(type -p python3) fake_bin/python
        - ln -s $(type -p pip3) fake_bin/pip
-       - readlink -fn fake_bin
-       - export PATH=$(readlink -fn fake_bin):$PATH
+       - ls -l fake_bin
+       - export PATH=$(pwd)/fake_bin:$PATH
        - echo $PATH
        - type python
     - name: "Python 2.7.17 on Windows"
