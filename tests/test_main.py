@@ -522,7 +522,11 @@ def test_main_module_all_mock_backend(backend, python_version):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
 
     sys_version_info = sys.version_info
-    sys.version_info = python_version
+
+    from collections import namedtuple
+    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
+    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
+
 
     module_backup = {}
     modules = ['dbus', 'win10toast', 'subprocess', 'getpass', 'paramiko']
@@ -570,7 +574,10 @@ def test_main_module_all_mock_bad_import_backend(backend, python_version):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
 
     sys_version_info = sys.version_info
-    sys.version_info = python_version
+
+    from collections import namedtuple
+    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
+    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
 
     module_backup = {}
     modules = ['dbus', 'win10toast', 'shutil', 'plyer', 'getpass']
@@ -633,8 +640,10 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
     sys_version_info = sys.version_info
-    sys.version_info.major = python_version[0]
-    sys.version_info.minor = python_version[1]
+
+    from collections import namedtuple
+    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
+    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
 
     import os
     path_backup = os.environ['PATH']
