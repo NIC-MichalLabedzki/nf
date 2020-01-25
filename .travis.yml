@@ -16,7 +16,7 @@ jobs:
       os: osx
       osx_image: xcode11.2
       language: shell
-    - name: "Python 3 on macOS"
+    - name: "Python 3.7.5 on macOS"
       os: osx
       osx_image: xcode11.2
       language: shell
@@ -25,7 +25,7 @@ jobs:
           packages:
            - python3
       before_install:
-       - type -p python3
+       - type python3
        - type python
        - type pip3
        - type pip
@@ -34,7 +34,6 @@ jobs:
        - ln -s $(type -p pip3) fake_bin/pip
        - ls -l fake_bin
        - export PATH=$(pwd)/fake_bin:$PATH
-       - echo $PATH
        - type python
     - name: "Python 2.7.17 on Windows"
       os: windows
