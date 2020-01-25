@@ -25,14 +25,17 @@ jobs:
           packages:
            - python3
       before_install:
-       - type python3
+       - type -p python3
        - type python
        - type pip3
        - type pip
        - mkdir fake_bin
        - ln -s $(type -p python3) fake_bin/python
        - ln -s $(type -p pip3) fake_bin/pip
-       - export PATH=$(readlink fake_bin -fn):$PATH
+       - readlink -fn fake_bin
+       - export PATH=$(readlink -fn fake_bin):$PATH
+       - echo $PATH
+       - type python
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
