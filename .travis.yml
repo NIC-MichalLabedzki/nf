@@ -32,7 +32,7 @@ jobs:
        - mkdir fake_bin
        - ln -s $(type -p python3) fake_bin/python
        - ln -s $(type -p pip3) fake_bin/pip
-       - PATH=$(readlink fake_bin -fn):$PATH
+       - export PATH=$(readlink fake_bin -fn):$PATH
     - name: "Python 2.7.17 on Windows"
       os: windows
       language: shell
