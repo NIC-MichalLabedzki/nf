@@ -657,6 +657,11 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
         module_mock=  method_mock
         setattr(module_mock, '__spec__', module_mock)
 
+        #if module_name == 'shutil':
+        #    from collections import namedtuple
+        #    size = namedtuple("terminal_size", "columns lines")
+        #    module_mock.get_terminal_size.return_value = size(80, 20)
+
         sys.modules[module_name] = module_mock
 
     if backend == 'ssh' or backend == 'paramiko':
@@ -677,7 +682,11 @@ def test_main_module_all_mock_bad_functionality_backend(backend, method_mock, py
             os.environ['SSH_CLIENT'] = ssh_client
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_name == 'shutil':
+            del sys.modules[module_name]
+            import shutil
+        else:
+            sys.modules[module_name] = module_backup[module_name]
 
     os.environ['PATH'] = path_backup
 
