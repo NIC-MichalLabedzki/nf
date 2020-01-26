@@ -200,8 +200,8 @@ FEATURES
 9. screen/tmux session/window/pane title/name in label
 10. python module aka library interface "import nf;nf.nf(['ls'])"
 
-TODO
-----
+TMUX/SCREEN used be `nf` or how to test it
+------------------------------------------
 1. tmux session name:
     tmux rename-session sesja
     tmux list-sessions -F "#{session_name}"
@@ -223,7 +223,14 @@ TODO
 
 6. screen window title
     screen -S 6981.pts-25.nic -Q title
-    bashffferee
+    terefere
 7. screen windows:
     screen -S 6981.pts-25.nic -Q windows
-    0* bashffferee  1 bash  2 bash  3- bash
+    0* terefere  1 bash  2 bash  3- bash
+
+TODO
+----
+1. virtualenv improvements: dbus module is not available, but there are still
+   tools: dbus-send, qbus, gdbus, so try to query konsole/yakuake title,
+   using freedesktop nofitication cannot be done by dbus-send or qbus because of
+   lack of variant array support

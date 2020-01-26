@@ -336,7 +336,24 @@ Examples:
                         gui_app_tab_name = dbus_object.tabTitle(session_id)
             except Exception as e:
                 if args.debug is True:
-                    print('DEBUG: yakuake get tab name'.format(backend), e)
+                    print('DEBUG: yakuake get tab name exception1'.format(backend), e)
+
+                try: # qdbus
+                    import shutil
+                    qdbus_app = shutil.which('qdbus')
+
+                    import subprocess
+                    tool_cmdline = [qdbus_app, 'org.kde.yakuake', '/yakuake/sessions', 'activeSessionId']
+                    active_sessionj_id = subprocess.check_output(tool_cmdline).decode().strip()
+                    if args.debug is True:
+                        print('DEBUG: active_sessionj_id', active_sessionj_id)
+                    tool_cmdline = ['qdbus', 'org.kde.yakuake', '/yakuake/tabs', 'tabTitle', active_sessionj_id]
+                    gui_app_tab_name = subprocess.check_output(tool_cmdline).decode().strip()
+                    if args.debug is True:
+                        print('DEBUG: gui_app_tab_name', gui_app_tab_name)
+                except Exception as e:
+                    if args.debug is True:
+                        print('DEBUG: yakuake get tab name exception2'.format(backend), e)
         elif gui_app == 'konsole':
             # $KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION title 1
             import dbus
@@ -459,12 +476,19 @@ Examples:
     if args.debug is True:
         print('DEBUG: detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
 
+    ############################################################################
+    # core
+    ############################################################################
     if sys.version_info >= (3, 5):
         exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
     else:
         import subprocess
         exit_code = subprocess.call(cmdline_args, shell=system_shell)
     # exit_code = os.system(cmdline) # works fine
+    ############################################################################
+    # end of core
+    ############################################################################
+
     if args.debug is True:
         print('DEBUG: cmdline={} system_shell={} exit code={}'.format(cmdline_args, system_shell, exit_code))
 
