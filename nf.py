@@ -325,6 +325,61 @@ Examples:
         if gui_app == 'yakuake':
             # SESSION_ID=$(qdbus org.kde.yakuake /yakuake/sessions activeSessionId)
             # qdbus org.kde.yakuake /yakuake/tabs tabTitle ${SESSION_ID}
+
+            def call_dbus(service_name, path, method, *arg):
+                import shutil
+                import subprocess
+                app = shutil.which('qdbus')
+                if app is not None:
+                    if args.debug is True:
+                        print('DEBUG: which qdbus: {}'.format(app))
+
+                    xarg = []
+                    for a in arg:
+                        if a.startswith('int32:'):
+                            a = a[6:]
+                        xarg.append(a)
+                    tool_cmdline = [app, service_name, path, method, *xarg]
+                else:
+                    app = shutil.which('gdbus')
+                    if app is not None:
+                        if args.debug is True:
+                            print('DEBUG: which gdbus: {}'.format(app))
+
+                        xarg = []
+                        for a in arg:
+                            if a.startswith('int32:'):
+                                xarg.append(a[6:])
+                            else:
+                                xarg.append(a)
+                        tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method), *xarg]
+                    else:
+                        app = shutil.which('dbus-send')
+                        if app is not None:
+                            if args.debug is True:
+                                print('DEBUG: which dbus-send: {}'.format(app))
+                            tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method), *arg]
+                        else:
+                            if args.debug is True:
+                                print('DEBUG: cannot find dbus backend')
+
+                if args.debug is True:
+                    print('DEBUG: dbus cmdline', tool_cmdline)
+
+                output = subprocess.check_output(tool_cmdline).decode().strip()
+                if args.debug is True:
+                    print('DEBUG: dbus backend output', output)
+
+                if app == shutil.which('gdbus'):
+                    output = output.strip('(),')
+                if app == shutil.which('dbus-send'):
+                    if 'int32' in output:
+                        output = output.split(' ')[1]
+                if args.debug is True:
+                    print('DEBUG: dbus final output', output)
+
+                return output
+
             try:
                 import dbus
                 dbus_session = dbus.SessionBus()
@@ -338,19 +393,10 @@ Examples:
                 if args.debug is True:
                     print('DEBUG: yakuake get tab name exception1'.format(backend), e)
 
-                try: # qdbus
-                    import shutil
-                    qdbus_app = shutil.which('qdbus')
+                try:
+                    active_session_id = call_dbus('org.kde.yakuake', '/yakuake/sessions', 'activeSessionId')
+                    gui_app_tab_name = call_dbus('org.kde.yakuake', '/yakuake/tabs', 'tabTitle', 'int32:' + active_session_id)
 
-                    import subprocess
-                    tool_cmdline = [qdbus_app, 'org.kde.yakuake', '/yakuake/sessions', 'activeSessionId']
-                    active_sessionj_id = subprocess.check_output(tool_cmdline).decode().strip()
-                    if args.debug is True:
-                        print('DEBUG: active_sessionj_id', active_sessionj_id)
-                    tool_cmdline = ['qdbus', 'org.kde.yakuake', '/yakuake/tabs', 'tabTitle', active_sessionj_id]
-                    gui_app_tab_name = subprocess.check_output(tool_cmdline).decode().strip()
-                    if args.debug is True:
-                        print('DEBUG: gui_app_tab_name', gui_app_tab_name)
                 except Exception as e:
                     if args.debug is True:
                         print('DEBUG: yakuake get tab name exception2'.format(backend), e)
