@@ -339,7 +339,8 @@ Examples:
                         if a.startswith('int32:'):
                             a = a[6:]
                         xarg.append(a)
-                    tool_cmdline = [app, service_name, path, method, *xarg]
+                    tool_cmdline = [app, service_name, path, method]
+                    tool_cmdline.extend(xarg)
                 else:
                     app = shutil.which('gdbus')
                     if app is not None:
@@ -352,13 +353,15 @@ Examples:
                                 xarg.append(a[6:])
                             else:
                                 xarg.append(a)
-                        tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method), *xarg]
+                        tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method)]
+                        tool_cmdline.extend(xarg)
                     else:
                         app = shutil.which('dbus-send')
                         if app is not None:
                             if args.debug is True:
                                 print('DEBUG: which dbus-send: {}'.format(app))
-                            tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method), *arg]
+                            tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method)]
+                            tool_cmdline.extend(xarg)
                         else:
                             if args.debug is True:
                                 print('DEBUG: cannot find dbus backend')
