@@ -52,7 +52,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
@@ -170,6 +170,22 @@ Examples:
             except Exception as e:
                 if args.debug is True:
                     print('DEBUG: backend={}'.format('dbus'), e)
+                backend = 'stdout'
+
+        if (backend in ['stdout', 'gdbus'] and args.backend == None) or args.backend == 'gdbus':
+            try:
+                import shutil
+
+                gdbus_app = shutil.which('gdbus')
+                if args.debug is True:
+                    print('DEBUG: backend={}'.format('gdbus'), gdbus_app)
+                if gdbus_app is not None:
+                    backend = 'gdbus'
+                else:
+                    backend = 'stdout'
+            except Exception as e:
+                if args.debug is True:
+                    print('DEBUG: backend={}'.format('gdbus'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'notify-send'] and args.backend == None) or args.backend == 'notify-send':
@@ -595,6 +611,22 @@ Examples:
                 notify__hints = dbus.Dictionary(signature='sv')
 
                 dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
+            elif backend == 'gdbus':
+                notify_cmdline = [gdbus_app, 'call', '--session', '--dest', 'org.freedesktop.Notifications', '--object-path', '/org/freedesktop/Notifications', '--method', 'org.freedesktop.Notifications.Notify',
+                                  notify__app_name,
+                                  str(int(time.time() * 1000000 % 2 ** 32)),
+                                  notify__app_icon,
+                                  notify__title,
+                                  notify__body,
+                                  "[]",
+                                  "{}",
+                                  str(notify__timeout)]
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    notify_exit_code = subprocess.run(notify_cmdline).returncode
+                else:
+                    import subprocess
+                    notify_exit_code = subprocess.call(notify_cmdline)
             elif backend == 'notify-send':
                 notify_cmdline = [notify_send_app, notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name]
                 if sys.version_info >= (3, 5):
