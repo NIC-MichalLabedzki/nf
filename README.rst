@@ -234,3 +234,6 @@ TODO
    tools: dbus-send, qbus, gdbus, so try to query konsole/yakuake title,
    using freedesktop nofitication cannot be done by dbus-send or qbus because of
    lack of variant array support
+2. nf 1.4.0:
+    a) nf -i PID # monitor specifiec already run process by PID/name/(interactive list???)
+    b) run nf in (hidden???) background to add ability to (on Linux) CTRL+Z and run nf in background then back to main process ("fg")
