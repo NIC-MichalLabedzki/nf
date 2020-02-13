@@ -45,7 +45,8 @@ CHANGELOG
 ---------
 
 From 1.2.0:
-    1. Add support for `yakuake` and `konsole` terminal tab name (to fast find notification source)
+    1. Add support for `yakuake`, `konsole`, 'screen' and 'tmux' terminal tab name (to fast find notification source)
+    2. Add new backend: gdbus
 
 SCREENSHOTS
 -----------
