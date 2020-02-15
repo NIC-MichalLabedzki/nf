@@ -513,7 +513,7 @@ def test_main_module_all_mock_save():
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-@pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'ls']
@@ -565,7 +565,7 @@ def test_main_module_all_mock_backend(backend, python_version):
     sys.version_info = sys_version_info
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
-@pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
+@pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '--debug', '--label', 'test_label2', '--backend={}'.format(backend), 'ls']
@@ -622,6 +622,8 @@ def get_method_mocks():
     return [
         ('dbus', dbus_session_bus),
         ('dbus', dbus_session_bus_get_object),
+        ('gdbus', shutil_which_none),
+        ('gdbus', shutil_which_found),
         ('notify-send', shutil_which_none),
         ('notify-send', shutil_which_found),
         ('termux-notification', shutil_which_none),
