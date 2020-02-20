@@ -145,7 +145,12 @@ CLI is Command Line Interface. So you have tool called: nf
 .. code-block:: bash
 
     $ python nf.py --help
-    usage: nf.py [-h] [-l LABEL] [-p] [-n] cmd ...
+    usage: nf.py [-h] [-l LABEL] [-p] [-n] [-s]
+                [-b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}]
+                [-d] [-v] [--custom_notification_text CUSTOM_NOTIFICATION_TEXT]
+                [--custom_notification_title CUSTOM_NOTIFICATION_TITLE]
+                [--custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE]
+                cmd ...
 
     Simple command line tool to make notification after target program finished work
 
@@ -160,9 +165,16 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {paramiko, ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko, ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
-                          Notification backend
+    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+                            Notification backend
     -d, --debug           More print debugging
+    -v, --version         Print version
+    --custom_notification_text CUSTOM_NOTIFICATION_TEXT
+                            Custom notification text
+    --custom_notification_title CUSTOM_NOTIFICATION_TITLE
+                            Custom notification title
+    --custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE
+                            Custom notification exit code
 
     Examples:
     nf make
@@ -173,15 +185,16 @@ CLI is Command Line Interface. So you have tool called: nf
     nf -l `tty` ls
     nf "ls | grep .py"
 
-    "/home/nf/src/nf$ nf.py -p ls
+    "/home/nic/src/nf$ nf.py -p ls
     LICENSE  nf.py  pytest.ini  README  README.dev  requirements-dev.txt  setup.cfg  setup.py  tox.ini
     -----------------------------------------------------------
-    "/home/nf/src/nf$ ls" finished work.
+    "/home/nic/src/nf$ ls" finished work.
 
     Start time:   17:32.50
     End time:     17:32.50
     Elapsed time: 00:00.00
     -----------------------------------------------------------
+
 
 LIMITATIONS
 -----------
@@ -197,9 +210,9 @@ FEATURES
 5. Support whole python implementations/versions (at least not crash and print on stdout)
 6. Case SSH: If you are over SSH send notification over backward-SSH connection to your native system (force password)
 7. Supported notification backends: paramiko (ssh), ssh, dbus, notify-send, termux-notification (Android), win10toast (Windows),plyer, plyer_toast, stdout
-8. Yakuake/Konsole terminal tab name in label
+8. yakuake/konsole terminal tab name in label
 9. screen/tmux session/window/pane title/name in label
-10. python module aka library interface "import nf;nf.nf(['ls'])"
+10. Python module aka library interface "import nf;nf.nf(['ls'])"
 
 TMUX/SCREEN used be `nf` or how to test it
 ------------------------------------------
@@ -231,10 +244,6 @@ TMUX/SCREEN used be `nf` or how to test it
 
 TODO
 ----
-1. virtualenv improvements: dbus module is not available, but there are still
-   tools: dbus-send, qbus, gdbus, so try to query konsole/yakuake title,
-   using freedesktop nofitication cannot be done by dbus-send or qbus because of
-   lack of variant array support
-2. nf 1.4.0:
+1. nf 1.4.0:
     a) nf -i PID # monitor specifiec already run process by PID/name/(interactive list???)
     b) run nf in (hidden???) background to add ability to (on Linux) CTRL+Z and run nf in background then back to main process ("fg")
