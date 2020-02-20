@@ -217,28 +217,46 @@ FEATURES
 TMUX/SCREEN used be `nf` or how to test it
 ------------------------------------------
 1. tmux session name:
+.. code-block:: bash
+
     tmux rename-session sesja
     tmux list-sessions -F "#{session_name}"
+
 2. tmux window name:
+.. code-block:: bash
+
     tmux rename-window okno
     tmux list-window -F "#{window_name} #{window_active}"
+
 3. tmux pane name:
+.. code-block:: bash
+
     printf '\033]2;%s\033\\' 'this is a title'
     tmux list-pane -F "#{pane_title} #{pane_active}"
+
 4. client pid to get parent (for example: yakuake)
+.. code-block:: bash
+
     tmux display-message -p "#{client_pid}"
 
 5. screen sessions:
+.. code-block:: bash
+
     screen -list
     There are screens on:
-            7842.pts-30.nic (Attached)
-            6981.pts-25.nic (Attached)
+    7842.pts-30.nic (Attached)
+    6981.pts-25.nic (Attached)
     2 Sockets in /tmp/screens/S-nic.
 
 6. screen window title
+.. code-block:: bash
+
     screen -S 6981.pts-25.nic -Q title
     terefere
+
 7. screen windows:
+.. code-block:: bash
+
     screen -S 6981.pts-25.nic -Q windows
     0* terefere  1 bash  2 bash  3- bash
 
