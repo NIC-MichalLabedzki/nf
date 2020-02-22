@@ -52,9 +52,10 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
+    parser.add_argument('-w', '--wait-for-pid', type=int, help='Wait for PID aka wait for already run process finish work')
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
-    parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
+    parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
@@ -558,6 +559,27 @@ Examples:
 
     if args.debug is True:
         print('DEBUG: detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
+
+    ############################################################################
+    # wait for pid
+    ############################################################################
+    if args.wait_for_pid is not None:
+        pid = args.wait_for_pid
+        if args.debug is True:
+            print('DEBUG: wait for pid {}'.format(pid))
+        try:
+            start_time = None
+            while True:
+                with open('/proc/{pid}/stat'.format(pid=pid)) as f:
+                    stat = f.read().split()
+                    if start_time is None:
+                        start_time = stat[21]
+                    elif start_time != stat[21]:
+                        raise Exception('previous process with this PID finish work')
+                time.sleep(1)
+        except Exception as e:
+            if args.debug is True:
+                print('DEBUG: exception while waiting for pid', e)
 
     ############################################################################
     # core
