@@ -2,9 +2,9 @@
 nf
 ==============
 
-.. |NF_VERSION| replace:: v1.3.2
+.. |NF_VERSION| replace:: v1.4.0
 
-.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/v1.3.2?label=latest%20stable%20build
+.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/v1.4.0?label=latest%20stable%20build
    :target: https://travis-ci.org/NIC-MichalLabedzki/nf
 
 .. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/master?label=latest%20development%20build
@@ -28,7 +28,7 @@ nf
 
 .. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
 
-.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.3.2
+.. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.4.0
 
 IN SHORT
 --------
@@ -53,29 +53,29 @@ SCREENSHOTS
 
 1. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_1_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_1_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_1_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_1_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 2. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_2_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_2_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_2_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_2_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 3. Screenshot from KDE:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_3_kde.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_3_kde.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_3_kde.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_3_kde.png
    :alt: Screenshot from KDE
    :width: 200
 
 4. Screenshot from Android:
 
-.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_4_android.png
-   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.3.2/images/screenshot_4_android.png
+.. image::  https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_4_android.png
+   :target: https://raw.githubusercontent.com/NIC-MichalLabedzki/nf/v1.4.0/images/screenshot_4_android.png
    :alt: Screenshot from Android
    :width: 200
 
