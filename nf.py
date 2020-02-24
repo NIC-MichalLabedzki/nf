@@ -55,13 +55,33 @@ Examples:
     parser.add_argument('-w', '--wait-for-pid', type=int, help='Wait for PID aka wait for already run process finish work')
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
-    parser.add_argument('-d', '--debug', action="store_true", help='More print debugging')
+    parser.add_argument('-d', '--debug', action="store_true", help='More print debugging on stdout')
+    parser.add_argument('--debugfile', type=str, help='More print debugging save into file')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
+
+    logfile = {'handle': None}
+    def log(*arg):
+        if args.debug is True:
+            argss = []
+            for a in arg:
+                argss.append(str(a))
+            print('DEBUG: {}'.format(' '.join(argss)))
+        if args.debugfile is not None:
+            argss = []
+            for a in arg:
+                argss.append(str(a))
+            if logfile['handle'] is None:
+                logfile['handle'] = open(args.debugfile, 'a+b', 0)
+            logfile['handle'].write('DEBUG: {}\n'.format(' '.join(argss)).encode())
+
+    log('nf version={}'.format(VERSION))
+    log('python {}'.format(sys.version_info))
+    log('platform {}'.format(sys.platform))
 
     try:
         import signal
@@ -72,8 +92,7 @@ Examples:
 
         signal.signal(signal.SIGINT, sigint_handler)
     except Exception as e:
-        if args.debug is True:
-            print('DEBUG: ', e)
+        log('signal exception', e)
 
     if args.backend is not None:
         backend = args.backend
@@ -94,33 +113,29 @@ Examples:
                     try:
                         ssh_client.load_system_host_keys()
                     except Exception as e:
-                        if args.debug is True:
-                            print('DEBUG: backend={}'.format('paramiko'), e)
+                        log('backend={}'.format('paramiko'), e)
                     try:
                         ssh_client.connect(hostname=ssh_ip, port=ssh_port, timeout=2)
                     except Exception as e:
                         exc_info = sys.exc_info()
-                        if args.debug is True:
-                            print('DEBUG: traceback {line} backend={backend}'.format(line=exc_info[-1].tb_lineno, backend='paramiko'), e)
-                            import traceback
-                            traceback.print_exception(*exc_info)
-                            print('DEBUG: end ----')
+                        log('traceback {line} backend={backend}'.format(line=exc_info[-1].tb_lineno, backend='paramiko'), e)
+                        import traceback
+                        traceback.print_exception(*exc_info)
+                        log('end ----')
                         try:
                             import getpass
                             password = getpass.getpass()
                             ssh_client.connect(hostname=ssh_ip, port=ssh_port, password=password, timeout=2)
                             del password
                         except Exception as e:
-                            if args.debug is True:
-                                print('DEBUG: backend={}'.format('paramiko'), e)
+                            log('backend={}'.format('paramiko'), e)
                             backend = 'stdout'
                 else:
                     if args.backend == 'paramiko':
                         print('nf: WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('paramiko'), e)
+                log('backend={}'.format('paramiko'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'ssh'] and args.backend == None) or args.backend == 'ssh':
@@ -138,8 +153,7 @@ Examples:
                         if ssh_process.poll() != None:
                             raise Exception('Public key not working')
                     except Exception as e:
-                        if args.debug is True:
-                            print('DEBUG: backend={}'.format('ssh'), e)
+                        log('backend={}'.format('ssh'), e)
                         ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
                         ssh_process.stdout.readline()  # expect password prompt
                     if ssh_process.poll():
@@ -151,8 +165,7 @@ Examples:
                         print('nf: WARNING: No $SSH_CLIENT, backend SSH will not work')
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('ssh'), e)
+                log('backend={}'.format('ssh'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'dbus'] and args.backend == None) or args.backend == 'dbus':
@@ -169,8 +182,7 @@ Examples:
                 else:
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('dbus'), e)
+                log('backend={}'.format('dbus'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'gdbus'] and args.backend == None) or args.backend == 'gdbus':
@@ -178,15 +190,13 @@ Examples:
                 import shutil
 
                 gdbus_app = shutil.which('gdbus')
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('gdbus'), gdbus_app)
+                log('backend={}'.format('gdbus'), gdbus_app)
                 if gdbus_app is not None:
                     backend = 'gdbus'
                 else:
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('gdbus'), e)
+                log('backend={}'.format('gdbus'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'notify-send'] and args.backend == None) or args.backend == 'notify-send':
@@ -194,15 +204,13 @@ Examples:
                 import shutil
 
                 notify_send_app = shutil.which('notify-send')
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('notify-send'), notify_send_app)
+                log('backend={}'.format('notify-send'), notify_send_app)
                 if notify_send_app is not None:
                     backend = 'notify-send'
                 else:
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('notify-send'), e)
+                log('backend={}'.format('notify-send'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'termux-notification'] and args.backend == None) or args.backend == 'termux-notification':
@@ -215,8 +223,7 @@ Examples:
                 else:
                     backend = 'stdout'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('termux-notification'), e)
+                log('backend={}'.format('termux-notification'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
@@ -224,8 +231,7 @@ Examples:
                 import win10toast
                 backend = 'win10toast'
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('win10toast'), e)
+                log('backend={}'.format('win10toast'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'plyer', 'plyer_toast'] and args.backend == None) or args.backend == 'plyer' or args.backend == 'plyer_toast':
@@ -234,8 +240,7 @@ Examples:
                 if args.backend == 'plyer' or args.backend == 'plyer_toast':
                     backend = args.backend
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: backend={}'.format('plyer'), e)
+                log('backend={}'.format('plyer'), e)
                 backend = 'stdout'
 
         if backend == 'stdout' and args.backend != 'stdout':
@@ -270,8 +275,7 @@ Examples:
         if 'tmux: server' in parent_names:
             tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
             multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
-            if args.debug is True:
-                print('DEBUG: tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
+            log('tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
             tmux_process_info = psutil.Process(multiplexer_client_pid)
             tmux_parents = tmux_process_info.parents()
             parent_names.extend([parent.name() for parent in tmux_parents])
@@ -279,8 +283,7 @@ Examples:
         parent_process_info_exe = parent_process_info.exe()
         parent_process_info_cmdline = parent_process_info.cmdline()
     except Exception as e:
-        if args.debug is True:
-            print('DEBUG: psutil failed'.format(backend), e)
+        log('psutil failed'.format(backend), e)
         parents = []
         parent_process_info_exe = ''
         parent_process_info_cmdline = ['']
@@ -288,13 +291,11 @@ Examples:
         try:
             ppid = os.getppid()
             parent_process_info_exe = os.readlink('/proc/{}/exe'.format(ppid))
-            if args.debug is True:
-                print('DEBUG: exe', parent_process_info_exe)
+            log('exe', parent_process_info_exe)
 
             with open('/proc/{}/cmdline'.format(ppid)) as f:
                 parent_process_info_cmdline = f.read()[0:-1].split('\0')
-                if args.debug is True:
-                    print('DEBUG: cmdline', parent_process_info_cmdline)
+                log('cmdline', parent_process_info_cmdline)
 
             pid = ppid
             while pid != 1:
@@ -303,25 +304,21 @@ Examples:
                 if 'tmux: server' == parent_name:
                     tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
                     multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
-                    if args.debug is True:
-                        print('DEBUG: tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
+                    log('tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
                     pid = multiplexer_client_pid
                 parent_names.append(parent_name)
                 with open('/proc/{}/stat'.format(pid)) as f:
                     other_process_info_stat = f.read().split(' ')
                     pid = int(other_process_info_stat[3])
         except Exception as e:
-            if args.debug is True:
-                print('DEBUG: usinng /proc failed'.format(backend), e)
+            log('usinng /proc failed'.format(backend), e)
 
     # GUI: yakuake, konsole
     try:
-        if args.debug is True:
-            print('DEBUG: shell parents', parent_names)
+        log('shell parents', parent_names)
         konsole_app_index = parent_names.index('konsole') if 'konsole' in parent_names else None
         yakuake_app_index = parent_names.index('yakuake') if 'yakuake' in parent_names else None
-        if args.debug is True:
-            print('DEBUG: detect konsole {} yakuake {}'.format(konsole_app_index, yakuake_app_index))
+        log('detect konsole {} yakuake {}'.format(konsole_app_index, yakuake_app_index))
         if yakuake_app_index is not None and konsole_app_index is not None:
             if konsole_app_index < yakuake_app_index:
                 gui_app = 'konsole'
@@ -335,8 +332,7 @@ Examples:
             gui_app = 'konsole'
         else:
              gui_app = 'unknown'
-        if args.debug is True:
-            print('DEBUG: gui_app {}'.format(gui_app))
+        log('gui_app {}'.format(gui_app))
 
 
 
@@ -345,8 +341,7 @@ Examples:
             import subprocess
             app = shutil.which('qdbus')
             if app is not None:
-                if args.debug is True:
-                    print('DEBUG: which qdbus: {}'.format(app))
+                log('which qdbus: {}'.format(app))
 
                 xarg = []
                 for a in arg:
@@ -358,8 +353,7 @@ Examples:
             else:
                 app = shutil.which('gdbus')
                 if app is not None:
-                    if args.debug is True:
-                        print('DEBUG: which gdbus: {}'.format(app))
+                    log('which gdbus: {}'.format(app))
 
                     xarg = []
                     for a in arg:
@@ -372,28 +366,23 @@ Examples:
                 else:
                     app = shutil.which('dbus-send')
                     if app is not None:
-                        if args.debug is True:
-                            print('DEBUG: which dbus-send: {}'.format(app))
+                        log('which dbus-send: {}'.format(app))
                         tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method)]
                         tool_cmdline.extend(xarg)
                     else:
-                        if args.debug is True:
-                            print('DEBUG: cannot find dbus backend')
+                        log('cannot find dbus backend')
 
-            if args.debug is True:
-                print('DEBUG: dbus cmdline', tool_cmdline)
+            log('dbus cmdline', tool_cmdline)
 
             output = subprocess.check_output(tool_cmdline).decode().strip()
-            if args.debug is True:
-                print('DEBUG: dbus backend output', output)
+            log('dbus backend output', output)
 
             if app == shutil.which('gdbus'):
                 output = output.strip('(),')
             if app == shutil.which('dbus-send'):
                 if 'int32' in output:
                     output = output.split(' ')[1]
-            if args.debug is True:
-                print('DEBUG: dbus final output', output)
+            log('dbus final output', output)
 
             return output
 
@@ -412,16 +401,14 @@ Examples:
                         dbus_object = dbus_session.get_object('org.kde.yakuake', '/yakuake/tabs')
                         gui_app_tab_name = dbus_object.tabTitle(session_id)
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: yakuake get tab name exception1'.format(backend), e)
+                log('yakuake get tab name exception1'.format(backend), e)
 
                 try:
                     active_session_id = call_dbus('org.kde.yakuake', '/yakuake/sessions', 'activeSessionId')
                     gui_app_tab_name = call_dbus('org.kde.yakuake', '/yakuake/tabs', 'tabTitle', 'int32:' + active_session_id)
 
                 except Exception as e:
-                    if args.debug is True:
-                        print('DEBUG: yakuake get tab name exception2'.format(backend), e)
+                    log('yakuake get tab name exception2'.format(backend), e)
         elif gui_app == 'konsole':
             # $KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION title 1
             try:
@@ -431,8 +418,7 @@ Examples:
                     dbus_object = dbus_session.get_object(os.environ['KONSOLE_DBUS_SERVICE'], os.environ['KONSOLE_DBUS_SESSION'])
                     gui_app_tab_name = dbus_object.title(1)
             except Exception as e:
-                if args.debug is True:
-                    print('DEBUG: yakuake get tab name exception1'.format(backend), e)
+                log('yakuake get tab name exception1'.format(backend), e)
 
                 try:
                     gui_app_tab_name = call_dbus(os.environ['KONSOLE_DBUS_SERVICE'], os.environ['KONSOLE_DBUS_SESSION'], 'title', 'int32:1')
@@ -441,21 +427,17 @@ Examples:
                     try:
                         gui_app_tab_name = call_dbus('org.kde.konsole', os.environ['KONSOLE_DBUS_SESSION'], 'title', 'int32:1')
                     except Exception as e:
-                        if args.debug is True:
-                            print('DEBUG: yakuake get tab name exception3'.format(backend), e)
-                    if args.debug is True:
-                        print('DEBUG: yakuake get tab name exception2'.format(backend), e)
+                        log('yakuake get tab name exception3'.format(backend), e)
+                    log('yakuake get tab name exception2'.format(backend), e)
 
-        if args.debug is True:
-            print('DEBUG: gui_app_tab_name', gui_app_tab_name)
+        log('gui_app_tab_name', gui_app_tab_name)
 
         # text multiplexers: tmux, screen
         tmux_app_index = parent_names.index('tmux: server') if 'tmux: server' in parent_names else None
         screen_app_index = parent_names.index('screen') if 'screen' in parent_names else None
         if tmux_app_index is None:
             tmux_app_index = parent_names.index('tmux: server') if 'tmux: server' in parent_names else None
-        if args.debug is True:
-            print('DEBUG: detect tmux {} screen {}'.format(tmux_app_index, screen_app_index))
+        log('detect tmux {} screen {}'.format(tmux_app_index, screen_app_index))
 
         if tmux_app_index is not None and screen_app_index is not None:
             if screen_app_index < tmux_app_index:
@@ -473,24 +455,21 @@ Examples:
         else:
              multiplexer_app = 'unknown'
 
-        if args.debug is True:
-            print('DEBUG: multiplexer_app {}'.format(multiplexer_app))
+        log('multiplexer_app {}'.format(multiplexer_app))
 
         multiplexer_window_name = None
         multiplexer_pane_name = None
         multiplexer_way = None
         if multiplexer_app == 'screen':
             sty = os.environ['STY']
-            if args.debug is True:
-                print('DEBUG: multiplexer_app {} STY {}'.format(multiplexer_app, sty))
+            log('multiplexer_app {} STY {}'.format(multiplexer_app, sty))
             screen_cmdline = ['screen', '-q', '-Q', 'title']
             import subprocess
             screen_output = subprocess.check_output(screen_cmdline)
             multiplexer_window_name = screen_output.decode().rstrip('\n\r')
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
-            if args.debug is True:
-                print('DEBUG: multiplexer_app {} title {}'.format(multiplexer_app, multiplexer_window_name))
+            log('multiplexer_app {} title {}'.format(multiplexer_app, multiplexer_window_name))
         if multiplexer_app == 'tmux':
             tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
@@ -498,20 +477,17 @@ Examples:
             [multiplexer_window_name] = [tmux_window.strip('"')[0:-2] for tmux_window in tmux_windows if tmux_window.strip('"')[-1] == '1']
             if multiplexer_window_name == '':
                 multiplexer_window_name = None
-            if args.debug is True:
-                print('DEBUG: multiplexer_app {} window {}'.format(multiplexer_app, multiplexer_window_name))
+            log('multiplexer_app {} window {}'.format(multiplexer_app, multiplexer_window_name))
 
             tmux_cmdline = ['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"']
             tmux_output = subprocess.check_output(tmux_cmdline)
             tmux_panes = tmux_output.decode()[0:-1].splitlines()
             [multiplexer_pane_name] = [tmux_pane.strip('"')[0:-2] for tmux_pane in tmux_panes if tmux_pane.strip('"')[-1] == '1']
-            if args.debug is True:
-                print('DEBUG: multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
+            log('multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
 
             tmux_cmdline = ['tmux', 'display-message', '-p', '"#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"']
             multiplexer_way = subprocess.check_output(tmux_cmdline).decode()[0:-1].strip('"').strip()
-            if args.debug is True:
-                print('DEBUG: multiplexer_app {} way {}'.format(multiplexer_app, multiplexer_way))
+            log('multiplexer_app {} way {}'.format(multiplexer_app, multiplexer_way))
 
         console_names = []
         if gui_app_tab_name is not None:
@@ -554,19 +530,16 @@ Examples:
             cmdline_args = shlex.split(run_cmd)
             system_shell = False
     except Exception as e:
-        if args.debug is True:
-            print('DEBUG: backend={} cmd run'.format(backend), e)
+        log('backend={} cmd run'.format(backend), e)
 
-    if args.debug is True:
-        print('DEBUG: detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
+    log('detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
 
     ############################################################################
     # wait for pid
     ############################################################################
     if args.wait_for_pid is not None:
         pid = args.wait_for_pid
-        if args.debug is True:
-            print('DEBUG: wait for pid {}'.format(pid))
+        log('wait for pid {}'.format(pid))
         try:
             start_time = None
             while True:
@@ -578,8 +551,7 @@ Examples:
                         raise Exception('previous process with this PID finish work')
                 time.sleep(1)
         except Exception as e:
-            if args.debug is True:
-                print('DEBUG: exception while waiting for pid', e)
+            log('exception while waiting for pid', e)
 
     ############################################################################
     # core
@@ -594,8 +566,7 @@ Examples:
     # end of core
     ############################################################################
 
-    if args.debug is True:
-        print('DEBUG: cmdline={} system_shell={} exit code={}'.format(cmdline_args, system_shell, exit_code))
+    log('cmdline={} system_shell={} exit code={}'.format(cmdline_args, system_shell, exit_code))
 
     time_end = datetime.datetime.now()
 
@@ -684,9 +655,8 @@ Examples:
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
                     else:
                         output, stderr_output = ssh_process.communicate(cmd)
-                    if args.debug is True:
-                        print('DEBUG: stdout', output)
-                        print('DEBUG: stderr', stderr_output)
+                    log('stdout', output)
+                    log('stderr', stderr_output)
             elif backend == 'paramiko':
                 if ssh_client:
                     with open(__file__, 'r') as f:
@@ -696,17 +666,15 @@ Examples:
                         myself = f.read()
                     cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
                     stdin, output, stderr_output = ssh_client.exec_command(cmd)
-                    if args.debug is True:
-                        print('DEBUG: stdout', output.read().decode())
-                        print('DEBUG: stderr', stderr_output.read().decode())
+                    log('stdout', output.read().decode())
+                    log('stderr', stderr_output.read().decode())
                     ssh_client.close()
         except Exception as e:
-            if args.debug is True:
-                print('DEBUG: engine error, backend={}:'.format(backend), e)
-                exc_info = sys.exc_info()
-                print('DEBUG: traceback line: {line} ; '.format(line=exc_info[-1].tb_lineno), e)
-                import traceback
-                traceback.print_exception(*exc_info)
+            log('engine error, backend={}:'.format(backend), e)
+            exc_info = sys.exc_info()
+            log('traceback line: {line} ; '.format(line=exc_info[-1].tb_lineno), e)
+            import traceback
+            traceback.print_exception(*exc_info)
     else:
         if backend != 'stdout':
             backend = 'stdout'
@@ -718,8 +686,7 @@ Examples:
             sizes = shutil.get_terminal_size()
             columns = sizes.columns
         except Exception as e:
-            if args.debug is True:
-                print('DEBUG: ', e)
+            log('', e)
 
         print('-' * columns)
         if notify__title != '':
@@ -737,6 +704,9 @@ Examples:
             print('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
             print('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
             print('----------', file=f)
+    if logfile['handle'] is not None:
+        logfile['handle'].write('\n'.encode())
+        logfile['handle'].close()
     return exit_code
 
 def main():
