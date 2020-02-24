@@ -537,6 +537,24 @@ Examples:
     ############################################################################
     # wait for pid
     ############################################################################
+    if sys.platform == 'win32' and sys.version_info >= (3, 7):
+        import subprocess
+        subprocess.Popen(['yes'], creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
+    elif sys.platform.startswith('freebsd') or  sys.platform.startswith('linux') or sys.platform.startswith('aix') or sys.platform.startswith('cygwin'):
+        gid =  os.getgid()
+        uid =  os.getuid()
+
+        log('ii0 pid', os.getpid())
+        pid = os.fork()
+        if pid > 0:
+            log('parent')
+            #sys.exit(0)
+            os._exit(0)
+        if pid == 0:
+
+            log('child')
+
+    log('ii1 pid', os.getpid())
     if args.wait_for_pid is not None:
         pid = args.wait_for_pid
         log('wait for pid {}'.format(pid))
@@ -548,11 +566,12 @@ Examples:
                     if start_time is None:
                         start_time = stat[21]
                     elif start_time != stat[21]:
+                        log('jjjjjjjjjjjjjjjjjjjjjj')
                         raise Exception('previous process with this PID finish work')
                 time.sleep(1)
         except Exception as e:
             log('exception while waiting for pid', e)
-
+    log('ii2 pid', os.getpid())
     ############################################################################
     # core
     ############################################################################
