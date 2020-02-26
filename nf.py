@@ -66,18 +66,22 @@ Examples:
 
     logfile = {'handle': None}
     def log(*arg):
+        current_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
         if args.debug is True:
             argss = []
             for a in arg:
                 argss.append(str(a))
-            print('DEBUG: {}'.format(' '.join(argss)))
+            try:
+                print('DEBUG {}: {}'.format(current_time, ' '.join(argss)))
+            except:
+                pass
         if args.debugfile is not None:
             argss = []
             for a in arg:
                 argss.append(str(a))
             if logfile['handle'] is None:
                 logfile['handle'] = open(args.debugfile, 'a+b', 0)
-            logfile['handle'].write('DEBUG: {}\n'.format(' '.join(argss)).encode())
+            logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
 
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
@@ -544,17 +548,34 @@ Examples:
         gid =  os.getgid()
         uid =  os.getuid()
 
-        log('ii0 pid', os.getpid())
         pid = os.fork()
         if pid > 0:
-            log('parent')
+            log('parent pid={} exit'.format(os.getpid()))
+
+            #sys.stdout.close()
+            #sys.stdin.close()
+            #sys.stderr.close()
             #sys.exit(0)
             os._exit(0)
         if pid == 0:
+            log('child pid={} start'.format(os.getpid()))
+            #sys.stdout = open(2, 'w')
+            #os.chdir("/")
+            #os.setsid()
+            #os.umask(0)
 
-            log('child')
+            #import signal
+            #signal.signal(signal.SIGHUP,  signal.SIG_DFL)
+            #signal.signal(signal.SIGINT,  signal.SIG_IGN)
+            #signal.signal(signal.SIGQUIT, signal.SIG_DFL)
+            #signal.signal(signal.SIGTERM, signal.SIG_DFL)
+            #signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-    log('ii1 pid', os.getpid())
+
+            #signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+            #os.setgid(gid)
+            #os.setuid(uid)
+
     if args.wait_for_pid is not None:
         pid = args.wait_for_pid
         log('wait for pid {}'.format(pid))
@@ -566,12 +587,10 @@ Examples:
                     if start_time is None:
                         start_time = stat[21]
                     elif start_time != stat[21]:
-                        log('jjjjjjjjjjjjjjjjjjjjjj')
                         raise Exception('previous process with this PID finish work')
                 time.sleep(1)
         except Exception as e:
             log('exception while waiting for pid', e)
-    log('ii2 pid', os.getpid())
     ############################################################################
     # core
     ############################################################################
