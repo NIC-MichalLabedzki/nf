@@ -53,6 +53,8 @@ Examples:
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
     parser.add_argument('-w', '--wait-for-pid', type=int, help='Wait for PID aka wait for already run process finish work')
+    parser.add_argument('--detach', action="store_true", help='Run command or wait for pid in detached process')
+
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging on stdout')
@@ -541,56 +543,41 @@ Examples:
     ############################################################################
     # wait for pid
     ############################################################################
-    if sys.platform == 'win32' and sys.version_info >= (3, 7):
-        import subprocess
-        subprocess.Popen(['yes'], creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
-    elif sys.platform.startswith('freebsd') or  sys.platform.startswith('linux') or sys.platform.startswith('aix') or sys.platform.startswith('cygwin'):
-        gid =  os.getgid()
-        uid =  os.getuid()
+    if args.detach:
+        if sys.platform == 'win32' and sys.version_info >= (3, 7):
+            not_detached_sys_argv = [arg for arg in sys.argv if arg != '--detach']
+            log('sys.argv', sys.argv)
+            log('new sys.argv', not_detached_sys_argv)
 
-        pid = os.fork()
-        if pid > 0:
-            log('parent pid={} exit'.format(os.getpid()))
+            import subprocess
+            subprocess.Popen(not_detached_sys_argv, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
+            sys.exit(0)
+        elif sys.platform.startswith('freebsd') or  sys.platform.startswith('linux') or sys.platform.startswith('aix') or sys.platform.startswith('cygwin'):
+            pid = os.fork()
+            if pid > 0:
+                log('parent pid={} exit'.format(os.getpid()))
 
-            #sys.stdout.close()
-            #sys.stdin.close()
-            #sys.stderr.close()
-            #sys.exit(0)
-            os._exit(0)
-        if pid == 0:
-            log('child pid={} start'.format(os.getpid()))
-            #sys.stdout = open(2, 'w')
-            #os.chdir("/")
-            #os.setsid()
-            #os.umask(0)
+                os._exit(0)
+            if pid == 0:
+                log('child pid={} start'.format(os.getpid()))
+        else:
+            log('detach not supported for {} {}'.format(sys.platform, sys.version_info))
 
-            #import signal
-            #signal.signal(signal.SIGHUP,  signal.SIG_DFL)
-            #signal.signal(signal.SIGINT,  signal.SIG_IGN)
-            #signal.signal(signal.SIGQUIT, signal.SIG_DFL)
-            #signal.signal(signal.SIGTERM, signal.SIG_DFL)
-            #signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-
-            #signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-            #os.setgid(gid)
-            #os.setuid(uid)
-
-    if args.wait_for_pid is not None:
-        pid = args.wait_for_pid
-        log('wait for pid {}'.format(pid))
-        try:
-            start_time = None
-            while True:
-                with open('/proc/{pid}/stat'.format(pid=pid)) as f:
-                    stat = f.read().split()
-                    if start_time is None:
-                        start_time = stat[21]
-                    elif start_time != stat[21]:
-                        raise Exception('previous process with this PID finish work')
-                time.sleep(1)
-        except Exception as e:
-            log('exception while waiting for pid', e)
+        if args.wait_for_pid is not None:
+            pid = args.wait_for_pid
+            log('wait for pid {}'.format(pid))
+            try:
+                start_time = None
+                while True:
+                    with open('/proc/{pid}/stat'.format(pid=pid)) as f:
+                        stat = f.read().split()
+                        if start_time is None:
+                            start_time = stat[21]
+                        elif start_time != stat[21]:
+                            raise Exception('previous process with this PID finish work')
+                    time.sleep(1)
+            except Exception as e:
+                log('exception while waiting for pid', e)
     ############################################################################
     # core
     ############################################################################
