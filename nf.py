@@ -701,6 +701,8 @@ Examples:
             log('traceback line: {line} ; '.format(line=exc_info[-1].tb_lineno), e)
             import traceback
             traceback.print_exception(*exc_info)
+
+            backend = 'stdout'
     else:
         if backend != 'stdout':
             backend = 'stdout'
