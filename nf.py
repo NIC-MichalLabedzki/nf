@@ -546,6 +546,7 @@ Examples:
     if args.detach:
         if sys.platform == 'win32' and sys.version_info >= (3, 7):
             not_detached_sys_argv = [arg for arg in sys.argv if arg != '--detach']
+            not_detached_sys_argv.insert(0, sys.executable)
             log('sys.argv', sys.argv)
             log('new sys.argv', not_detached_sys_argv)
 
