@@ -88,6 +88,7 @@ Examples:
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
     log('platform {}'.format(sys.platform))
+    log('argv {}'.format(sys.argv))
 
     try:
         import signal
@@ -174,14 +175,18 @@ Examples:
                 log('backend={}'.format('ssh'), e)
                 backend = 'stdout'
 
+        backend_internal = {}
+
         if (backend in ['stdout', 'dbus'] and args.backend == None) or args.backend == 'dbus':
             try:
                 import dbus
 
                 dbus_session = dbus.SessionBus()
                 if dbus_session is not None:
+                    backend_internal['dbus_session'] = dbus_session
                     dbus_notification = dbus_session.get_object('org.freedesktop.Notifications', '/org/freedesktop/Notifications')
                     if dbus_notification is not None:
+                        backend_internal['dbus_notification'] = dbus_notification
                         backend = 'dbus'
                     else:
                         backend = 'stdout'
@@ -251,7 +256,7 @@ Examples:
 
         if backend == 'stdout' and args.backend != 'stdout':
             print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
-
+    log('choosen backend is {}'.format(backend))
     notify__title = args.cmd
 
     cmdline = args.cmd + (' ' if len(args.args) > 0 else '') + ' '.join(args.args)
@@ -399,12 +404,12 @@ Examples:
             # qdbus org.kde.yakuake /yakuake/tabs tabTitle ${SESSION_ID}
             try:
                 import dbus
-                dbus_session = dbus.SessionBus()
-                if dbus_session is not None:
-                    dbus_object = dbus_session.get_object('org.kde.yakuake', '/yakuake/sessions')
+                gui_app_dbus_session = dbus.SessionBus()
+                if gui_app_dbus_session is not None:
+                    dbus_object = gui_app_dbus_session.get_object('org.kde.yakuake', '/yakuake/sessions')
                     if dbus_object is not None:
                         session_id = dbus_object.activeSessionId()
-                        dbus_object = dbus_session.get_object('org.kde.yakuake', '/yakuake/tabs')
+                        dbus_object = gui_app_dbus_session.get_object('org.kde.yakuake', '/yakuake/tabs')
                         gui_app_tab_name = dbus_object.tabTitle(session_id)
             except Exception as e:
                 log('yakuake get tab name exception1'.format(backend), e)
@@ -419,9 +424,9 @@ Examples:
             # $KONSOLE_DBUS_SERVICE $KONSOLE_DBUS_SESSION title 1
             try:
                 import dbus
-                dbus_session = dbus.SessionBus()
-                if dbus_session is not None:
-                    dbus_object = dbus_session.get_object(os.environ['KONSOLE_DBUS_SERVICE'], os.environ['KONSOLE_DBUS_SESSION'])
+                gui_app_dbus_session = dbus.SessionBus()
+                if gui_app_dbus_session is not None:
+                    dbus_object = gui_app_dbus_session.get_object(os.environ['KONSOLE_DBUS_SERVICE'], os.environ['KONSOLE_DBUS_SESSION'])
                     gui_app_tab_name = dbus_object.title(1)
             except Exception as e:
                 log('yakuake get tab name exception1'.format(backend), e)
@@ -629,7 +634,12 @@ Examples:
                 notify__actions = dbus.Array(signature='s')
                 notify__hints = dbus.Dictionary(signature='sv')
 
-                dbus_notification.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
+                try:
+                    backend_internal['dbus_notification'].Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
+                except Exception as e:
+                    log('dbus notify #1 fails', e)
+                    notify_interface = dbus.Interface(dbus_notification, dbus_interface='org.freedesktop.Notifications')
+                    notify_interface.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
             elif backend == 'gdbus':
                 notify_cmdline = [gdbus_app, 'call', '--session', '--dest', 'org.freedesktop.Notifications', '--object-path', '/org/freedesktop/Notifications', '--method', 'org.freedesktop.Notifications.Notify',
                                   notify__app_name,
