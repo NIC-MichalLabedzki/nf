@@ -35,6 +35,10 @@ Examples:
  nf -l sleeping sleep 2
  nf -l `tty` ls
  nf "ls | grep .py"
+ nf --detach sleep 15
+ nf -w 55555 ls
+ nf -w 55555 --detach echo Finished
+ nf -w 55555 -w 55556 echo Done
 
  "/home/nic/src/nf$ nf.py -p ls
  LICENSE  nf.py  pytest.ini  README  README.dev  requirements-dev.txt  setup.cfg  setup.py  tox.ini
@@ -52,7 +56,7 @@ Examples:
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
-    parser.add_argument('-w', '--wait-for-pid', type=int, help='Wait for PID aka wait for already run process finish work')
+    parser.add_argument('-w', '--wait-for-pid', type=int, action='append',help='Wait for PID aka wait for already run process finish work. This option can be used multiple times.')
     parser.add_argument('--detach', action="store_true", help='Run command or wait for pid in detached process')
 
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
@@ -569,21 +573,29 @@ Examples:
         else:
             log('detach not supported for {} {}'.format(sys.platform, sys.version_info))
 
-        if args.wait_for_pid is not None:
-            pid = args.wait_for_pid
-            log('wait for pid {}'.format(pid))
-            try:
-                start_time = None
-                while True:
-                    with open('/proc/{pid}/stat'.format(pid=pid)) as f:
-                        stat = f.read().split()
-                        if start_time is None:
-                            start_time = stat[21]
-                        elif start_time != stat[21]:
-                            raise Exception('previous process with this PID finish work')
-                    time.sleep(1)
-            except Exception as e:
-                log('exception while waiting for pid', e)
+    if args.wait_for_pid is not None:
+        pids = list(set(args.wait_for_pid)) # unique items only
+        log('wait for pid: {}'.format(pids))
+        try:
+            start_time = None
+            while True:
+                for pid in pids[:]:
+                    try:
+                        with open('/proc/{pid}/stat'.format(pid=pid)) as f:
+                            stat = f.read().split()
+                            if start_time is None:
+                                start_time = stat[21]
+                            elif start_time != stat[21]:
+                                log('pid {} finished work'.format(pid))
+                                pids.remove(pid)
+                    except Exception as e:
+                        log('exception while waiting for pid {}:'.format(pid), e)
+                        pids.remove(pid)
+                if len(pids) == 0:
+                    break
+                time.sleep(1)
+        except Exception as e:
+            log('exception while waiting for pids', e)
     ############################################################################
     # core
     ############################################################################
