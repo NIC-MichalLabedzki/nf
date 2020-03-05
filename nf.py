@@ -576,26 +576,35 @@ Examples:
     if args.wait_for_pid is not None:
         pids = list(set(args.wait_for_pid)) # unique items only
         log('wait for pid: {}'.format(pids))
+        psutil_fail = False
         try:
-            start_time = None
-            while True:
-                for pid in pids[:]:
-                    try:
-                        with open('/proc/{pid}/stat'.format(pid=pid)) as f:
-                            stat = f.read().split()
-                            if start_time is None:
-                                start_time = stat[21]
-                            elif start_time != stat[21]:
-                                log('pid {} finished work'.format(pid))
-                                pids.remove(pid)
-                    except Exception as e:
-                        log('exception while waiting for pid {}:'.format(pid), e)
-                        pids.remove(pid)
-                if len(pids) == 0:
-                    break
-                time.sleep(1)
+            import psutil
+            processes = [psutil.Process(pid) for pid in pids if  psutil.pid_exists(pid)]
+            psutil.wait_procs(processes)
         except Exception as e:
-            log('exception while waiting for pids', e)
+            log('wait for pid psutil exception', e)
+            psutil_fail = True
+        if psutil_fail == True:
+            try:
+                start_time = None
+                while True:
+                    for pid in pids[:]:
+                        try:
+                            with open('/proc/{pid}/stat'.format(pid=pid)) as f:
+                                stat = f.read().split()
+                                if start_time is None:
+                                    start_time = stat[21]
+                                elif start_time != stat[21]:
+                                    log('pid {} finished work'.format(pid))
+                                    pids.remove(pid)
+                        except Exception as e:
+                            log('exception while waiting for pid {}:'.format(pid), e)
+                            pids.remove(pid)
+                    if len(pids) == 0:
+                        break
+                    time.sleep(1)
+            except Exception as e:
+                log('exception while waiting for pids', e)
     ############################################################################
     # core
     ############################################################################
