@@ -181,6 +181,14 @@ Examples:
 
         backend_internal = {}
 
+        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
+            try:
+                import win10toast
+                backend = 'win10toast'
+            except Exception as e:
+                log('backend={}'.format('win10toast'), e)
+                backend = 'stdout'
+
         if (backend in ['stdout', 'dbus'] and args.backend == None) or args.backend == 'dbus':
             try:
                 import dbus
@@ -239,14 +247,6 @@ Examples:
                     backend = 'stdout'
             except Exception as e:
                 log('backend={}'.format('termux-notification'), e)
-                backend = 'stdout'
-
-        if (backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
-            try:
-                import win10toast
-                backend = 'win10toast'
-            except Exception as e:
-                log('backend={}'.format('win10toast'), e)
                 backend = 'stdout'
 
         if (backend in ['stdout', 'plyer', 'plyer_toast'] and args.backend == None) or args.backend == 'plyer' or args.backend == 'plyer_toast':
