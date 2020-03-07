@@ -44,9 +44,10 @@ More information about license: https://opensource.org/licenses/0BSD
 CHANGELOG
 ---------
 
-From 1.2.0:
-    1. Add support for `yakuake`, `konsole`, 'screen' and 'tmux' terminal tab name (to fast find notification source)
-    2. Add new backend: gdbus
+From 1.3.2:
+    1. --detach
+    2. --wait-for-pids
+    3. Add new backend: win10toast-persist
 
 SCREENSHOTS
 -----------
@@ -146,7 +147,7 @@ CLI is Command Line Interface. So you have tool called: nf
 
     $ python nf.py --help
     usage: nf.py [-h] [-l LABEL] [-p] [-n] [-s]
-                [-b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}]
+                [-b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}]
                 [-d] [-v] [--custom_notification_text CUSTOM_NOTIFICATION_TEXT]
                 [--custom_notification_title CUSTOM_NOTIFICATION_TITLE]
                 [--custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE]
@@ -165,7 +166,7 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
                             Notification backend
     -d, --debug           More print debugging
     -v, --version         Print version
