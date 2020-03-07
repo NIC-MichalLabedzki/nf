@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(use_scm_version=True,
       install_requires=[
-        'win10toast ; platform_system=="Windows"',
+        'win10toast-persist ; platform_system=="Windows"',
         'paramiko ; platform_system=="Windows"',
         'psutil ; platform_system=="Windows"'
       ],

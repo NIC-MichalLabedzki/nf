@@ -59,7 +59,7 @@ Examples:
     parser.add_argument('-w', '--wait-for-pid', type=int, action='append',help='Wait for PID aka wait for already run process finish work. This option can be used multiple times.')
     parser.add_argument('--detach', action="store_true", help='Run command or wait for pid in detached process')
 
-    parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
+    parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
     parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging on stdout')
     parser.add_argument('--debugfile', type=str, help='More print debugging save into file')
@@ -180,6 +180,14 @@ Examples:
                 backend = 'stdout'
 
         backend_internal = {}
+
+        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
+            try:
+                import win10toast
+                backend = 'win10toast-persist'
+            except Exception as e:
+                log('backend={}'.format('win10toast-persist'), e)
+                backend = 'stdout'
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
             try:
@@ -693,6 +701,9 @@ Examples:
                 else:
                     import subprocess
                     notify_exit_code = subprocess.call(notify_cmdline)
+            elif backend == 'win10toast-persist':
+                toaster = win10toast.ToastNotifier()
+                toaster.show_toast(notify__title, notify__body, duration=None)
             elif backend == 'win10toast':
                 toaster = win10toast.ToastNotifier()
                 toaster.show_toast(notify__title, notify__body)
