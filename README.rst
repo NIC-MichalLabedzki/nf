@@ -45,9 +45,11 @@ CHANGELOG
 ---------
 
 From 1.3.2:
-    1. --detach
-    2. --wait-for-pids
+    1. `--detach` for run command as detached process (stdout is still the same, but parent of process is system dependant)
+    2. `--wait-for-pids` wait for one or more processes then run cmd
     3. Add new backend: win10toast-persist
+    4. fix backends priorities on Win
+    5. fix 'null' dbus interface on some Linux configurations
 
 SCREENSHOTS
 -----------
