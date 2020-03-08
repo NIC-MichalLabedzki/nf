@@ -561,14 +561,19 @@ Examples:
     # wait for pid
     ############################################################################
     if args.detach:
-        if sys.platform == 'win32' and sys.version_info >= (3, 7):
+        if sys.platform == 'win32':
             not_detached_sys_argv = [arg for arg in sys.argv if arg != '--detach']
             not_detached_sys_argv.insert(0, sys.executable)
             log('sys.argv', sys.argv)
             log('new sys.argv', not_detached_sys_argv)
 
+            if sys.version_info >= (3, 7):
+                DETACHED_PROCESS = subprocess.DETACHED_PROCESS
+            else:
+                DETACHED_PROCESS = 0x08
+
             import subprocess
-            subprocess.Popen(not_detached_sys_argv, creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
+            subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
             sys.exit(0)
         elif sys.platform.startswith('freebsd') or  sys.platform.startswith('linux') or sys.platform.startswith('aix') or sys.platform.startswith('cygwin'):
             pid = os.fork()
