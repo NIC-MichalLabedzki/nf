@@ -558,34 +558,38 @@ Examples:
     log('detected_shell={} detected_shell_cmdline={} use_system_shell={} cmdline={}'.format(shell, shell_cmdline, system_shell, run_cmd))
 
     ############################################################################
-    # wait for pid
+    # --detach
     ############################################################################
     if args.detach:
-        if sys.platform == 'win32':
-            not_detached_sys_argv = [arg for arg in sys.argv if arg != '--detach']
-            not_detached_sys_argv.insert(0, sys.executable)
-            log('sys.argv', sys.argv)
-            log('new sys.argv', not_detached_sys_argv)
+        try:
+            if sys.platform == 'win32':
+                not_detached_sys_argv = [arg for arg in sys.argv if arg != '--detach']
+                not_detached_sys_argv.insert(0, sys.executable)
+                log('sys.argv', sys.argv)
+                log('new sys.argv', not_detached_sys_argv)
 
-            if sys.version_info >= (3, 7):
-                DETACHED_PROCESS = subprocess.DETACHED_PROCESS
+                if sys.version_info >= (3, 7):
+                    DETACHED_PROCESS = subprocess.DETACHED_PROCESS
+                else:
+                    DETACHED_PROCESS = 0x08
+
+                import subprocess
+                subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
+                sys.exit(0)
             else:
-                DETACHED_PROCESS = 0x08
+                pid = os.fork()
+                if pid > 0:
+                    log('parent pid={} exit'.format(os.getpid()))
 
-            import subprocess
-            subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
-            sys.exit(0)
-        elif sys.platform.startswith('freebsd') or  sys.platform.startswith('linux') or sys.platform.startswith('aix') or sys.platform.startswith('cygwin'):
-            pid = os.fork()
-            if pid > 0:
-                log('parent pid={} exit'.format(os.getpid()))
+                    os._exit(0)
+                if pid == 0:
+                    log('child pid={} start'.format(os.getpid()))
+        except Exception as e:
+            log('detach not supported for {} {}'.format(sys.platform, sys.version_info), e)
 
-                os._exit(0)
-            if pid == 0:
-                log('child pid={} start'.format(os.getpid()))
-        else:
-            log('detach not supported for {} {}'.format(sys.platform, sys.version_info))
-
+    ############################################################################
+    # --wait-for-pids
+    ############################################################################
     if args.wait_for_pid is not None:
         pids = list(set(args.wait_for_pid)) # unique items only
         log('wait for pid: {}'.format(pids))
