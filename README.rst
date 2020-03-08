@@ -85,11 +85,35 @@ SCREENSHOTS
 NON-INSTALL
 -----------
 
+It is one-file script so you can download and use it.
+You can also run it from sources without any dependancies* (need only python and maybe some modules delivered with it [or not])
+
+\* - Windows needs some modules to work, see setup.py for details. On 2020-03-08 they are: `python -m install psutil win10toast-persist`
+
+Latest developement version:
+
+.. code-block:: bash
+
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/master/nf.py
+
+
+or
+
+.. code-block:: bash
+
+    curl https://github.com/NIC-MichalLabedzki/nf/raw/master/nf.py -f -L -o nf.py
+
+or put link into your browser
+
+https://github.com/NIC-MichalLabedzki/nf/raw/master/nf.py
+
+or
+
 .. code-block:: bash
 
     git clone git@github.com:NIC-MichalLabedzki/nf.git
 
-You can run it from sources without any dependancies* (python and some modules delivered with it)
+
 
 .. code-block:: bash
 
@@ -103,25 +127,49 @@ See:
 
 See CLI section for more details.
 
+Previous stable versions:
+
+.. code-block:: bash
+
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.3.2/nf.py
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.2.0/nf.py
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.1.1/nf.py
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.0.1/nf.py
 
 INSTALLATION
 ------------
 
+
+
 .. code-block:: bash
 
-    pip install nf
+    python -m pip install nf
 
 or
 
 .. code-block:: bash
 
-    pip install -e git@github.com:NIC-MichalLabedzki/nf.git
+    python -m pip install nf --user
 
 or
 
 .. code-block:: bash
 
-    pip install -e https://github.com/NIC-MichalLabedzki/nf.git
+    python -m pip install nf --user --proxy=YOUR.PROXY.IP.v4:YOUR_PORT
+
+or
+
+.. code-block:: bash
+
+    python -m pip install -e git+https://github.com/NIC-MichalLabedzki/nf.git#egg=master
+
+or
+
+.. code-block:: bash
+
+    git clone https://github.com/NIC-MichalLabedzki/nf.git
+    cd nf
+    python setup.py # or python -m pip install -e .
 
 or
 
@@ -129,8 +177,13 @@ or
 
     git clone git@github.com:NIC-MichalLabedzki/nf.git
     cd nf
-    python setup.py # or pip install -e .
+    python setup.py # or python -m pip install -e .
 
+To update:
+
+.. code-block:: bash
+
+    python -m pip install nf -U
 
 INTERFACE
 ---------
@@ -148,9 +201,10 @@ CLI is Command Line Interface. So you have tool called: nf
 .. code-block:: bash
 
     $ python nf.py --help
-    usage: nf.py [-h] [-l LABEL] [-p] [-n] [-s]
+    usage: nf.py [-h] [-l LABEL] [-p] [-n] [-s] [-w WAIT_FOR_PID] [--detach]
                 [-b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}]
-                [-d] [-v] [--custom_notification_text CUSTOM_NOTIFICATION_TEXT]
+                [-v] [-d] [--debugfile DEBUGFILE]
+                [--custom_notification_text CUSTOM_NOTIFICATION_TEXT]
                 [--custom_notification_title CUSTOM_NOTIFICATION_TITLE]
                 [--custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE]
                 cmd ...
@@ -168,10 +222,16 @@ CLI is Command Line Interface. So you have tool called: nf
     -p, --print           Print notification text in stdout too
     -n, --no-notify       Do not do annoying notifications
     -s, --save            Save/append command and stat to .nf file
-    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+    -w WAIT_FOR_PID, --wait-for-pid WAIT_FOR_PID
+                            Wait for PID aka wait for already run process finish
+                            work. This option can be used multiple times.
+    --detach              Run command or wait for pid in detached process
+    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}
                             Notification backend
-    -d, --debug           More print debugging
     -v, --version         Print version
+    -d, --debug           More print debugging on stdout
+    --debugfile DEBUGFILE
+                            More print debugging save into file
     --custom_notification_text CUSTOM_NOTIFICATION_TEXT
                             Custom notification text
     --custom_notification_title CUSTOM_NOTIFICATION_TITLE
@@ -187,6 +247,10 @@ CLI is Command Line Interface. So you have tool called: nf
     nf -l sleeping sleep 2
     nf -l `tty` ls
     nf "ls | grep .py"
+    nf --detach sleep 15
+    nf -w 55555 ls
+    nf -w 55555 --detach echo Finished
+    nf -w 55555 -w 55556 echo Done
 
     "/home/nic/src/nf$ nf.py -p ls
     LICENSE  nf.py  pytest.ini  README  README.dev  requirements-dev.txt  setup.cfg  setup.py  tox.ini
@@ -197,6 +261,7 @@ CLI is Command Line Interface. So you have tool called: nf
     End time:     17:32.50
     Elapsed time: 00:00.00
     -----------------------------------------------------------
+
 
 
 LIMITATIONS
@@ -217,7 +282,7 @@ FEATURES
 9. screen/tmux session/window/pane title/name in label
 10. Python module aka library interface "import nf;nf.nf(['ls'])"
 
-TMUX/SCREEN used be `nf` or how to test it
+TMUX/SCREEN used by `nf` or how to test it
 ------------------------------------------
 1. tmux session name:
 .. code-block:: bash
@@ -265,6 +330,8 @@ TMUX/SCREEN used be `nf` or how to test it
 
 TODO
 ----
-1. nf 1.4.0:
-    a) nf -i PID # monitor specifiec already run process by PID/name/(interactive list???)
-    b) run nf in (hidden???) background to add ability to (on Linux) CTRL+Z and run nf in background then back to main process ("fg")
+nf 1.5.0
+~~~~~~~~
+1. --try-version=1.3.2 - download (need Internet connection), put in home directory and use it instead of installed version
+2. --try-version=dev - latest git version to tests
+3. $HOME/.nf directory and "versions" subdir to downloaded versions
