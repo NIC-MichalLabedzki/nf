@@ -1205,6 +1205,36 @@ def test_no_psutil(fixture_environment):
         sys.modules[module_name] = module_backup[module_name]
 
 
+def test_detach_unix_parent(fixture_environment):
+    import os
+
+    os.fork = mock.Mock()
+    os.fork.return_value = 5
+    os._exit = sys.exit
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+
+        assert exit_e.value.code == 0
+
+def test_detach_unix_child(fixture_environment):
+    import os
+
+    os.fork = mock.Mock()
+    os.fork.return_value = 0
+
+    import nf
+    nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+
+
+def test_wait_for_pids(fixture_environment):
+
+    import nf
+    #nf.nf(['-dp', '--wait-for-pids', '5', '--backend', 'stdout', 'echo'])
+
+    pytest.xfail()
+
 @pytest.mark.slow
 def test_readme_rst():
     import rstcheck
