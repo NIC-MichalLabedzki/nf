@@ -546,7 +546,7 @@ Examples:
         if detected_shell or detected_win_shell or shell.endswith('cmd.exe') or detected_xonsh:
 
             if shell.endswith('cmd.exe'):
-                c = '\\c'
+                c = '/c'
             else:
                 c = '-c'
             run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=cmdline.replace('"', '\\"'))
