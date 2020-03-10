@@ -550,8 +550,13 @@ Examples:
             else:
                 c = '-c'
             run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=cmdline.replace('"', '\\"'))
-            cmdline_args = shlex.split(run_cmd)
-            system_shell = False
+
+            if shell.endswith('cmd.exe'):
+                cmdline_args = run_cmd
+                system_shell = True
+            else:
+                cmdline_args = shlex.split(run_cmd)
+                system_shell = False
     except Exception as e:
         log('backend={} cmd run'.format(backend), e)
 
@@ -625,11 +630,15 @@ Examples:
     ############################################################################
     # core
     ############################################################################
-    if sys.version_info >= (3, 5):
-        exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
-    else:
-        import subprocess
-        exit_code = subprocess.call(cmdline_args, shell=system_shell)
+    try:
+        if sys.version_info >= (3, 5):
+            exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
+        else:
+            import subprocess
+            exit_code = subprocess.call(cmdline_args, shell=system_shell)
+    except Exception as e:
+        log('core run cmdline failed for: <{}>'.format(cmdline_args), e)
+        #exit_code = os.system(run_cmd)
     # exit_code = os.system(cmdline) # works fine
     ############################################################################
     # end of core
