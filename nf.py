@@ -285,6 +285,7 @@ Examples:
     system_shell = True
     shell = None
     shell_cmdline = None
+    exit_code = 0
 
     parent_names = []
     try:
@@ -618,6 +619,9 @@ Examples:
                                     start_time = stat[21]
                                 elif start_time != stat[21]:
                                     log('pid {} finished work'.format(pid))
+                                    pids.remove(pid)
+                                elif stat[2] == 'Z':
+                                    log('pid {} is zombie, treat as finished'.format(pid))
                                     pids.remove(pid)
                         except Exception as e:
                             log('exception while waiting for pid {}:'.format(pid), e)

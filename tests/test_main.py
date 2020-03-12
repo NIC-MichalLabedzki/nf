@@ -1218,6 +1218,7 @@ def test_detach_unix_parent(fixture_environment):
 
         assert exit_e.value.code == 0
 
+
 def test_detach_unix_child(fixture_environment):
     import os
 
@@ -1228,12 +1229,88 @@ def test_detach_unix_child(fixture_environment):
     nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
 
 
-def test_wait_for_pids(fixture_environment):
+@pytest.mark.parametrize("python_version", [(3, 5), (3, 7)])
+def test_detach_win(fixture_environment, fixture_python_version, python_version):
+    import sys
+    import subprocess
+
+    fixture_python_version(python_version)
+
+    platform = sys.platform
+    sys.platform = 'win32'
+
+    popen = subprocess.Popen
+    subprocess.Popen = mock.Mock()
+
+    old_CREATE_NEW_PROCESS_GROUP =  getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP') if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP') else None
+    old_DETACHED_PROCESS =  getattr(subprocess, 'DETACHED_PROCESS') if hasattr(subprocess, 'DETACHED_PROCESS') else None
+    subprocess.CREATE_NEW_PROCESS_GROUP = -1
+    subprocess.DETACHED_PROCESS = -1
+
+    with pytest.raises(SystemExit) as exit_e:
+        import nf
+        nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+
+    sys.platform = platform
+    subprocess.Popen = popen
+    subprocess.CREATE_NEW_PROCESS_GROUP = old_CREATE_NEW_PROCESS_GROUP
+    subprocess.DETACHED_PROCESS = old_DETACHED_PROCESS
+
+    assert exit_e.value.code == 0
+
+
+def test_wait_for_pid(fixture_environment, capsys):
+    import time
+    import subprocess
+    import sys
+
+    pid1 = subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(1)']).pid
+    pid2 = subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(1)']).pid
 
     import nf
-    #nf.nf(['-dp', '--wait-for-pids', '5', '--backend', 'stdout', 'echo'])
+    start = time.time()
+    nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
+    end = time.time()
 
-    pytest.xfail()
+    captured = capsys.readouterr()
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
+
+    spent = end - start
+    assert spent > 0.5
+
+
+@pytest.mark.skipif(sys.platform == "win32" or sys.platform == "darwin", reason="Linux specific test")
+def test_wait_for_pid_no_psutil(fixture_environment, capsys):
+    import sys
+    module_name = 'psutil'
+    module_backup = {}
+    if module_name in sys.modules:
+        module_backup[module_name] = sys.modules[module_name]
+        del sys.modules[module_name]
+        sys.modules[module_name] = None
+    else:
+        module_backup[module_name] = None
+        sys.modules[module_name] = None
+
+    import time
+    import subprocess
+    import sys
+
+    pid1 = subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(1)']).pid
+    pid2 = subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(1)']).pid
+
+    import nf
+    start = time.time()
+    nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
+    end = time.time()
+
+    captured = capsys.readouterr()
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
+
+    if module_backup[module_name] is not None:
+        sys.modules[module_name] = module_backup[module_name]
+
+    assert end - start > 0.5
 
 @pytest.mark.slow
 def test_readme_rst():
