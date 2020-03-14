@@ -68,8 +68,6 @@ jobs:
         - python -m pip install PyInstaller==3.6
   allow_failures:
     - python: "nightly"
-    - os: osx
-    - os: windows
 
 install:
   - pip install -r requirements-dev.txt
