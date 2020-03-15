@@ -1049,6 +1049,7 @@ def test_no_psutil(fixture_environment):
         sys.modules[module_name] = module_backup[module_name]
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_detach_unix_parent(fixture_environment):
     import os
 
@@ -1069,6 +1070,7 @@ def test_detach_unix_parent(fixture_environment):
     assert exit_e.value.code == 0
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_detach_unix_child(fixture_environment):
     import os
 
