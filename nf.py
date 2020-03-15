@@ -581,13 +581,14 @@ Examples:
 
                 import subprocess
                 subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
-                sys.exit(0)
+                exit_code = 0
+                return exit_code
             else:
                 pid = os.fork()
                 if pid > 0:
                     log('parent pid={} exit'.format(os.getpid()))
 
-                    os._exit(0)
+                    return 'detached'
                 if pid == 0:
                     log('child pid={} start'.format(os.getpid()))
         except Exception as e:
@@ -804,7 +805,10 @@ Examples:
 def main():
     import sys
     exit_code = nf()
-    sys.exit(exit_code)
+    if exit_code == 'detached':
+        os._exit(0)
+    else:
+        sys.exit(exit_code)
 
 if __name__ == "__main__":
    main()

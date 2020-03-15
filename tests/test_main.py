@@ -663,7 +663,7 @@ def test_yakuake_support(fixture_environment, capsys):
     test_environment = prepare()
 
     import nf
-    nf.nf(['-ndp', 'echo'])
+    exit_code = nf.nf(['-ndp', 'echo'])
 
     post(test_environment)
 
@@ -671,6 +671,8 @@ def test_yakuake_support(fixture_environment, capsys):
 
     stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
+
+    assert exit_code == 0
     assert stdout[1] == 'echo [yakuake_tab_title]'
 
 
@@ -734,7 +736,7 @@ def test_konsole_support(fixture_environment, capsys, is_case_ppid):
     test_environment = prepare()
 
     import nf
-    nf.nf(['-ndp', 'echo'])
+    exit_code = nf.nf(['-ndp', 'echo'])
 
     post(test_environment)
 
@@ -743,6 +745,7 @@ def test_konsole_support(fixture_environment, capsys, is_case_ppid):
     stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
     print(captured.out)
 
+    assert exit_code == 0
     assert stdout[1] == 'echo [konsole_tab_title]'
 
 
@@ -814,7 +817,7 @@ else:
     test_environment = prepare()
 
     import nf
-    nf.nf(['-ndp', 'echo'])
+    exit_code = nf.nf(['-ndp', 'echo'])
 
     captured = capsys.readouterr()
 
@@ -823,6 +826,7 @@ else:
 
     post(test_environment)
 
+    assert exit_code == 0
     assert stdout[1] == 'echo [screen_window_title]'
 
 
@@ -912,7 +916,7 @@ else:
     test_environment = prepare()
 
     import nf
-    nf.nf(['-ndp', 'echo'])
+    exit_code = nf.nf(['-ndp', 'echo'])
 
     captured = capsys.readouterr()
 
@@ -921,6 +925,7 @@ else:
 
     post(test_environment)
 
+    assert exit_code == 0
     assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
 
 
@@ -1005,7 +1010,7 @@ else:
     test_environment = prepare()
 
     import nf
-    nf.nf(['-dp', '--backend', 'ssh', 'echo'])
+    exit_code = nf.nf(['-dp', '--backend', 'ssh', 'echo'])
 
     captured = capsys.readouterr()
     stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
@@ -1013,6 +1018,7 @@ else:
 
     post(test_environment)
 
+    assert exit_code == 0
     assert stdout[1] == 'echo'
 
 
@@ -1022,7 +1028,9 @@ def test_ssh_no_ssh_environment_variable(fixture_environment, backend):
     # import os
     # del os.environ['SSH_CLIENT']
     import nf
-    nf.nf(['-dp', '--backend', backend, 'echo'])
+    exit_code = nf.nf(['-dp', '--backend', backend, 'echo'])
+
+    assert exit_code == 0
 
 
 def test_no_psutil(fixture_environment):
@@ -1040,10 +1048,12 @@ def test_no_psutil(fixture_environment):
 # TODO: stubs for: os.readlink, open, f.read(), and tmux fake app
 
     import nf
-    nf.nf(['-dp', '--backend', 'stdout', 'echo'])
+    exit_code = nf.nf(['-dp', '--backend', 'stdout', 'echo'])
 
     if module_backup[module_name] is not None:
         sys.modules[module_name] = module_backup[module_name]
+
+    assert exit_code == 0
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
@@ -1055,16 +1065,15 @@ def test_detach_unix_parent(fixture_environment):
     os.fork.return_value = 5
 
     os_exit = os._exit
-    os._exit = sys.exit
+    os._exit = mock.Mock()
 
-    with pytest.raises(SystemExit) as exit_e: # FIXME: nf.nf should not try to sys.exit
-        import nf
-        nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+    import nf
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
 
     os.fork = fork
-    os_exit = os._exit
+    os._exit = os_exit
 
-    assert exit_e.value.code == 0
+    assert exit_code == 'detached'
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
@@ -1076,9 +1085,11 @@ def test_detach_unix_child(fixture_environment):
     os.fork.return_value = 0
 
     import nf
-    nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
 
     os.fork = fork
+
+    assert exit_code == 0
 
 
 @pytest.mark.parametrize("python_version", [(3, 5), (3, 7)])
@@ -1099,16 +1110,15 @@ def test_detach_win(fixture_environment, fixture_python_version, python_version)
     subprocess.CREATE_NEW_PROCESS_GROUP = -1
     subprocess.DETACHED_PROCESS = -1
 
-    with pytest.raises(SystemExit) as exit_e: # FIXME: nf.nf should not try to sys.exit
-        import nf
-        nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
+    import nf
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo'])
 
     sys.platform = platform
     subprocess.Popen = popen
     subprocess.CREATE_NEW_PROCESS_GROUP = old_CREATE_NEW_PROCESS_GROUP
     subprocess.DETACHED_PROCESS = old_DETACHED_PROCESS
 
-    assert exit_e.value.code == 0
+    assert exit_code == 0
 
 
 def test_wait_for_pid(fixture_environment, capsys):
@@ -1121,13 +1131,14 @@ def test_wait_for_pid(fixture_environment, capsys):
 
     import nf
     start = time.time()
-    nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
+    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
     end = time.time()
 
     captured = capsys.readouterr()
     stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
 
     spent = end - start
+    assert exit_code == 0
     assert spent > 0.5
 
 
@@ -1153,7 +1164,7 @@ def test_wait_for_pid_no_psutil(fixture_environment, capsys):
 
     import nf
     start = time.time()
-    nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
+    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo'])
     end = time.time()
 
     captured = capsys.readouterr()
@@ -1162,6 +1173,7 @@ def test_wait_for_pid_no_psutil(fixture_environment, capsys):
     if module_backup[module_name] is not None:
         sys.modules[module_name] = module_backup[module_name]
 
+    assert exit_code == 0
     assert end - start > 0.5
 
 
