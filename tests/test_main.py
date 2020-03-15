@@ -588,7 +588,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
     sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
 
     import os
-    path_backup = os.environ['PATH']
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
 
     module_backup = {}
@@ -616,8 +615,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
 
     for module_name in modules:
         sys.modules[module_name] = module_backup[module_name]
-
-    os.environ['PATH'] = path_backup
 
     sys.argv = sys_argv
     sys.version_info = sys_version_info
@@ -798,14 +795,14 @@ else:
             import PyInstaller.__main__
             PyInstaller.__main__.run(['--name=%s' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
 
-            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH'] # FIXME: Where this is back?
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
         else:
             app = os.path.join(tmp_fake_apps, test_app_name)
             with open(app, 'w') as f:
                 f.write(my_app)
             os.chmod(app, 0o777)
 
-            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH'] # FIXME: Where this is back?
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
         return test_environment
 
@@ -897,14 +894,14 @@ else:
             import PyInstaller.__main__
             PyInstaller.__main__.run(['--name=%s' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
 
-            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH'] # FIXME: Where this is back?
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
         else:
             app = os.path.join(tmp_fake_apps, test_app_name)
             with open(app, 'w') as f:
                 f.write(my_app)
             os.chmod(app, 0o777)
 
-            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH'] # FIXME: Where this is back?
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
         return test_environment
 
