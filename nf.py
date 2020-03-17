@@ -89,6 +89,12 @@ Examples:
                 logfile['handle'] = open(args.debugfile, 'a+b', 0)
             logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
 
+    def print_stdout(*arg, **karg):
+        try:
+            print(*arg, **karg)
+        except Exception as e:
+            log('cannot print on stdout: ', *arg)
+
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
     log('platform {}'.format(sys.platform))
@@ -143,7 +149,7 @@ Examples:
                             backend = 'stdout'
                 else:
                     if args.backend == 'paramiko':
-                        print('nf: WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
+                        print_stdout('nf: WARNING: No $SSH_CLIENT, backend "paramiko" will not work')
                     backend = 'stdout'
             except Exception as e:
                 log('backend={}'.format('paramiko'), e)
@@ -173,7 +179,7 @@ Examples:
                         backend = 'ssh'
                 else:
                     if args.backend == 'ssh':
-                        print('nf: WARNING: No $SSH_CLIENT, backend SSH will not work')
+                        print_stdout('nf: WARNING: No $SSH_CLIENT, backend SSH will not work')
                     backend = 'stdout'
             except Exception as e:
                 log('backend={}'.format('ssh'), e)
@@ -267,7 +273,7 @@ Examples:
                 backend = 'stdout'
 
         if backend == 'stdout' and args.backend != 'stdout':
-            print("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
+            print_stdout("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
     log('choosen backend is {}'.format(backend))
     notify__title = args.cmd
 
@@ -781,22 +787,22 @@ Examples:
         except Exception as e:
             log('', e)
 
-        print('-' * columns)
+        print_stdout('-' * columns)
         if notify__title != '':
-            print(notify__title)
-        print(notify__body)
-        print('-' * columns)
+            print_stdout(notify__title)
+        print_stdout(notify__body)
+        print_stdout('-' * columns)
         if not args.no_notify:
-            print('\a')
+            print_stdout('\a')
 
     if args.save:
         with open(".nf", 'a') as f:
-            print(cmdline, file=f)
-            print('Exit code: {}'.format(exit_code), file=f)
-            print('Start {}'.format(time_start.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
-            print('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
-            print('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
-            print('----------', file=f)
+            print_stdout(cmdline, file=f)
+            print_stdout('Exit code: {}'.format(exit_code), file=f)
+            print_stdout('Start {}'.format(time_start.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+            print_stdout('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+            print_stdout('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
+            print_stdout('----------', file=f)
     if logfile['handle'] is not None:
         logfile['handle'].write('\n'.encode())
         logfile['handle'].close()

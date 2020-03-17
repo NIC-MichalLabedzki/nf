@@ -1177,6 +1177,34 @@ def test_wait_for_pid_no_psutil(fixture_environment, capsys):
     assert end - start > 0.5
 
 
+def test_debugfile(fixture_environment):
+    test_file = 'tmp_debugfile'
+
+    import nf
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo'])
+    import os
+    os.remove(test_file)
+
+    assert exit_code == 0
+
+
+def test_closed_stdout(fixture_environment):
+    test_file = 'tmp_debugfile'
+    stdout = sys.stdout
+    sys.stdout = 0 # cause AttributeError: 'int' object has no attribute 'write'
+
+    import nf
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo'])
+
+    sys.stdout = stdout
+    import os
+    with open(test_file) as f:
+        print(f.read())
+    os.remove(test_file)
+
+    assert exit_code == 0
+
+
 @pytest.mark.slow
 def test_readme_rst():
     import rstcheck
