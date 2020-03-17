@@ -4,6 +4,7 @@ pytest-cov==2.7.1
 pytest-progress==1.2.1
 twine==1.13.0
 rstcheck==3.3.1
+readme-renderer==24.0 # 25>0 require Pygments==2.5.1 but there is no python 3.4 support
 
 # nf optional dependencies need for Windows
 psutil==5.6.7

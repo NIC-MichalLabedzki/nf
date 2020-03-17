@@ -72,6 +72,7 @@ jobs:
 install:
   - pip install -r requirements-dev.txt
   - pip install coveralls
+  - pip freeze
 
 script:
   - pytest
