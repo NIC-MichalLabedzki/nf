@@ -98,6 +98,12 @@ Examples:
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
     log('platform {}'.format(sys.platform))
+    is_wsl = None
+    if sys.platform.startswith('linux'):
+        with open('/proc/version') as f:
+            v = f.read()
+            is_wsl = True if 'Microsoft' in v else False
+    log('is_wsl {}'.format(is_wsl))
     log('argv {}'.format(sys.argv))
 
     try:
@@ -187,16 +193,24 @@ Examples:
 
         backend_internal = {}
 
-        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
+        if ((sys.platform == 'win32' or is_wsl) and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
+                if is_wsl:
+                    pass # TODO
+                    # python -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
+                    # PYTHONPATH +=:win32_modules
+
                 import win10toast
                 backend = 'win10toast-persist'
             except Exception as e:
                 log('backend={}'.format('win10toast-persist'), e)
                 backend = 'stdout'
 
-        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
+        if ((sys.platform == 'win32' or is_wsl) and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
             try:
+                if is_wsl:
+                    pass # TODO
+
                 import win10toast
                 backend = 'win10toast'
             except Exception as e:
