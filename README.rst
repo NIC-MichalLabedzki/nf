@@ -7,26 +7,32 @@ nf
 .. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/v1.4.0?label=latest%20stable%20build
    :target: https://travis-ci.org/NIC-MichalLabedzki/nf
 
-.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/master?label=latest%20development%20build
-   :target: https://travis-ci.org/NIC-MichalLabedzki/nf
-
-.. image:: https://badge.fury.io/py/nf.svg
-   :target: https://badge.fury.io/py/nf
+.. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf/v1.4.0
+   :target: https://coveralls.io/github/NIC-MichalLabedzki/nf
 
 .. image:: https://img.shields.io/pypi/v/nf
+   :target: https://pypi.org/project/nf/
+
+.. image:: https://img.shields.io/pypi/implementation/nf
 
 .. image:: https://img.shields.io/pypi/pyversions/nf.svg
    :target: https://pypi.python.org/pypi/nf
 
-.. image:: https://img.shields.io/pypi/implementation/nf
+.. image:: https://img.shields.io/pypi/l/nf
+
+.. image:: https://img.shields.io/pypi/dm/nf
+
+------------------------------
+
+.. image:: https://img.shields.io/travis/NIC-MichalLabedzki/nf/master?label=latest%20development%20build
+   :target: https://travis-ci.org/NIC-MichalLabedzki/nf
+
+.. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf/master?label=latest%20development%20coverage
+   :target: https://coveralls.io/github/NIC-MichalLabedzki/nf
 
 .. image:: https://img.shields.io/github/repo-size/NIC-MichalLabedzki/nf
 
 .. image:: https://img.shields.io/github/languages/code-size/NIC-MichalLabedzki/nf
-
-.. image:: https://img.shields.io/pypi/l/nf
-
-.. image:: https://img.shields.io/coveralls/github/NIC-MichalLabedzki/nf
 
 .. image:: https://img.shields.io/github/commits-since/NIC-MichalLabedzki/nf/v1.4.0
 
@@ -47,9 +53,10 @@ CHANGELOG
 From 1.3.2:
     1. `--detach` for run command as detached process (stdout is still the same, but parent of process is system dependant)
     2. `--wait-for-pids` wait for one or more processes then run cmd
-    3. Add new backend: win10toast-persist
+    3. add new backend: win10toast-persist
     4. fix backends priorities on Win
     5. fix 'null' dbus interface on some Linux configurations
+    6. detect WSL (Win) but do not support it yet
 
 SCREENSHOTS
 -----------
@@ -131,6 +138,7 @@ Previous stable versions:
 
 .. code-block:: bash
 
+    wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.4.0/nf.py
     wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.3.2/nf.py
     wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.2.0/nf.py
     wget -c https://github.com/NIC-MichalLabedzki/nf/raw/v1.1.1/nf.py
@@ -335,3 +343,4 @@ nf 1.5.0
 1. --try-version=1.3.2 - download (need Internet connection), put in home directory and use it instead of installed version
 2. --try-version=dev - latest git version to tests
 3. $HOME/.nf directory and "versions" subdir to downloaded versions
+4. WSL support
