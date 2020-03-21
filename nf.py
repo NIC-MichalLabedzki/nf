@@ -19,7 +19,7 @@ from __future__ import print_function as _print_function
 """
 
 def nf(argv=None):
-    VERSION = '1.4.0dev'
+    VERSION = '1.4.0'
     import argparse
     import datetime
     import os

@@ -1,5 +1,5 @@
 from setuptools import setup
-setup(use_scm_version=True,
+setup(version='1.4.0',
       install_requires=[
         'win10toast-persist ; platform_system=="Windows"',
         'paramiko ; platform_system=="Windows"',
