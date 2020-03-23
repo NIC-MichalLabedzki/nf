@@ -99,10 +99,13 @@ Examples:
     log('python {}'.format(sys.version_info))
     log('platform {}'.format(sys.platform))
     is_wsl = None
-    if sys.platform.startswith('linux'):
-        with open('/proc/version') as f:
-            v = f.read()
-            is_wsl = True if 'Microsoft' in v else False
+    try:
+        if sys.platform.startswith('linux'):
+            with open('/proc/version') as f:
+                v = f.read()
+                is_wsl = True if 'Microsoft' in v else False
+    except Exception as e:
+        log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
     log('argv {}'.format(sys.argv))
 
