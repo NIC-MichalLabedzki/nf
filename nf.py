@@ -9,16 +9,116 @@
 # Project name/application name: nf
 # Source: https://github.com/NIC-MichalLabedzki/nf
 #
+# Usage:
+#   ./nf.py [optional options] command [arg...]
+#
 ##
 
 # for python2
 from __future__ import print_function as _print_function
 
-"""
-./nf.py [optional options] command [arg...]
-"""
 
 def nf(argv=None):
+    """
+    This function does not exit python interpreter so can be used in other Python scripts.
+    It is compatible with python 2 and 3. "argv" is list of strings - exactly the same arguments
+    used in command line.
+
+    For example:
+    "nf(['-p', '-n', 'ls', '/etc'])"
+
+    usage: nf.py [-h] [-l LABEL] [-p] [-n] [-s] [-w WAIT_FOR_PID] [--detach]
+                [-b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}]
+                [-v] [-d] [--debugfile DEBUGFILE]
+                [--custom_notification_text CUSTOM_NOTIFICATION_TEXT]
+                [--custom_notification_title CUSTOM_NOTIFICATION_TITLE]
+                [--custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE]
+                cmd ...
+
+    Simple command line tool to make notification after target program finished work
+
+    positional arguments:
+    cmd
+    args
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    -l LABEL, --label LABEL
+                            Add humn readable text to custom job identification
+    -p, --print           Print notification text in stdout too
+    -n, --no-notify       Do not do annoying notifications
+    -s, --save            Save/append command and stat to .nf file
+    -w WAIT_FOR_PID, --wait-for-pid WAIT_FOR_PID
+                            Wait for PID aka wait for already run process finish
+                            work. This option can be used multiple times.
+    --detach              Run command or wait for pid in detached process
+    -b {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}, --backend {paramiko,ssh,dbus,gdbus,notify-send,termux-notification,win10toast-persist,win10toast,plyer,plyer_toast,stdout}
+                            Notification backend
+    -v, --version         Print version
+    -d, --debug           More print debugging on stdout
+    --debugfile DEBUGFILE
+                            More print debugging save into file
+    --custom_notification_text CUSTOM_NOTIFICATION_TEXT
+                            Custom notification text
+    --custom_notification_title CUSTOM_NOTIFICATION_TITLE
+                            Custom notification title
+    --custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE
+                            Custom notification exit code
+
+    Examples:
+    nf make
+    nf ls
+    nf ls not_exist_file
+    nf sleep 2
+    nf -l sleeping sleep 2
+    nf -l `tty` ls
+    nf "ls | grep .py"
+    nf --detach sleep 15
+    nf -w 55555 ls
+    nf -w 55555 --detach echo Finished
+    nf -w 55555 -w 55556 echo Done
+
+    "/home/nic/src/nf$ nf.py -p ls
+    LICENSE  nf.py  pytest.ini  README  README.dev  requirements-dev.txt  setup.cfg  setup.py  tox.ini
+    -----------------------------------------------------------
+    "/home/nic/src/nf$ ls" finished work.
+
+    Start time:   17:32.50
+    End time:     17:32.50
+    Elapsed time: 00:00.00
+    -----------------------------------------------------------
+
+    Use environment variables:
+    KONSOLE_DBUS_SERVICE
+    KONSOLE_DBUS_SESSION
+    KONSOLE_VERSION
+    SSH_CLIENT
+    STY
+    TMUX
+
+    New in 1.1.0:
+    -s, --save
+
+    New in 1.2.0:
+    -b, --backend {paramiko, ssh, dbus,notify-send,termux-notification,win10toast,plyer,plyer_toast,stdout}
+    -b ssh
+    -b paramiko
+    -b plyer
+    -b plyer_toast
+    --custom_notification_text CUSTOM_NOTIFICATION_TEXT
+    --custom_notification_title CUSTOM_NOTIFICATION_TITLE
+    --custom_notification_exit_code CUSTOM_NOTIFICATION_EXIT_CODE
+    -d, --debug
+
+    New in 1.3.0:
+    -b gdbus
+
+    New in 1.4.0:
+    -b win10toast-persist
+    --detach
+    -w, --wait-for-pid WAIT_FOR_PID
+
+    """
     VERSION = '1.5.0.dev0'
     import argparse
     import datetime
@@ -826,6 +926,9 @@ Examples:
     return exit_code
 
 def main():
+    """
+    Execute nf(argv) where argv is sys.argv then exit with returned value. This function exit python interpreter.
+    """
     import sys
     exit_code = nf()
     if exit_code == 'detached':
