@@ -166,6 +166,8 @@ Examples:
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
+
+    parser.add_argument('--try-version', type=str, help='Run specific nf version, download and cache in ~/.nf/versions')
     parser.add_argument('cmd')
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args(argv)
@@ -208,6 +210,44 @@ Examples:
         log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
     log('argv {}'.format(sys.argv))
+
+    if args.try_version:
+        url = 'https://github.com/NIC-MichalLabedzki/nf/raw/{}/nf.py'.format(args.try_version)
+
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        data = ''
+        try:
+            import urllib.request
+            request = urllib.request.urlopen(url, context=ctx)
+            data = request.read()
+        except Exception as e:
+            log('urllib for python3 failed', e)
+            try:
+                import urllib
+                request = urllib.urlopen(url, context=ctx)
+                data = request.read()
+            except Exception as e:
+                log('urllib for python2 failed', e)
+        if data == '':
+            print_stdout('ERROR: Cannot download old nf: {}'.format(args.try_version))
+            return 1
+
+        import subprocess
+# TODO: filter args from --try-version only to support double debug or help or version: nf -d --try-version=v1.3.0 -d echo
+        new_argv = [arg for arg in sys.argv[1:] if arg[0:13] != '--try-version']
+        new_argv.insert(0, '-')
+        new_argv.insert(0, sys.executable)
+        log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
+        python_process = subprocess.Popen(new_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        output, stderr_output = python_process.communicate(data)
+        log('old nf stdout:', output.decode())
+        log('old nf stderr:', stderr_output.decode())
+
+        return 0
 
     try:
         import signal
