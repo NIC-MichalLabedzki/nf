@@ -151,8 +151,20 @@ Examples:
  -----------------------------------------------------------
  '''
 
-    parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-l', '--label', type=str, help='Add humn readable text to custom job identification')
+    class help_action(argparse.Action):
+        def __init__(self, option_strings, dest, nargs=None, **kwargs):
+            super(help_action, self).__init__(option_strings, dest, **kwargs)
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            setattr(namespace, self.dest, values)
+            parser.print_help()
+            sys.exit(0)
+
+
+    parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=False)
+
+    parser.add_argument('-h', '--help', action="store_true", help='show this help message and exit')
+    parser.add_argument('-l', '--label', type=str, help='Add human readable text to custom job identification')
     parser.add_argument('-p', '--print', action="store_true", help='Print notification text in stdout too')
     parser.add_argument('-n', '--no-notify', action="store_true", help='Do not do annoying notifications')
     parser.add_argument('-s', '--save', action="store_true", help='Save/append command and stat to .nf file')
@@ -160,7 +172,7 @@ Examples:
     parser.add_argument('--detach', action="store_true", help='Run command or wait for pid in detached process')
 
     parser.add_argument('-b', '--backend', type=str, choices=['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'], help='Notification backend')
-    parser.add_argument('-v', '--version', action="version", help='Print version', version=VERSION)
+    parser.add_argument('-v', '--version', action="store_true", help='Print version')
     parser.add_argument('-d', '--debug', action="store_true", help='More print debugging on stdout')
     parser.add_argument('--debugfile', type=str, help='More print debugging save into file')
     parser.add_argument('--custom_notification_text', type=str, help='Custom notification text')
@@ -168,8 +180,29 @@ Examples:
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
 
     parser.add_argument('--try-version', type=str, help='Run specific nf version, download and cache in ~/.nf/versions')
-    parser.add_argument('cmd')
+    parser.add_argument('cmd', nargs='?')
     parser.add_argument('args', nargs=argparse.REMAINDER)
+
+    if '--version' in sys.argv or '-v' in sys.argv:
+        index_version = sys.argv.index('--version') if '--version' in sys.argv else sys.argv.index('-v')
+        index_try_version = -1
+        for arg in sys.argv:
+            if arg.startswith('--try-version'):
+                index_try_version = sys.argv.index(arg)
+        if index_version < index_try_version or index_try_version == -1:
+            print(VERSION)
+            return 0
+
+    if '--help' in sys.argv or '-h' in sys.argv:
+        index_help = sys.argv.index('--help') if '--help' in sys.argv else sys.argv.index('-h')
+        index_try_version = -1
+        for arg in sys.argv:
+            if arg.startswith('--try-version'):
+                index_try_version = sys.argv.index(arg)
+        if index_help < index_try_version or index_try_version == -1:
+            parser.print_help()
+            return 0
+
     args = parser.parse_args(argv)
 
     logfile = {'handle': None}
@@ -237,14 +270,19 @@ Examples:
             return 1
 
         import subprocess
-# TODO: filter args from --try-version only to support double debug or help or version: nf -d --try-version=v1.3.0 -d echo
-        new_argv = [arg for arg in sys.argv[1:] if arg[0:13] != '--try-version']
+        try_version_index = 0
+        for index, arg in enumerate(sys.argv[0:]):
+            if arg[0:13] == '--try-version':
+                try_version_index = index
+        log('try-version index', try_version_index)
+        new_argv = sys.argv[try_version_index + 1:]
         new_argv.insert(0, '-')
         new_argv.insert(0, sys.executable)
         log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
         python_process = subprocess.Popen(new_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         output, stderr_output = python_process.communicate(data)
-        log('old nf stdout:', output.decode())
+        if output:
+            print_stdout(output.decode().rstrip('\n'))
         log('old nf stderr:', stderr_output.decode())
 
         return 0
