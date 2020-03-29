@@ -51,7 +51,8 @@ CHANGELOG
 ---------
 
 From 1.4.0:
-    1. TODO
+    1. --try-version=list
+    2. --try-version=tag,branch,commit hash, "master" to try latest development or "list" to display possible tags/versions.
 
 SCREENSHOTS
 -----------
@@ -335,7 +336,7 @@ TODO
 ----
 nf 1.5.0
 ~~~~~~~~
-1. --try-version=1.3.2 - download (need Internet connection), put in home directory and use it instead of installed version
-2. --try-version=dev - latest git version to tests
-3. $HOME/.nf directory and "versions" subdir to downloaded versions
-4. WSL support
+
+1. $HOME/.nf directory and "versions" subdir to downloaded versions
+2. cache --try-version
+3. WSL support
