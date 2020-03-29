@@ -242,6 +242,7 @@ Examples:
         log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
     log('argv {}'.format(sys.argv))
+    log('args {}'.format(args))
 
     if args.try_version:
         url = 'https://github.com/NIC-MichalLabedzki/nf/raw/{}/nf.py'.format(args.try_version)
@@ -271,9 +272,10 @@ Examples:
         import subprocess
         try_version_index = 0
         for index, arg in enumerate(sys.argv[0:]):
-            if arg[0:13] == '--try-version':
+            if arg.startswith('--try-version'):
                 try_version_index = index
-        log('try-version index', try_version_index)
+                if not arg.startswith('--try-version='):
+                    try_version_index += 1
         new_argv = sys.argv[try_version_index + 1:]
         new_argv.insert(0, '-')
         new_argv.insert(0, sys.executable)
