@@ -150,17 +150,6 @@ Examples:
  Elapsed time: 00:00.00
  -----------------------------------------------------------
  '''
-
-    class help_action(argparse.Action):
-        def __init__(self, option_strings, dest, nargs=None, **kwargs):
-            super(help_action, self).__init__(option_strings, dest, **kwargs)
-
-        def __call__(self, parser, namespace, values, option_string=None):
-            setattr(namespace, self.dest, values)
-            parser.print_help()
-            sys.exit(0)
-
-
     parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=False)
 
     parser.add_argument('-h', '--help', action="store_true", help='show this help message and exit')
@@ -183,25 +172,35 @@ Examples:
     parser.add_argument('cmd', nargs='?')
     parser.add_argument('args', nargs=argparse.REMAINDER)
 
-    if '--version' in sys.argv or '-v' in sys.argv:
-        index_version = sys.argv.index('--version') if '--version' in sys.argv else sys.argv.index('-v')
-        index_try_version = -1
-        for arg in sys.argv:
-            if arg.startswith('--try-version'):
-                index_try_version = sys.argv.index(arg)
-        if index_version < index_try_version or index_try_version == -1:
-            print(VERSION)
-            return 0
+    if argv == None:
+        argv = sys.argv[1:]
+    if argv:
+        if '--version' in argv or '-v' in argv:
+            index_version = argv.index('--version') if '--version' in argv else argv.index('-v')
+            index_try_version = -1
+            for arg in argv:
+                if arg.startswith('--try-version'):
+                    index_try_version = argv.index(arg)
+            if index_version < index_try_version or index_try_version == -1:
+                print(VERSION)
+                return 0
 
-    if '--help' in sys.argv or '-h' in sys.argv:
-        index_help = sys.argv.index('--help') if '--help' in sys.argv else sys.argv.index('-h')
-        index_try_version = -1
-        for arg in sys.argv:
-            if arg.startswith('--try-version'):
-                index_try_version = sys.argv.index(arg)
-        if index_help < index_try_version or index_try_version == -1:
+        if len(argv) == 1:
             parser.print_help()
             return 0
+
+        if '--help' in argv or '-h' in argv:
+            index_help = argv.index('--help') if '--help' in argv else argv.index('-h')
+            index_try_version = -1
+            for arg in argv:
+                if arg.startswith('--try-version'):
+                    index_try_version = argv.index(arg)
+            if index_help < index_try_version or index_try_version == -1:
+                parser.print_help()
+                return 0
+    else:
+        parser.print_help()
+        return 0
 
     args = parser.parse_args(argv)
 

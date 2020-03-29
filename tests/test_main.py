@@ -255,17 +255,29 @@ def test_main_module_dbus_error(fixture_environment):
 #===============================================================================
 
 def test_tool_runable(fixture_environment):
+    sys_argv = sys.argv
+    sys.argv = ['nf']
+
     with pytest.raises(SystemExit) as exit_e:
         import runpy
         runpy.run_module('nf', run_name= "__main__")
-    assert exit_e.value.code == 2
+
+    sys.argv = sys_argv
+
+    assert exit_e.value.code == 0
 
 
 def test_main_no_args(fixture_environment):
+    sys_argv = sys.argv
+    sys.argv = ['nf']
+
     with pytest.raises(SystemExit) as exit_e:
         import nf
         nf.main()
-    assert exit_e.value.code == 2
+
+    sys.argv = sys_argv
+
+    assert exit_e.value.code == 0
 
 
 def test_main_module_all_mock(fixture_environment):
