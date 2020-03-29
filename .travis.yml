@@ -70,9 +70,9 @@ jobs:
     - python: "nightly"
 
 install:
-  - pip install -r requirements-dev.txt
-  - pip install coveralls
-  - pip freeze
+  - python -m pip install -r requirements-dev.txt
+  - python -m pip install coveralls
+  - python -m pip freeze
 
 script:
   - pytest
