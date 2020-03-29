@@ -168,7 +168,7 @@ Examples:
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
 
-    parser.add_argument('--try-version', type=str, help='Run specific nf version, download and cache in ~/.nf/versions')
+    parser.add_argument('--try-version', type=str, help='Download and run specific nf version: tag, branch, commit hash or "list" to display possible tags/versions. Try "master" for latest development version.')
     parser.add_argument('cmd', nargs='?')
     parser.add_argument('args', nargs=argparse.REMAINDER)
 
@@ -245,7 +245,10 @@ Examples:
     log('args {}'.format(args))
 
     if args.try_version:
-        url = 'https://github.com/NIC-MichalLabedzki/nf/raw/{}/nf.py'.format(args.try_version)
+        if args.try_version == 'list':
+            url = 'https://api.github.com/repos/NIC-MichalLabedzki/nf/tags'
+        else:
+            url = 'https://github.com/NIC-MichalLabedzki/nf/raw/{}/nf.py'.format(args.try_version)
 
         import ssl
         ctx = ssl.create_default_context()
@@ -266,25 +269,30 @@ Examples:
             except Exception as e:
                 log('urllib for python2 failed', e)
         if data == '':
-            print_stdout('ERROR: Cannot download old nf: {}'.format(args.try_version))
+            print_stdout('ERROR: Cannot download specified nf version for: {}'.format(args.try_version))
             return 1
 
-        import subprocess
-        try_version_index = 0
-        for index, arg in enumerate(sys.argv[0:]):
-            if arg.startswith('--try-version'):
-                try_version_index = index
-                if not arg.startswith('--try-version='):
-                    try_version_index += 1
-        new_argv = sys.argv[try_version_index + 1:]
-        new_argv.insert(0, '-')
-        new_argv.insert(0, sys.executable)
-        log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
-        python_process = subprocess.Popen(new_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        output, stderr_output = python_process.communicate(data)
-        if output:
-            print_stdout(output.decode().rstrip('\n'))
-        log('old nf stderr:', stderr_output.decode())
+        if args.try_version == 'list':
+            import json
+            tags = json.loads(data.decode())
+            print_stdout(' '.join([tag['name'] for tag in tags]))
+        else:
+            import subprocess
+            try_version_index = 0
+            for index, arg in enumerate(sys.argv[0:]):
+                if arg.startswith('--try-version'):
+                    try_version_index = index
+                    if not arg.startswith('--try-version='):
+                        try_version_index += 1
+            new_argv = sys.argv[try_version_index + 1:]
+            new_argv.insert(0, '-')
+            new_argv.insert(0, sys.executable)
+            log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
+            python_process = subprocess.Popen(new_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            output, stderr_output = python_process.communicate(data)
+            if output:
+                print_stdout(output.decode().rstrip('\n'))
+            log('old nf stderr:', stderr_output.decode())
 
         return 0
 
