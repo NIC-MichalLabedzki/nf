@@ -182,7 +182,7 @@ Examples:
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
             if index_version < index_try_version or index_try_version == -1:
-                print(VERSION)
+                print_stdout(VERSION)
                 return 0
 
         if len(argv) == 1:
@@ -292,7 +292,8 @@ Examples:
             output, stderr_output = python_process.communicate(data)
             if output:
                 print_stdout(output.decode().rstrip('\n'))
-            log('old nf stderr:', stderr_output.decode())
+            if stderr_output:
+                print(stderr_output.decode(), file=sys.stderr)
 
         return 0
 
