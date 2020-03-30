@@ -16,6 +16,15 @@ jobs:
       os: osx
       osx_image: xcode11.2
       language: shell
+      addons:
+        homebrew:
+          packages:
+           - python@2
+      before_install:
+       - type python3 || true
+       - type python
+       - type pip3 || true
+       - type pip || true
     - name: "Python 3.7.5 on macOS"
       os: osx
       osx_image: xcode11.2
@@ -26,9 +35,9 @@ jobs:
            - python3
       before_install:
        - type python3
-       - type python
+       - type python || true
        - type pip3
-       - type pip
+       - type pip || true
        - mkdir fake_bin
        - ln -s $(type -p python3) fake_bin/python
        - ln -s $(type -p pip3) fake_bin/pip
