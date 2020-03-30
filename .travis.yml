@@ -25,6 +25,15 @@ jobs:
        - type python
        - type pip3 || true
        - type pip || true
+       - export PATH=/usr/local/opt/python@2/libexec/bin:$PATH
+       - type python
+       - type pip || true
+       - mkdir fake_bin
+       - ln -s $(type -p python2.7) fake_bin/python || true
+       - ln -s $(type -p pip2.7) fake_bin/pip || true
+       - ls -l fake_bin
+       - export PATH=$(pwd)/fake_bin:$PATH
+       - type python
     - name: "Python 3.7.5 on macOS"
       os: osx
       osx_image: xcode11.2
