@@ -185,7 +185,7 @@ Examples:
                 print_stdout(VERSION)
                 return 0
 
-        if len(argv) == 1:
+        if len(argv) == 0:
             parser.print_help()
             return 0
 
