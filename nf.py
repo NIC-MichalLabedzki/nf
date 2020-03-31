@@ -384,24 +384,35 @@ Examples:
 
         backend_internal = {}
 
-        if ((sys.platform == 'win32' or is_wsl) and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
+        if is_wsl:
+            # TODO:
+            # python -m pip install pyenv-win
+            #
+            # (python or python.exe) -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
+            # PYTHONPATH +=:win32_modules
+            nf_exit_code = 0
             try:
-                if is_wsl:
-                    pass # TODO
-                    # python -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
-                    # PYTHONPATH +=:win32_modules
+                cmdline_args = ['python.exe']+ argv
+                if sys.version_info >= (3, 5):
+                    nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    nf_exit_code = subprocess.call(cmdline_args, shell=False)
+                return nf_exit_code
+            except Exception as e:
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                print_stdout('ERROR: Cannot run external python')
 
+        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
+            try:
                 import win10toast
                 backend = 'win10toast-persist'
             except Exception as e:
                 log('backend={}'.format('win10toast-persist'), e)
                 backend = 'stdout'
 
-        if ((sys.platform == 'win32' or is_wsl) and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
+        if (sys.platform == 'win32' and backend in ['stdout', 'win10toast'] and args.backend == None) or args.backend == 'win10toast':
             try:
-                if is_wsl:
-                    pass # TODO
-
                 import win10toast
                 backend = 'win10toast'
             except Exception as e:
