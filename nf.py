@@ -385,8 +385,62 @@ Examples:
         backend_internal = {}
 
         if is_wsl:
+            import shutil
+
+            python_exe = shutil.which('python.exe')
+            log('type python.exe before', python_exe)
+
+            try:
+# TODO %USERPROFILE%\.nf
+                cmdline_args = ['python', '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nf\\wsl\\pyenv-win']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                #return cmd_exit_code
+            except Exception as e:
+                log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python')
+                #return cmd_exit_code
+
+            cmd_exit_code = 0
+            try:
+                cmdline_args = ['.nf\\wsl\\pyenv-win\\bin\\pyenv', 'install', '3.5.2']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                #return cmd_exit_code
+            except Exception as e:
+                log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python')
+                #return cmd_exit_code
+
+            python_exe = shutil.which('python.exe')
+            log('type python.exe before', python_exe)
+
+            cmd_exit_code = 0
+            try:
+                cmdline_args = ['.nf\\wsl\\pyenv-win\\shims\\python.exe', '-m', 'pip', 'install', '--platform', 'win32', '--only-binary=:all:', '--target', 'win32_modules', '.nf\\wsl\\win10toast-persist']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                #return cmd_exit_code
+            except Exception as e:
+                log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python')
+                #return cmd_exit_code
+
             # TODO:
-            # python -m pip install pyenv-win
+            # python -m pip install pyenv-win --platform win32 --only-binary=:all: --target %USERPROFILE%/.nf/wsl/pyenv-win
+            # PATH += %USERPROFILE%\.pyenv\pyenv-win\bin;%USERPROFILE%\.pyenv\pyenv-win\shims
             #
             # (python or python.exe) -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
             # PYTHONPATH +=:win32_modules
@@ -398,7 +452,8 @@ Examples:
                 else:
                     import subprocess
                     nf_exit_code = subprocess.call(cmdline_args, shell=False)
-                return nf_exit_code
+                if nf_exit_code == 0:
+                    return nf_exit_code
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python')
