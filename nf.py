@@ -405,7 +405,7 @@ Examples:
 
             try:
 # TODO %USERPROFILE%\.nf
-                cmdline_args = ['python', '-m', 'pip', 'install', 'pip', '-U', '--target', '.nf\\wsl\\pip']
+                cmdline_args = ['python', '-m', 'pip', 'install', 'pip', '-U', '--target', '.nf/wsl/pip']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -415,10 +415,10 @@ Examples:
             except Exception as e:
                 log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python')
-            sys.path.insert(0, '.nf\\wsl\\pip')
+            sys.path.insert(0, '.nf/wsl/pip')
             try:
 # TODO %USERPROFILE%\.nf
-                cmdline_args = ['python', '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nf\\wsl\\pyenv-win']
+                cmdline_args = ['python', '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nf/wsl/pyenv-win']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -429,10 +429,10 @@ Examples:
                 log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python')
 
-            sys.path.insert(0, '.nf\\wsl\\pyenv-win')
+            sys.path.insert(0, '.nf/wsl/pyenv-win')
             cmd_exit_code = 0
             try:
-                cmdline_args = ['.nf\\wsl\\pyenv-win\\bin\\pyenv', 'install', '3.5.2']
+                cmdline_args = ['.nf/wsl/pyenv-win/bin/pyenv', 'install', '3.5.2']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -450,7 +450,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = ['.nf\\wsl\\pyenv-win\\shims\\python.exe', '-m', 'pip', 'install', '--platform', 'win32', '--only-binary=:all:', '--target', 'win32_modules', '.nf\\wsl\\win10toast-persist']
+                cmdline_args = ['.nf/wsl/pyenv-win/shims/python.exe', '-m', 'pip', 'install', '--platform', 'win32', '--only-binary=:all:', '--target', 'win32_modules', '.nf/wsl/win10toast-persist']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
