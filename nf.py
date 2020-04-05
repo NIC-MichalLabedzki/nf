@@ -399,7 +399,7 @@ Examples:
 
         backend_internal = {}
 
-        if is_wsl == False:
+        if is_wsl:
             python_exe = which('python.exe')
             log('type python.exe before', python_exe)
 
