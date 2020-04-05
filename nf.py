@@ -399,7 +399,7 @@ Examples:
 
         backend_internal = {}
 
-        if is_wsl:
+        if is_wsl == False:
             python_exe = which('python.exe')
             log('type python.exe before', python_exe)
 
@@ -432,7 +432,7 @@ Examples:
             sys.path.insert(0, '.nf/wsl/pyenv-win')
             cmd_exit_code = 0
             try:
-                cmdline_args = ['.nf/wsl/pyenv-win/bin/pyenv', 'install', '3.5.2']
+                cmdline_args = ['.nf/wsl/pyenv-win/pyenv-win/bin/pyenv', 'install', '3.5.2']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -445,12 +445,9 @@ Examples:
                 print_stdout('ERROR: Cannot run external python')
                 #return cmd_exit_code
 
-            #python_exe = which('python.exe')
-            #log('type python.exe after', python_exe)
-
             cmd_exit_code = 0
             try:
-                cmdline_args = ['.nf/wsl/pyenv-win/shims/python.exe', '-m', 'pip', 'install', '--platform', 'win32', '--only-binary=:all:', '--target', 'win32_modules', '.nf/wsl/win10toast-persist']
+                cmdline_args = ['.nf/wsl/pyenv-win/pyenv-win/shims/python.exe', '-m', 'pip', 'install', '--platform', 'win32', '--only-binary=:all:', '--target', 'win32_modules', '.nf/wsl/win10toast-persist']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -461,7 +458,13 @@ Examples:
             except Exception as e:
                 log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python')
-                #return cmd_exit_code
+
+
+            sys.path.insert(0, '.nf/wsl/pyenv-win/pyenv-win/bin')
+            sys.path.insert(0, '.nf/wsl/pyenv-win/pyenv-win/shims')
+
+            python_exe = which('python.exe')
+            log('type python.exe after', python_exe)
 
             # TODO:
             # python -m pip install pyenv-win --platform win32 --only-binary=:all: --target %USERPROFILE%/.nf/wsl/pyenv-win
