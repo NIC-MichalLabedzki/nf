@@ -21,6 +21,7 @@ jobs:
        - type pip || true
        - python --version
        - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+       - export PATH=/Users/travis/Library/Python/2.7/bin:$PATH
        - python get-pip.py
     - name: "Python 3.7.5 on macOS"
       os: osx
