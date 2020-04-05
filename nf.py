@@ -244,6 +244,21 @@ Examples:
     log('argv {}'.format(sys.argv))
     log('args {}'.format(args))
 
+    def which(cmd):
+        try:
+            import shutil
+
+            path = shutil.which(cmd)
+        except Exception as e:
+            log('which by shutil failed:', e)
+            try:
+                import distutils.spawn
+
+                path = distutils.spawn.find_executable(cmd)
+            except Exception as e:
+                log('which by distutils failed', e)
+        return path
+
     if args.try_version:
         if args.try_version == 'list':
             url = 'https://api.github.com/repos/NIC-MichalLabedzki/nf/tags'
@@ -384,10 +399,8 @@ Examples:
 
         backend_internal = {}
 
-        if is_wsl:
-            import shutil
-
-            python_exe = shutil.which('python.exe')
+        if is_wsl == False:
+            python_exe = which('python.exe')
             log('type python.exe before', python_exe)
 
             try:
@@ -420,8 +433,8 @@ Examples:
                 print_stdout('ERROR: Cannot run external python')
                 #return cmd_exit_code
 
-            python_exe = shutil.which('python.exe')
-            log('type python.exe before', python_exe)
+            python_exe = which('python.exe')
+            log('type python.exe after', python_exe)
 
             cmd_exit_code = 0
             try:
@@ -495,9 +508,7 @@ Examples:
 
         if (backend in ['stdout', 'gdbus'] and args.backend == None) or args.backend == 'gdbus':
             try:
-                import shutil
-
-                gdbus_app = shutil.which('gdbus')
+                gdbus_app = which('gdbus')
                 log('backend={}'.format('gdbus'), gdbus_app)
                 if gdbus_app is not None:
                     backend = 'gdbus'
@@ -509,9 +520,7 @@ Examples:
 
         if (backend in ['stdout', 'notify-send'] and args.backend == None) or args.backend == 'notify-send':
             try:
-                import shutil
-
-                notify_send_app = shutil.which('notify-send')
+                notify_send_app = which('notify-send')
                 log('backend={}'.format('notify-send'), notify_send_app)
                 if notify_send_app is not None:
                     backend = 'notify-send'
@@ -523,9 +532,7 @@ Examples:
 
         if (backend in ['stdout', 'termux-notification'] and args.backend == None) or args.backend == 'termux-notification':
             try:
-                import shutil
-
-                termux_notification_app = shutil.which('termux-notification')
+                termux_notification_app = which('termux-notification')
                 if termux_notification_app is not None:
                     backend = 'termux-notification'
                 else:
@@ -638,9 +645,8 @@ Examples:
 
 
         def call_dbus(service_name, path, method, *arg):
-            import shutil
             import subprocess
-            app = shutil.which('qdbus')
+            app = which('qdbus')
             if app is not None:
                 log('which qdbus: {}'.format(app))
 
@@ -652,7 +658,7 @@ Examples:
                 tool_cmdline = [app, service_name, path, method]
                 tool_cmdline.extend(xarg)
             else:
-                app = shutil.which('gdbus')
+                app = which('gdbus')
                 if app is not None:
                     log('which gdbus: {}'.format(app))
 
@@ -665,7 +671,7 @@ Examples:
                     tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method)]
                     tool_cmdline.extend(xarg)
                 else:
-                    app = shutil.which('dbus-send')
+                    app = which('dbus-send')
                     if app is not None:
                         log('which dbus-send: {}'.format(app))
                         tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method)]
@@ -678,9 +684,9 @@ Examples:
             output = subprocess.check_output(tool_cmdline).decode().strip()
             log('dbus backend output', output)
 
-            if app == shutil.which('gdbus'):
+            if app == which('gdbus'):
                 output = output.strip('(),')
-            if app == shutil.which('dbus-send'):
+            if app == which('dbus-send'):
                 if 'int32' in output:
                     output = output.split(' ')[1]
             log('dbus final output', output)
