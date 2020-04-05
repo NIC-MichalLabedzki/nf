@@ -405,6 +405,19 @@ Examples:
 
             try:
 # TODO %USERPROFILE%\.nf
+                cmdline_args = ['python', '-m', 'pip', 'install', 'pip', '-U', '--target', '.nf\\wsl\\pip']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python')
+            sys.path.insert(0, '.nf\\wsl\\pip')
+            try:
+# TODO %USERPROFILE%\.nf
                 cmdline_args = ['python', '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nf\\wsl\\pyenv-win']
                 if sys.version_info >= (3, 5):
                     import subprocess
@@ -412,12 +425,11 @@ Examples:
                 else:
                     import subprocess
                     cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-                #return cmd_exit_code
             except Exception as e:
                 log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python')
-                #return cmd_exit_code
 
+            sys.path.insert(0, '.nf\\wsl\\pyenv-win')
             cmd_exit_code = 0
             try:
                 cmdline_args = ['.nf\\wsl\\pyenv-win\\bin\\pyenv', 'install', '3.5.2']
@@ -433,8 +445,8 @@ Examples:
                 print_stdout('ERROR: Cannot run external python')
                 #return cmd_exit_code
 
-            python_exe = which('python.exe')
-            log('type python.exe after', python_exe)
+            #python_exe = which('python.exe')
+            #log('type python.exe after', python_exe)
 
             cmd_exit_code = 0
             try:
@@ -459,7 +471,7 @@ Examples:
             # PYTHONPATH +=:win32_modules
             nf_exit_code = 0
             try:
-                cmdline_args = ['python.exe']+ argv
+                cmdline_args = ['python.exe'] + argv
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
                 else:
