@@ -60,6 +60,17 @@ jobs:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
         - python -m pip install PyInstaller==3.6
+    - name: "Python 3.7.6 on WSL Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - PYTHONIOENCODING=utf8
+        - PYTHONUTF8=1
+        - WSL=wsl
+      before_install:
+        - wsl sudo apt install python3 python3-pip
+        - wsl python -m pip install --upgrade pip
     - name: "Python 3.8.0 on Windows"
       os: windows
       language: shell
@@ -73,11 +84,12 @@ jobs:
         - python -m pip install PyInstaller==3.6
   allow_failures:
     - python: "nightly"
+    - name: "Python 3.7.6 on WSL Windows"
 
 install:
-  - python -m pip install -r requirements-dev.txt
-  - python -m pip install coveralls
-  - python -m pip freeze
+  - $WSL python -m pip install -r requirements-dev.txt
+  - $WSL python -m pip install coveralls
+  - $WSL python -m pip freeze
 
 script:
   - pytest
