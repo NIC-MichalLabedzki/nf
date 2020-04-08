@@ -331,7 +331,22 @@ Examples:
     if not args.no_notify:
         if (backend in ['stdout', 'paramiko'] and args.backend == None) or args.backend == 'paramiko':
             try:
-                if 'SSH_CLIENT' in os.environ:
+# TODO use tmux show-environment SSH_CONNECTION and SSH_CONNECTION before SSH_CLIENT
+                if 'TMUX' in os.environ:
+                    output = None
+                    try:
+                        import subprocess
+                        cmdline_args = ['tmux', 'show-environment', 'SSH_CONNECTION']
+                        output = subprocess.check_output(cmdline_args, shell=False).decode().strip()
+                        log('cmd: {} output'.format(cmdline_args), output)
+                        if output == '-SSH_CONNECTION':
+                            log('no ssh in tmux')
+                        else:
+                            log('ssh in tmux:', output[15:])
+# TODO: extract ssh core from below elif
+                    except Exception as e:
+                        log('{} failed: {}'.format(cmdline_args, output), e)
+                elif 'SSH_CLIENT' in os.environ:
                     ssh_connection = os.environ['SSH_CLIENT'].split(' ')
                     ssh_ip = ssh_connection[0]
                     ssh_port = ssh_connection[2]
@@ -369,6 +384,7 @@ Examples:
 
         if (backend in ['stdout', 'ssh'] and args.backend == None) or args.backend == 'ssh':
             try:
+# TODO: see above
                 if 'SSH_CLIENT' in os.environ:
                     ssh_connection = os.environ['SSH_CLIENT'].split(' ')
                     ssh_ip = ssh_connection[0]
