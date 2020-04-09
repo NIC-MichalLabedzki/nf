@@ -259,6 +259,34 @@ Examples:
                 log('which by distutils failed', e)
         return path
 
+    def get_ssh():
+        import os
+        ssh_ip = None
+        ssh_port = None
+
+        if 'TMUX' in os.environ:
+            output = None
+            try:
+                import subprocess
+                cmdline_args = ['tmux', 'show-environment', 'SSH_CONNECTION']
+                output = subprocess.check_output(cmdline_args, shell=False).decode().strip()
+                log('cmd: {} output'.format(cmdline_args), output)
+                if output == '-SSH_CONNECTION':
+                    log('no ssh in tmux')
+                else:
+                    log('ssh in tmux:', output[15:])
+                    ssh_connection = output[15:].split(' ')
+                    ssh_ip = ssh_connection[0]
+                    ssh_port = ssh_connection[3]
+            except Exception as e:
+                log('{} failed: {}'.format(cmdline_args, output), e)
+
+        if (ssh_ip is None or ssh_port is None) and 'SSH_CLIENT' in os.environ:
+            ssh_connection = os.environ['SSH_CLIENT'].split(' ')
+            ssh_ip = ssh_connection[0]
+            ssh_port = ssh_connection[2]
+        return (ssh_ip, ssh_port)
+
     if args.try_version:
         if args.try_version == 'list':
             url = 'https://api.github.com/repos/NIC-MichalLabedzki/nf/tags'
@@ -331,26 +359,9 @@ Examples:
     if not args.no_notify:
         if (backend in ['stdout', 'paramiko'] and args.backend == None) or args.backend == 'paramiko':
             try:
-# TODO use tmux show-environment SSH_CONNECTION and SSH_CONNECTION before SSH_CLIENT
-                if 'TMUX' in os.environ:
-                    output = None
-                    try:
-                        import subprocess
-                        cmdline_args = ['tmux', 'show-environment', 'SSH_CONNECTION']
-                        output = subprocess.check_output(cmdline_args, shell=False).decode().strip()
-                        log('cmd: {} output'.format(cmdline_args), output)
-                        if output == '-SSH_CONNECTION':
-                            log('no ssh in tmux')
-                        else:
-                            log('ssh in tmux:', output[15:])
-# TODO: extract ssh core from below elif
-                    except Exception as e:
-                        log('{} failed: {}'.format(cmdline_args, output), e)
-                elif 'SSH_CLIENT' in os.environ:
-                    ssh_connection = os.environ['SSH_CLIENT'].split(' ')
-                    ssh_ip = ssh_connection[0]
-                    ssh_port = ssh_connection[2]
+                ssh_ip, ssh_port = get_ssh()
 
+                if ssh_ip is not None and ssh_port is not None:
                     import paramiko
                     ssh_client = paramiko.SSHClient()
                     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -384,12 +395,8 @@ Examples:
 
         if (backend in ['stdout', 'ssh'] and args.backend == None) or args.backend == 'ssh':
             try:
-# TODO: see above
-                if 'SSH_CLIENT' in os.environ:
-                    ssh_connection = os.environ['SSH_CLIENT'].split(' ')
-                    ssh_ip = ssh_connection[0]
-                    ssh_port = ssh_connection[2]
-
+                ssh_ip, ssh_port = get_ssh()
+                if ssh_ip is not None and ssh_port is not None:
                     import subprocess
 
                     try:
