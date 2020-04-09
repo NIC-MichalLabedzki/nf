@@ -75,7 +75,7 @@ jobs:
         - Get-VM || true
         - wslconfig //list || true
         - wslconfig //list //all || true
-        - wslconfig /setdefault Ubuntu || true
+        - wslconfig //setdefault Ubuntu || true
         - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
@@ -83,11 +83,11 @@ jobs:
         - wsl --list --all || true
         - wsl -s Ubuntu || true
         - Get-VM || true
-        - wslconfig /list || true
-        - wslconfig /list /all || true
-        - wslconfig /setdefault Ubuntu || true
+        - wslconfig //list || true
+        - wslconfig //list //all || true
+        - wslconfig //setdefault Ubuntu || true
         - wsl sudo apt-get update
-        - wsl sudo apt-get install -y python3 python3-pip
+        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pip
         - wsl python -m pip install --upgrade pip
         - wsl python --version || true
         - wsl python2 --version || true
