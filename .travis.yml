@@ -88,10 +88,15 @@ jobs:
         - wslconfig //setdefault Ubuntu || true
         - wsl sudo apt-get update
         - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pip
-        - wsl python -m pip install --upgrade pip
         - wsl python --version || true
         - wsl python2 --version || true
         - wsl python3 --version || true
+        - wsl mkdir fake_bin
+        - wsl ln -s $(type -p python3) fake_bin/python
+        - wsl ls -l fake_bin
+        - wsl export PATH=$(pwd)/fake_bin:$PATH
+        - wsl python --version || true
+        - wsl python -m pip install --upgrade pip
     - name: "Python 3.8.0 on Windows"
       os: windows
       language: shell
