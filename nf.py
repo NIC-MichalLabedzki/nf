@@ -268,16 +268,16 @@ Examples:
             output = None
             try:
                 import subprocess
-                cmdline_args = ['tmux', 'show-environment', 'SSH_CONNECTION']
+                cmdline_args = ['tmux', 'show-environment', 'SSH_CLIENT']
                 output = subprocess.check_output(cmdline_args, shell=False).decode().strip()
                 log('cmd: {} output'.format(cmdline_args), output)
-                if output == '-SSH_CONNECTION':
+                if output == '-SSH_CLIENT':
                     log('no ssh in tmux')
                 else:
-                    log('ssh in tmux:', output[15:])
-                    ssh_connection = output[15:].split(' ')
+                    ssh_connection = output[11:].split(' ')
+                    log('ssh in tmux:', ssh_connection)
                     ssh_ip = ssh_connection[0]
-                    ssh_port = ssh_connection[3]
+                    ssh_port = ssh_connection[2]
             except Exception as e:
                 log('{} failed: {}'.format(cmdline_args, output), e)
 
@@ -285,6 +285,7 @@ Examples:
             ssh_connection = os.environ['SSH_CLIENT'].split(' ')
             ssh_ip = ssh_connection[0]
             ssh_port = ssh_connection[2]
+        log('debug ssh: ', ssh_ip, ssh_port)
         return (ssh_ip, ssh_port)
 
     if args.try_version:
