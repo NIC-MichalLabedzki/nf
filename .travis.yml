@@ -52,6 +52,7 @@ jobs:
         - python -m pip install PyInstaller==3.6
       env:
         - PATH=/c/Python27:/c/Python27/Scripts:$PATH
+        - PYTHONNIC=python
     - name: "Python 3.7.6 on Windows"
       os: windows
       language: shell
@@ -59,6 +60,7 @@ jobs:
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
         - PYTHONIOENCODING=utf8
         - PYTHONUTF8=1
+        - PYTHONNIC=python
       before_install:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
@@ -127,6 +129,7 @@ jobs:
         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHONIOENCODING=utf8
         - PYTHONUTF8=1
+        - PYTHONNIC=python
       before_install:
         - choco install python --version 3.8.0
         - python -m pip install --upgrade pip

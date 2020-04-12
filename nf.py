@@ -480,7 +480,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = ['pyenv', 'install', '3.5.2']
+                cmdline_args = ['cmd.exe', '/c', 'pyenv install 3.5.2']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -490,6 +490,20 @@ Examples:
             except Exception as e:
                 log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, step win 4')
+
+            cmd_exit_code = 0
+            try:
+                cmdline_args = ['cmd.exe', '/c', '.nf/wsl/pyenv-win/pyenv-win/bin/pyenv install 3.5.2']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, step win 4')
+
 
             try:
                 cmdline_args = ['pyenv.bat', 'install', '3.5.2']
@@ -514,7 +528,7 @@ Examples:
             # PYTHONPATH +=:win32_modules
             nf_exit_code = 0
             try:
-                cmdline_args = ['python.exe'] + argv
+                cmdline_args = ['python.exe', 'nf.py'] + argv
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
                 else:
