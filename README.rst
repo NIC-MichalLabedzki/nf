@@ -53,6 +53,7 @@ CHANGELOG
 From 1.4.0:
     1. --try-version=list
     2. --try-version=tag,branch,commit hash, "master" to try latest development or "list" to display possible tags/versions.
+    3. fix issue: ssh/paramiko in detached/re-attached tmux does not work
 
 SCREENSHOTS
 -----------

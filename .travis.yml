@@ -64,7 +64,6 @@ jobs:
       os: windows
       language: shell
       env:
-        - PATH=/c/Python37:/c/Python37/Scripts:$PATH
         - PYTHONIOENCODING=utf8
         - PYTHONUTF8=1
         - WSL=wsl
@@ -87,14 +86,11 @@ jobs:
         - wslconfig //list //all || true
         - wslconfig //setdefault Ubuntu || true
         - wsl sudo apt-get update
-        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-pip
+        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3-minimal python3-pip
         - wsl python --version || true
         - wsl python2 --version || true
         - wsl python3 --version || true
-        - wsl mkdir fake_bin
-        - wsl ln -s $(type -p python3) fake_bin/python
-        - wsl ls -l fake_bin
-        - wsl export PATH=$(pwd)/fake_bin:$PATH
+        - wsl sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
         - wsl python --version || true
         - wsl python -m pip install --upgrade pip
     - name: "Python 3.8.0 on Windows"
