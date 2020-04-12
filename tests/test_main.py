@@ -925,6 +925,17 @@ else:
         for module_name in test_environment['modules']:
             sys.modules[module_name] = test_environment['module_backup'][module_name]
 
+        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
+        if os.path.exists(tmp_fake_apps):
+            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(tmp_fake_apps)
+        os.mkdir(tmp_fake_apps)
+
+
     test_environment = prepare()
 
     import nf
