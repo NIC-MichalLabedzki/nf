@@ -87,10 +87,10 @@ jobs:
         - wslconfig //setdefault Ubuntu || true
         - wsl sudo apt-get update
         - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3-minimal python3-pip
-        - wsl python --version || true
+        - wsl python --version || trueinstall
         - wsl python2 --version || true
         - wsl python3 --version || true
-        - wsl sudo update-alternatives --install C:/program files/git/usr/bin/python python C:/program files/git/usr/bin/python3 10
+        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
         - wsl python --version || true
         - wsl python -m pip install --upgrade pip
     - name: "Python 3.8.0 on Windows"
