@@ -110,8 +110,8 @@ install:
   - $WSL python -m pip freeze
 
 script:
-  - pytest
-  - coveralls
+  - $WSL python -m pytest
+  - $WSL python -m coveralls
 
 notifications:
   email:
