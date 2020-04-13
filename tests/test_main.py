@@ -929,7 +929,12 @@ else:
         if os.path.exists(tmp_fake_apps):
             for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
                 for name in files:
-                    os.remove(os.path.join(root, name))
+                    try:
+                        os.remove(os.path.join(root, name))
+                    except Exception as e:
+                        import time
+                        time.sleep(1)
+                        os.remove(os.path.join(root, name))
                 for name in dirs:
                     os.rmdir(os.path.join(root, name))
             os.rmdir(tmp_fake_apps)
