@@ -65,6 +65,18 @@ jobs:
         - choco install python --version 3.7.6
         - python -m pip install --upgrade pip
         - python -m pip install PyInstaller==3.6
+    - name: "Python 3.8.0 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+        - PYTHONIOENCODING=utf8
+        - PYTHONUTF8=1
+        - PYTHONNIC=python
+      before_install:
+        - choco install python --version 3.8.0
+        - python -m pip install --upgrade pip
+        - python -m pip install PyInstaller==3.6
     - name: "Python 2 on WSL Windows"
       os: windows
       language: shell
@@ -122,22 +134,43 @@ jobs:
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
-    - name: "Python 3.8.0 on Windows"
+    - name: "nf on python 3 on WSL Windows"
       os: windows
       language: shell
       env:
-        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
         - PYTHONIOENCODING=utf8
         - PYTHONUTF8=1
-        - PYTHONNIC=python
+        - PYTHONNIC="wsl python3"
+        - PATH=/c/Users/travis/build/NIC-MichalLabedzki/n/fake_bin:$PATH
       before_install:
-        - choco install python --version 3.8.0
-        - python -m pip install --upgrade pip
-        - python -m pip install PyInstaller==3.6
+        - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
+        - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
+        - Ubuntu/ubuntu1804.exe install --root
+        - wsl --list || true
+        - wsl --list --all || true
+        - wslconfig //list || true
+        - wslconfig //list //all || true
+#        - wsl -s Ubuntu-18.04 || true
+#        - wslconfig //setdefault Ubuntu-18.04 || true
+        - wsl sudo apt-get update
+        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3-minimal python3-pip
+        - wsl python --version || true
+        - wsl python2 --version || true
+        - wsl python3 --version || true
+        - wsl type -p python || true
+        - wsl type -p python3 || true
+#        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
+        - $PYTHONNIC --version || true
+        - $PYTHONNIC -m pip install --upgrade pip
+      install:
+        - $PYTHONNIC -m pip install -r requirements-dev.txt
+      script:
+        - $PYTHONNIC nf.py -dp echo
   allow_failures:
     - python: "nightly"
     - name: "Python 2 on WSL Windows"
     - name: "Python 3 on WSL Windows"
+    - name: "nf on python 3 on WSL Windows"
 
 install:
   - $PYTHONNIC -m pip install -r requirements-dev.txt
