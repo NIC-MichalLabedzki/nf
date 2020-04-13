@@ -3,10 +3,13 @@ from __future__ import print_function as _print_function
 import mock
 import pytest
 import sys
+import os
 
 #===============================================================================
 # fixtures and utils
 #===============================================================================
+
+tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
 
 @pytest.fixture(scope='function')
 def fixture_environment():
@@ -46,6 +49,29 @@ def fixture_python_version(request):
     yield python_version
 
     sys.version_info = sys_version_info
+
+
+@pytest.fixture(scope='function')
+def fixture_remove_fake_apps():
+
+    def remove_fake_apps(tmp_fake_apps):
+        if os.path.exists(tmp_fake_apps):
+            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
+                for name in files:
+                    try:
+                        os.remove(os.path.join(root, name))
+                    except Exception as e:
+                        import time
+                        time.sleep(1)
+                        os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(tmp_fake_apps)
+
+    remove_fake_apps(tmp_fake_apps)
+    os.mkdir(tmp_fake_apps)
+    yield
+    remove_fake_apps(tmp_fake_apps)
 
 
 def get_method_mocks():
@@ -761,7 +787,7 @@ def test_konsole_support(fixture_environment, capsys, is_case_ppid):
     assert stdout[1] == 'echo [konsole_tab_title]'
 
 
-def test_screen_support(fixture_environment, capsys):
+def test_screen_support(fixture_remove_fake_apps, fixture_environment, capsys):
     import os
 
     def prepare():
@@ -790,17 +816,6 @@ if sys.argv[1:] == ['-q', '-Q', 'title']:
 else:
     sys.exit(2)
 '''
-
-        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
-        if os.path.exists(tmp_fake_apps):
-            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(tmp_fake_apps)
-        os.mkdir(tmp_fake_apps)
-
         test_app_name = 'screen'
         if sys.platform == "win32":
             app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
@@ -843,7 +858,7 @@ else:
 
 
 @pytest.mark.parametrize("is_case_ppid", [False, True])
-def test_tmux_support(fixture_environment, capsys, is_case_ppid):
+def test_tmux_support(fixture_remove_fake_apps, fixture_environment, capsys, is_case_ppid):
     import os
 
     def prepare():
@@ -876,16 +891,6 @@ def test_tmux_support(fixture_environment, capsys, is_case_ppid):
             sys.modules[module_name] = module_mock
 
         os.environ['TMUX'] = '/dev/null'
-
-        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
-        if os.path.exists(tmp_fake_apps):
-            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(tmp_fake_apps)
-        os.mkdir(tmp_fake_apps)
 
         my_app = '''#!/usr/bin/env python
 import sys
@@ -925,22 +930,6 @@ else:
         for module_name in test_environment['modules']:
             sys.modules[module_name] = test_environment['module_backup'][module_name]
 
-        tmp_fake_apps = os.path.abspath(os.path.join('tests', 'tmp_fake_apps'))
-        if os.path.exists(tmp_fake_apps):
-            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
-                for name in files:
-                    try:
-                        os.remove(os.path.join(root, name))
-                    except Exception as e:
-                        import time
-                        time.sleep(1)
-                        os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(tmp_fake_apps)
-        os.mkdir(tmp_fake_apps)
-
-
     test_environment = prepare()
 
     import nf
@@ -959,7 +948,7 @@ else:
 
 @pytest.mark.parametrize("ssh_script_index", [0, 1, 2])
 @pytest.mark.parametrize("python_version", [(2, 7), (3,3)])
-def test_backend_ssh(capsys, fixture_environment, fixture_python_version, ssh_script_index, python_version):
+def test_backend_ssh(capsys, fixture_remove_fake_apps, fixture_environment, fixture_python_version, ssh_script_index, python_version):
     import sys
     if sys.version_info < (3, 0):
         pytest.skip("Test unfortunately does not work with python < 3.0, python hangs anf this is related to sys.exit() in fake app script".format((3, 0), sys.version_info))
@@ -1012,21 +1001,12 @@ else:
 
         os.environ['SSH_CLIENT'] = '127.0.0.1 5555 6666'
 
-        tmp_fake_apps = 'tests/tmp_fake_apps'
-        if os.path.exists(tmp_fake_apps):
-            for root, dirs, files in os.walk(tmp_fake_apps, topdown=False):
-                for name in files:
-                    os.remove(os.path.join(root, name))
-                for name in dirs:
-                    os.rmdir(os.path.join(root, name))
-            os.rmdir(tmp_fake_apps)
-        os.mkdir(tmp_fake_apps)
-        tmux_app = os.path.join(tmp_fake_apps, 'ssh')
-        with open(tmux_app, 'w') as f:
+        ssh_app = os.path.join(tmp_fake_apps, 'ssh')
+        with open(ssh_app, 'w') as f:
             f.write(ssh_script[ssh_script_index])
-        os.chmod(tmux_app, 0o777)
+        os.chmod(ssh_app, 0o777)
 
-        os.environ['PATH'] = os.path.abspath('tests/tmp_fake_apps/') + ':' + os.environ['PATH']
+        os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
         return test_environment
 
