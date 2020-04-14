@@ -1213,6 +1213,17 @@ def test_closed_stdout(fixture_environment):
     assert exit_code == 0
 
 
+def test_wsl(fixture_environment):
+    test_file = 'tmp_debugfile'
+
+    import nf
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'wsl', 'echo'])
+    import os
+    os.remove(test_file)
+
+    assert exit_code == 0
+
+
 @pytest.mark.slow
 def test_readme_rst():
     import rstcheck
