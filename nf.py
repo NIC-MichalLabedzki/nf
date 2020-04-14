@@ -501,7 +501,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = ['cmd.exe', '/c', 'pyenv install 3.5.2']
+                cmdline_args = ['cmd.exe', '/c', 'pyenv install --skip-existing --quiet 3.7.6-amd64']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -515,7 +515,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install 3.5.2']
+                cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --skip-existing --quiet 3.7.6-amd64']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -529,7 +529,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = ['pyenv', 'install', '3.5.2']
+                cmdline_args = ['pyenv', 'install', '--skip-existing', '--quiet', '3.7.6-amd64']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode

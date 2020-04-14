@@ -104,6 +104,7 @@ jobs:
         - wsl type -p python || true
         - wsl type -p python3 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
+        - $PYTHONNIC -c 'import os,sys,fcntl; flags = fcntl.fcntl(sys.stdout, fcntl.F_GETFL); fcntl.fcntl(sys.stdout, fcntl.F_SETFL, flags&~os.O_NONBLOCK);'
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
     - name: "Python 3 on WSL Windows"
@@ -132,6 +133,7 @@ jobs:
         - wsl type -p python || true
         - wsl type -p python3 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
+        - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
     - name: "nf on python 3 on WSL Windows"
@@ -161,6 +163,7 @@ jobs:
         - wsl type -p python3 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
         - $PYTHONNIC --version || true
+        - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC -m pip install --upgrade pip
       install:
         - $PYTHONNIC -m pip install -r requirements-dev.txt
