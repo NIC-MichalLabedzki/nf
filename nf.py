@@ -150,6 +150,16 @@ Examples:
  Elapsed time: 00:00.00
  -----------------------------------------------------------
  '''
+
+    def print_stdout(*arg, **karg):
+        try:
+            print(*arg, **karg)
+        except Exception as e:
+            try:
+                log('cannot print on stdout: ', *arg)
+            except:
+                pass
+
     parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=False)
 
     parser.add_argument('-h', '--help', action="store_true", help='show this help message and exit')
@@ -178,56 +188,62 @@ Examples:
         if '--version' in argv or '-v' in argv:
             index_version = argv.index('--version') if '--version' in argv else argv.index('-v')
             index_try_version = -1
+            index_cmd = -1
             for arg in argv:
+                if not arg.startswith('-'):
+                    index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
-            if index_version < index_try_version or index_try_version == -1:
+            if index_version < index_cmd and (index_version < index_try_version or index_try_version == -1):
                 print_stdout(VERSION)
                 return 0
 
         if len(argv) == 0:
-            parser.print_help()
+            help_text = parser.format_help()
+            print_stdout(help_text)
             return 0
 
         if '--help' in argv or '-h' in argv:
             index_help = argv.index('--help') if '--help' in argv else argv.index('-h')
             index_try_version = -1
+            index_cmd = -1
             for arg in argv:
+                if not arg.startswith('-'):
+                    index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
-            if index_help < index_try_version or index_try_version == -1:
-                parser.print_help()
+            if index_help < index_cmd and (index_help < index_try_version or index_try_version) == -1:
+                help_text = parser.format_help()
+                print_stdout(help_text)
                 return 0
     else:
-        parser.print_help()
+        help_text = parser.format_help()
+        print_stdout(help_text)
         return 0
 
     args = parser.parse_args(argv)
 
     logfile = {'handle': None}
     def log(*arg):
-        current_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
-        if args.debug is True:
-            argss = []
-            for a in arg:
-                argss.append(str(a))
-            try:
-                print('DEBUG {}: {}'.format(current_time, ' '.join(argss)))
-            except:
-                pass
-        if args.debugfile is not None:
-            argss = []
-            for a in arg:
-                argss.append(str(a))
-            if logfile['handle'] is None:
-                logfile['handle'] = open(args.debugfile, 'a+b', 0)
-            logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
-
-    def print_stdout(*arg, **karg):
         try:
-            print(*arg, **karg)
-        except Exception as e:
-            log('cannot print on stdout: ', *arg)
+            current_time = datetime.datetime.now().strftime("%Y/%m/%d %H:%M:%S.%f")
+            if args.debug is True:
+                argss = []
+                for a in arg:
+                    argss.append(str(a))
+                try:
+                    print('DEBUG {}: {}'.format(current_time, ' '.join(argss)))
+                except:
+                    pass
+            if args.debugfile is not None:
+                argss = []
+                for a in arg:
+                    argss.append(str(a))
+                if logfile['handle'] is None:
+                    logfile['handle'] = open(args.debugfile, 'a+b', 0)
+                logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
+        except:
+            pass
 
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
