@@ -514,6 +514,34 @@ Examples:
 
             cmd_exit_code = 0
             try:
+                cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --skip-existing --quiet 3.5.2-amd64']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, step win 4.1')
+            log('wsl step 4.1 exit code', cmd_exit_code, cmdline_args)
+
+            cmd_exit_code = 0
+            try:
+                cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --list']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, step win 4.2')
+            log('wsl step 4.1 exit code', cmd_exit_code, cmdline_args)
+
+            cmd_exit_code = 0
+            try:
                 cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv global 3.5.2']
                 if sys.version_info >= (3, 5):
                     import subprocess
@@ -525,6 +553,20 @@ Examples:
                 log('pyenv-win set python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, step win 5')
             log('wsl step 5 exit code', cmd_exit_code, cmdline_args)
+
+            cmd_exit_code = 0
+            try:
+                cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv global 3.5.2-amd64']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('pyenv-win set python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, step win 5.1')
+            log('wsl step 5.1 exit code', cmd_exit_code, cmdline_args)
 
             python_exe = which('python.exe')
             log('type python.exe after set', python_exe)
@@ -542,7 +584,7 @@ Examples:
 
             nf_exit_code = 0
             try:
-                cmdline_args = ['python.exe', 'nf.py'] + argv
+                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\wsl\win10toast-persist"&& python.exe nf.py'] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -556,6 +598,23 @@ Examples:
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last win step')
+
+            nf_exit_code = 0
+            try:
+                cmdline_args = ['python.exe', 'nf.py'] + argv
+                log('run external python:', cmdline_args)
+                if sys.version_info >= (3, 5):
+                    nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    nf_exit_code = subprocess.call(cmdline_args, shell=False)
+                if nf_exit_code == 0:
+                    return nf_exit_code
+                else:
+                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+            except Exception as e:
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, last2 win step')
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
@@ -1004,6 +1063,7 @@ Examples:
     ############################################################################
     # core
     ############################################################################
+    log('before run cmd', cmdline_args)
     try:
         if sys.version_info >= (3, 5):
             exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
@@ -1012,6 +1072,7 @@ Examples:
             exit_code = subprocess.call(cmdline_args, shell=system_shell)
     except Exception as e:
         log('core run cmdline failed for: <{}>'.format(cmdline_args), e)
+    log('after run cmd', cmdline_args)
         #exit_code = os.system(run_cmd)
     # exit_code = os.system(cmdline) # works fine
     ############################################################################

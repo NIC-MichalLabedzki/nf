@@ -163,7 +163,6 @@ jobs:
         - wsl type -p python3 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
         - $PYTHONNIC --version || true
-        - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC -m pip install --upgrade pip
       install:
         - $PYTHONNIC -m pip install -r requirements-dev.txt
