@@ -190,7 +190,7 @@ Examples:
             index_try_version = -1
             index_cmd = -1
             for arg in argv:
-                if not arg.startswith('-'):
+                if index_cmd == -1 and not arg.startswith('-'):
                     index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
@@ -208,7 +208,7 @@ Examples:
             index_try_version = -1
             index_cmd = -1
             for arg in argv:
-                if not arg.startswith('-'):
+                if index_cmd == -1 and not arg.startswith('-'):
                     index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
