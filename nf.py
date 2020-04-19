@@ -639,6 +639,56 @@ Examples:
                 print_stdout('ERROR: Cannot run external python, step win 5.1')
             log('wsl step 5.1 exit code', cmd_exit_code, cmdline_args)
 
+
+            def download_file(url, download_dir):
+                import ssl
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+
+                data = ''
+                try:
+                    import urllib.request
+                    request = urllib.request.urlopen(url, context=ctx)
+                    data = request.read()
+                except Exception as e:
+                    log('urllib for python3 failed', e)
+                    try:
+                        import urllib
+                        request = urllib.urlopen(url, context=ctx)
+                        data = request.read()
+                    except Exception as e:
+                        log('urllib for python2 failed', e)
+                if data == '':
+                    print_stdout('ERROR: Cannot download file: {}'.format(url))
+                    return 1
+
+                downloaded_file = os.path.join(download_dir, 'python.zip')
+                with open(downloaded_file, 'wb') as f:
+                    f.write(data)
+
+            download_dir = '.nfdir/wsl/python/zip'
+            import os
+            try:
+                os.makedirs(download_dir)
+            except:
+                pass
+                # TODO
+            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
+            downloaded_file = os.path.join(download_dir, 'python.zip')
+
+            new_python_dir = '.nfdir/wsl/python/3.8.2'
+            try:
+                os.makedirs(new_python_dir)
+            except:
+                pass
+                # TODO
+            import zipfile
+            with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
+                file_zip.extractall(new_python_dir)
+            os.environ["PATH"] = os.path.abspath(new_python_dir + os.pathsep + os.environ["PATH"])
+
+            # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
             python_exe = which('python.exe')
             log('type python.exe after set', python_exe)
             python_x = which('python')
@@ -655,7 +705,7 @@ Examples:
 
             nf_exit_code = 0
             try:
-                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && set PYTHONPATH="%PYTHONPATH%;.nfdir\\wsl\\win10toast-persist" && python.exe ' + os.path.abspath(__file__) + ' '.join(argv)]
+                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && set PYTHONPATH="%PYTHONPATH%;.nfdir\\wsl\\win10toast-persist" && python.exe ' + './nf.py' + ' '.join(argv)]
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -686,6 +736,24 @@ Examples:
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last2 win step')
+
+            nf_exit_code = 0
+            try:
+                cmdline_args = ['python.exe', __file__] + argv
+                log('run external python:', cmdline_args)
+                if sys.version_info >= (3, 5):
+                    nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    nf_exit_code = subprocess.call(cmdline_args, shell=False)
+                if nf_exit_code == 0:
+                    return nf_exit_code
+                else:
+                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
+            except Exception as e:
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, last3 win step')
+
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
