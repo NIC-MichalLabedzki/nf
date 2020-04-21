@@ -439,9 +439,10 @@ Examples:
 
         backend_internal = {}
 
-        if is_wsl or args.backend == 'wsl':
+        if is_wsl or (args.backend == 'wsl' and is_wsl == False):
             python_exe = which('python.exe')
             log('type python.exe before', python_exe)
+
 
             cmd_exit_code = 0
             try:
@@ -705,7 +706,7 @@ Examples:
 
             nf_exit_code = 0
             try:
-                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && set PYTHONPATH="%PYTHONPATH%;.nfdir\\wsl\\win10toast-persist" && python.exe ' + './nf.py' + ' '.join(argv)]
+                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && set PYTHONPATH="%PYTHONPATH%;.nfdir\\wsl\\win10toast-persist" && python.exe ' + './nf.py ' + ' '.join(argv)]
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -722,7 +723,10 @@ Examples:
 
             nf_exit_code = 0
             try:
-                cmdline_args = ['python.exe', os.path.abspath(__file__)] + argv
+                import ntpath
+                module_path = ntpath.abspath('.nfdir\\wsl\\win10toast-persist')
+                module_path = 'C:\\' + module_path[7:] # assume "/mnt/c/" # TODO: suppor c,d,e...a,b..
+                cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;{module_path}" && set PYTHONPATH="%PYTHONPATH%;{module_path}" && python.exe '.format(module_path=module_path) + './nf.py ' + ' '.join(argv)]
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -739,7 +743,10 @@ Examples:
 
             nf_exit_code = 0
             try:
-                cmdline_args = ['python.exe', __file__] + argv
+                import ntpath
+                module_path = ntpath.abspath('.nfdir\\wsl\\win10toast-persist')
+                module_path = 'C:\\' + module_path[7:] # assume "/mnt/c/" # TODO: suppor c,d,e...a,b..
+                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,'{}');print('debug path: ',sys.path);f = open('./nf.py'); s = f.read();print(exec(s))".format(module_path)] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -753,6 +760,24 @@ Examples:
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
+
+
+            nf_exit_code = 0
+            try:
+                cmdline_args = ['python.exe', __file__] + argv
+                log('run external python:', cmdline_args)
+                if sys.version_info >= (3, 5):
+                    nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    nf_exit_code = subprocess.call(cmdline_args, shell=False)
+                if nf_exit_code == 0:
+                    return nf_exit_code
+                else:
+                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
+            except Exception as e:
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                print_stdout('ERROR: Cannot run external python, last4 win step')
 
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
