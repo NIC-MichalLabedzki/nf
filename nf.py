@@ -746,7 +746,7 @@ Examples:
                 import ntpath
                 module_path = ntpath.abspath('.nfdir\\wsl\\win10toast-persist')
                 module_path = 'C:\\' + module_path[7:] # assume "/mnt/c/" # TODO: suppor c,d,e...a,b..
-                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,'{}');print('debug path: ',sys.path);f = open({});s = f.read();print(exec(s[s.find('##\n'):]));".format(module_path, __file__)] + argv
+                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,'{}');print('debug path: ',sys.path);f = open({});s = f.read();print(exec(s[s.find('##\\n'):]));".format(module_path, __file__)] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
