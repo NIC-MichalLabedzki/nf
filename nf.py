@@ -741,12 +741,31 @@ Examples:
             #    log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
             #    print_stdout('ERROR: Cannot run external python, last2 win step')
 
+            def wsl_to_windows_path(wsl_path):
+                import os
+                abs_wsl_path = os.path.abspath(wsl_path)
+                log('wsl_to_windows_path', wsl_path, '->', abs_wsl_path)
+
+                cmdline_args = ['wslpath', '-a', '-w', abs_wsl_path]
+                import subprocess
+                try:
+                    win_path = subprocess.check_output(cmdline_args).decode().strip('"\n')
+                except Exception as e:
+                    log('wspath exit error', e)
+                    if abs_wsl_path.startswith('/home/'):
+                        win_path = 'C:\\Users\\' + abs_wsl_path[6:].replace('/', '\\')
+                    else:
+                        win_path = 'C:\\' + abs_wsl_path[7:].replace('/', '\\')
+
+                log('wsl_to_windows_path return', win_path)
+                return win_path
+
             nf_exit_code = 0
             try:
-                import ntpath
-                module_path = ntpath.abspath('.nfdir\\wsl\\win10toast-persist')
-                module_path = 'C:\\' + module_path[7:] # assume "/mnt/c/" # TODO: suppor c,d,e...a,b..
-                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,'{}');print('debug path: ',sys.path);f = open({});s = f.read();print(exec(s[s.find('##\\n'):]));".format(module_path, __file__)] + argv
+                module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
+                module_win_path = wsl_to_windows_path(module_wsl_path)
+                nf_win_file = wsl_to_windows_path('nf.py')
+                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,'{}');print('debug path: ',sys.path);f = open('{}');s = f.read();print(exec(s[s.find('##\\n'):]));".format(module_win_path, nf_win_file)] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
