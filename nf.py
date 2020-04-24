@@ -459,28 +459,28 @@ Examples:
                 print_stdout('ERROR: Cannot run external python, step lin 1')
             sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
 
-            cmd_exit_code = 0
-            try:
+            #cmd_exit_code = 0
+            #try:
 # TODO %USERPROFILE%\.nf
-                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nfdir/wsl/pyenv-win']
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                else:
-                    import subprocess
-                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            except Exception as e:
-                log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-                print_stdout('ERROR: Cannot run external python, step lin 2')
-
-            sys.path.insert(0, os.path.abspath('.nfdir/wsl/pyenv-win'))
-            import os
-            os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/shims') + os.pathsep + os.environ["PATH"]
-            os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/bin') + os.pathsep + os.environ["PATH"]
+            #    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nfdir/wsl/pyenv-win']
+            #    if sys.version_info >= (3, 5):
+            #        import subprocess
+            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+            #    else:
+            #        import subprocess
+            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            #except Exception as e:
+            #    log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+            #    print_stdout('ERROR: Cannot run external python, step lin 2')
+            #
+            #sys.path.insert(0, os.path.abspath('.nfdir/wsl/pyenv-win'))
+            #import os
+            #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/shims') + os.pathsep + os.environ["PATH"]
+            #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/bin') + os.pathsep + os.environ["PATH"]
 
             cmd_exit_code = 0
             try:
-                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win32', '--only-binary=:all:', '--target', '.nfdir/wsl/win10toast-persist']
+                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win32', '--python-version', '3.8.2', '--only-binary=:all:', '--target', '.nfdir/wsl/win10toast-persist']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -491,11 +491,13 @@ Examples:
                 log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, step lin 3')
 
+
             sys.path.insert(0, os.path.abspath('.nfdir/wsl/win10toast-persist'))
             if 'PYTHONPATH' in os.environ:
                 os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist') + ':' + os.environ.get('PYTHONPATH')
             else:
                 os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist')
+
 
 
             #cmd_exit_code = 0
@@ -780,6 +782,16 @@ Examples:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
 
+            try:
+                cmdline_args = ['python.exe', '-m', 'pip']
+                if sys.version_info >= (3, 5):
+                    import subprocess
+                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                else:
+                    import subprocess
+                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+            except Exception as e:
+                log('python win pip check'.format(cmdline_args, cmd_exit_code), e)
 
             #nf_exit_code = 0
             #try:
