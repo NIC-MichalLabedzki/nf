@@ -689,6 +689,8 @@ Examples:
             import zipfile
             with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
                 file_zip.extractall(new_python_dir)
+            with open('.nfdir/wsl/python/3.8.2/python38._pth', 'a') as f:
+                f.write('import site\n');
             os.environ["PATH"] = os.path.abspath(new_python_dir + os.pathsep + os.environ["PATH"])
 
             # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
