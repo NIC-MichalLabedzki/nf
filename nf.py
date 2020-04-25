@@ -480,7 +480,7 @@ Examples:
 
             cmd_exit_code = 0
             try:
-                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win32', '--python-version', '3.8.2', '--only-binary=:all:', '--target', '.nfdir/wsl/win10toast-persist']
+                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', '.nfdir/wsl/win10toast-persist']
                 if sys.version_info >= (3, 5):
                     import subprocess
                     cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -677,8 +677,8 @@ Examples:
             except:
                 pass
                 # TODO
-            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
-            #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
+            #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
+            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
 
             new_python_dir = '.nfdir/wsl/python/3.8.2'
