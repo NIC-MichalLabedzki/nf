@@ -689,8 +689,11 @@ Examples:
             import zipfile
             with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
                 file_zip.extractall(new_python_dir)
+
+            # NOTE: Do nothing?
             with open('.nfdir/wsl/python/3.8.2/python38._pth', 'a') as f:
-                f.write('import site\n');
+                f.write('import site\n')
+            ###
             os.environ["PATH"] = os.path.abspath(new_python_dir + os.pathsep + os.environ["PATH"])
 
             # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
@@ -769,7 +772,7 @@ Examples:
                 module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
                 module_win_path = wsl_to_windows_path(module_wsl_path)
                 nf_win_file = wsl_to_windows_path('nf.py')
-                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,{});sys.path.insert(0,'');f = open({}, encoding='utf-8');s = f.read();print(exec(s));".format(repr(module_win_path), repr(nf_win_file))] + argv
+                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,{});sys.path.insert(0,'');import os;[sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk({}) if len(dirs) > 0];f = open({}, encoding='utf-8');s = f.read();print(exec(s));".format(repr(module_win_path), repr(module_win_path), repr(nf_win_file))] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
