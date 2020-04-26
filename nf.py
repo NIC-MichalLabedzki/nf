@@ -768,6 +768,13 @@ Examples:
                 log('wsl_to_windows_path return', win_path)
                 return win_path
 
+
+            import site
+            module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
+            site.addsitedir(module_wsl_path)
+            backend = 'win10toast-persist'
+
+
             nf_exit_code = 0
             try:
                 module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
@@ -780,13 +787,15 @@ Examples:
                 else:
                     import subprocess
                     nf_exit_code = subprocess.call(cmdline_args, shell=False)
-                if nf_exit_code == 0:
-                    return nf_exit_code
+                #if nf_exit_code == 0:
+                #    return nf_exit_code
                 else:
                     log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
+
+            log('wsl external python exit code ', nf_exit_code)
 
             #nf_exit_code = 0
             #try:
