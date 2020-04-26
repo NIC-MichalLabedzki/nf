@@ -770,9 +770,8 @@ Examples:
 
             import site
             module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
-            site.addsitedir(module_wsl_path)
+            site.addsitedir(os.path.abspath(module_wsl_path))
             backend = 'win10toast-persist'
-            import win10toast
 
             nf_exit_code = 0
             try:
@@ -1353,9 +1352,11 @@ Examples:
                     import subprocess
                     notify_exit_code = subprocess.call(notify_cmdline)
             elif backend == 'win10toast-persist':
+                import win10toast
                 toaster = win10toast.ToastNotifier()
                 toaster.show_toast(notify__title, notify__body, duration=None)
             elif backend == 'win10toast':
+                import win10toast
                 toaster = win10toast.ToastNotifier()
                 toaster.show_toast(notify__title, notify__body)
             elif backend == 'plyer':
