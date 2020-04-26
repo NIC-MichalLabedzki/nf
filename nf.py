@@ -194,7 +194,7 @@ Examples:
                     index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
-            if index_version < index_cmd and (index_version < index_try_version or index_try_version == -1):
+            if (index_version < index_cmd or index_cmd == -1) and (index_version < index_try_version or index_try_version == -1):
                 print_stdout(VERSION)
                 return 0
 
@@ -212,7 +212,7 @@ Examples:
                     index_cmd = argv.index(arg)
                 if arg.startswith('--try-version'):
                     index_try_version = argv.index(arg)
-            if index_help < index_cmd and (index_help < index_try_version or index_try_version) == -1:
+            if (index_help < index_cmd or index_cmd == -1) and (index_help < index_try_version or index_try_version) == -1:
                 help_text = parser.format_help()
                 print_stdout(help_text)
                 return 0
