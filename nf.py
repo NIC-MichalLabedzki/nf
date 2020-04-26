@@ -773,7 +773,7 @@ Examples:
                 module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
                 module_win_path = wsl_to_windows_path(module_wsl_path)
                 nf_win_file = wsl_to_windows_path('nf.py')
-                cmdline_args = ['python.exe', '-c', "import sys;sys.path.insert(0,{});sys.path.insert(0,'');import os;[sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk({}) if len(dirs) > 0];f = open({}, encoding='utf-8');s = f.read();print(exec(s));".format(repr(module_win_path), repr(module_win_path), repr(nf_win_file))] + argv
+                cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});f = open({}, encoding='utf-8');s = f.read();print(exec(s));".format(repr(module_win_path), repr(nf_win_file))] + argv
                 log('run external python:', cmdline_args)
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
