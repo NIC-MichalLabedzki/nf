@@ -165,9 +165,12 @@ jobs:
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
       install:
-        - $PYTHONNIC -m pip install -r requirements-dev.txt
+        - echo
+        #- $PYTHONNIC -m pip install -r requirements-dev.txt
       script:
-        - $PYTHONNIC nf.py -dp echo
+        - $PYTHONNIC nf.py -dp --debugfile logs echo
+        - echo '---------------------------------------'
+        - cat logs
   allow_failures:
     - python: "nightly"
     - name: "Python 2 on WSL Windows"
