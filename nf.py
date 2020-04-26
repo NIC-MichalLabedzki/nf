@@ -492,11 +492,11 @@ Examples:
                 print_stdout('ERROR: Cannot run external python, step lin 3')
 
 
-            sys.path.insert(0, os.path.abspath('.nfdir/wsl/win10toast-persist'))
-            if 'PYTHONPATH' in os.environ:
-                os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist') + ':' + os.environ.get('PYTHONPATH')
-            else:
-                os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist')
+            #sys.path.insert(0, os.path.abspath('.nfdir/wsl/win10toast-persist'))
+            #if 'PYTHONPATH' in os.environ:
+            #    os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist') + ':' + os.environ.get('PYTHONPATH')
+            #else:
+            #    os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist')
 
 
 
