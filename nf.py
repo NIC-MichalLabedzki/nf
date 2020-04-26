@@ -768,12 +768,11 @@ Examples:
                 log('wsl_to_windows_path return', win_path)
                 return win_path
 
-
             import site
             module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
             site.addsitedir(module_wsl_path)
             backend = 'win10toast-persist'
-
+            import win10toast
 
             nf_exit_code = 0
             try:
