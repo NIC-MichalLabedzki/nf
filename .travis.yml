@@ -168,7 +168,7 @@ jobs:
         - echo
         #- $PYTHONNIC -m pip install -r requirements-dev.txt
       script:
-        - $PYTHONNIC nf.py -dp --debugfile logs echo
+        - $PYTHONNIC nf.py -dp --debugfile logs echo 2>&1
         - echo '---------------------------------------'
         - cat logs
   allow_failures:
