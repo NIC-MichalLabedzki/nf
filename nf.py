@@ -789,8 +789,8 @@ Examples:
                     nf_exit_code = subprocess.call(cmdline_args, shell=False)
                 #if nf_exit_code == 0:
                 #    return nf_exit_code
-                else:
-                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
+                #else:
+                #    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
