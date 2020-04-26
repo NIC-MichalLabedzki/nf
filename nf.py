@@ -439,7 +439,7 @@ Examples:
 
         backend_internal = {}
 
-        if is_wsl or (args.backend == 'wsl' and is_wsl == False):
+        if is_wsl or (args.backend == 'wsl' and is_wsl is not True):
             python_exe = which('python.exe')
             log('type python.exe before', python_exe)
 
