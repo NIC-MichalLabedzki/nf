@@ -677,7 +677,8 @@ Examples:
             except:
                 pass
                 # TODO
-            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
+            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
+            #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
 
             new_python_dir = '.nfdir/wsl/python/3.8.2'
