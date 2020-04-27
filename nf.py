@@ -760,10 +760,19 @@ Examples:
                     win_path = subprocess.check_output(cmdline_args).decode().strip('"\n')
                 except Exception as e:
                     log('wspath exit error', e)
-                    if abs_wsl_path.startswith('/home/'):
-                        win_path = 'C:\\Users\\' + abs_wsl_path[6:].replace('/', '\\')
-                    else:
+                    if abs_wsl_path.startswith('/mnt/'):
                         win_path = 'C:\\' + abs_wsl_path[7:].replace('/', '\\')
+                    else:
+                        path = abs_wsl_path.split(os.path.sep)
+                        user = ''
+                        if path[0] == 'home':
+                            user = path[1]
+                            path = path[2:]
+                        else:
+                            import getpass
+                            user = getpass.getuser()
+                            path = path[1:]
+                        win_path = 'C:\\Users\\{}\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\'.format(user) + '\\'.join(path) + '\\'
 
                 log('wsl_to_windows_path return', win_path)
                 return win_path
@@ -772,6 +781,9 @@ Examples:
             module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
             site.addsitedir(os.path.abspath(module_wsl_path))
             backend = 'win10toast-persist'
+            import sys
+            import os
+            [sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk(module_wsl_path) if len(dirs) > 0]
 
             nf_exit_code = 0
             try:
