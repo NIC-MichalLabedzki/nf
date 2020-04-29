@@ -146,6 +146,8 @@ jobs:
         - PATH=/c/Users/travis/build/NIC-MichalLabedzki/n/fake_bin:$PATH
       before_install:
         - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
+        - python --version || true
+        - python3 --version || true
         - powershell.exe -NoProfile -Command "Expand-Archive -Path ubuntu-1804.zip -DestinationPath Ubuntu"
         - Ubuntu/ubuntu1804.exe install --root
         - wsl --list || true
@@ -154,6 +156,8 @@ jobs:
         - wslconfig //list //all || true
 #        - wsl -s Ubuntu-18.04 || true
 #        - wslconfig //setdefault Ubuntu-18.04 || true
+        - python --version || true
+        - python3 --version || true
         - wsl sudo apt-get update
         - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3-minimal python3-pip
         - wsl python --version || true

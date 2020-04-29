@@ -444,20 +444,22 @@ Examples:
             log('type python.exe before', python_exe)
 
 
-            cmd_exit_code = 0
-            try:
+            target_dir = '.nfdir/wsl/pip'
+            if not os.path.exists(target_dir):
+                cmd_exit_code = 0
+                try:
 # TODO %USERPROFILE%\.nf
-                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pip', '--target', '.nfdir/wsl/pip']
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                else:
-                    import subprocess
-                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            except Exception as e:
-                log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-                print_stdout('ERROR: Cannot run external python, step lin 1')
-            sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
+                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pip', '--target', target_dir]
+                    if sys.version_info >= (3, 5):
+                        import subprocess
+                        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                    else:
+                        import subprocess
+                        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                except Exception as e:
+                    log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                    print_stdout('ERROR: Cannot run external python, step lin 1')
+                sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
 
             #cmd_exit_code = 0
             #try:
@@ -478,18 +480,20 @@ Examples:
             #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/shims') + os.pathsep + os.environ["PATH"]
             #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/bin') + os.pathsep + os.environ["PATH"]
 
-            cmd_exit_code = 0
-            try:
-                cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', '.nfdir/wsl/win10toast-persist']
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                else:
-                    import subprocess
-                    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            except Exception as e:
-                log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-                print_stdout('ERROR: Cannot run external python, step lin 3')
+            target_dir = '.nfdir/wsl/win10toast-persist'
+            if not os.path.exists(target_dir):
+                cmd_exit_code = 0
+                try:
+                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', target_dir]
+                    if sys.version_info >= (3, 5):
+                        import subprocess
+                        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
+                    else:
+                        import subprocess
+                        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                except Exception as e:
+                    log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                    print_stdout('ERROR: Cannot run external python, step lin 3')
 
 
             #sys.path.insert(0, os.path.abspath('.nfdir/wsl/win10toast-persist'))
@@ -677,9 +681,11 @@ Examples:
             except:
                 pass
                 # TODO
+
             #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
-            download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
+            if not os.path.exists(downloaded_file):
+                download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
 
             new_python_dir = '.nfdir/wsl/python/3.8.2'
             try:
@@ -695,7 +701,7 @@ Examples:
             with open('.nfdir/wsl/python/3.8.2/python38._pth', 'a') as f:
                 f.write('import site\n')
             ###
-            os.environ["PATH"] = os.path.abspath(new_python_dir + os.pathsep + os.environ["PATH"])
+            os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
 
             # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
             python_exe = which('python.exe')
@@ -777,17 +783,20 @@ Examples:
                 log('wsl_to_windows_path return', win_path)
                 return win_path
 
-            import site
-            module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
-            site.addsitedir(os.path.abspath(module_wsl_path))
-            backend = 'win10toast-persist'
-            import sys
-            import os
-            sys.path.insert(0, os.path.abspath(module_wsl_path))
-            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32'))
-            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32', 'lib'))
-            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'Pythonwin'))
-            [sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk(module_wsl_path) if len(dirs) > 0]
+            #try:
+            #    import site
+            #    module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
+            #    site.addsitedir(os.path.abspath(module_wsl_path))
+            #    backend = 'win10toast-persist'
+            #    import sys
+            #    import os
+            #    sys.path.insert(0, os.path.abspath(module_wsl_path))
+            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32'))
+            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32', 'lib'))
+            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'Pythonwin'))
+            #    [sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk(module_wsl_path) if len(dirs) > 0]
+            #except Exception as e:
+            #    log('run local python with win10toast* module failed', e)
 
             nf_exit_code = 0
             try:
@@ -799,18 +808,19 @@ Examples:
                 s = f.read()
 
                 cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
-                log('run external python:') # TO long to display cmdline_args
+                log('run external python:', cmdline_args[20:]) # TO long to display cmdline_args
                 if sys.version_info >= (3, 5):
+                    import subprocess
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
                 else:
                     import subprocess
                     nf_exit_code = subprocess.call(cmdline_args, shell=False)
-                #if nf_exit_code == 0:
-                #    return nf_exit_code
-                #else:
-                #    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
+                if nf_exit_code == 0:
+                    return nf_exit_code
+                else:
+                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args[20:], nf_exit_code))
             except Exception as e:
-                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args[20:], nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
 
             log('wsl external python exit code ', nf_exit_code)
