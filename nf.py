@@ -778,7 +778,9 @@ Examples:
                             import getpass
                             user = getpass.getuser()
                             path = path[1:]
-                        win_path = 'C:\\Users\\{}\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\'.format(user) + '\\'.join(path) + '\\'
+                        win_path = 'C:\\Users\\{}\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\'.format(user) + '\\'.join(path)
+                        if os.path.isdir(win_path):
+                            win_path += '\\'
 
                 log('wsl_to_windows_path return', win_path)
                 return win_path
@@ -804,11 +806,13 @@ Examples:
                 module_win_path = wsl_to_windows_path(module_wsl_path)
                 nf_win_file = wsl_to_windows_path('nf.py')
 
-                f = open(__file__, encoding='utf-8')
-                s = f.read()
+                # NOTE great, but Win support 8192 argument length limit... lin probably has limit too
+                #f = open(__file__, encoding='utf-8')
+                #s = f.read()
 
-                cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
-                log('run external python:', cmdline_args[20:]) # TO long to display cmdline_args
+                #cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
+                cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});f = open({}, encoding='utf-8');s = f.read();exec(s);".format(repr(module_win_path), repr(nf_win_file))] + argv
+                log('run external python:', cmdline_args) # TO long to display cmdline_args
                 if sys.version_info >= (3, 5):
                     import subprocess
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
@@ -818,9 +822,9 @@ Examples:
                 if nf_exit_code == 0:
                     return nf_exit_code
                 else:
-                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args[20:], nf_exit_code))
+                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
             except Exception as e:
-                log('run external python failed for: <{}> exit code {}'.format(cmdline_args[20:], nf_exit_code), e)
+                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
 
             log('wsl external python exit code ', nf_exit_code)
