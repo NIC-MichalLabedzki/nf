@@ -710,7 +710,7 @@ Examples:
             # (python or python.exe) -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
             # PYTHONPATH +=:win32_modules
 
-            log('environment', os.environ)
+            #log('environment', os.environ)
 
             #nf_exit_code = 0
             #try:
@@ -783,6 +783,10 @@ Examples:
             backend = 'win10toast-persist'
             import sys
             import os
+            sys.path.insert(0, os.path.abspath(module_wsl_path))
+            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32'))
+            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32', 'lib'))
+            sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'Pythonwin'))
             [sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk(module_wsl_path) if len(dirs) > 0]
 
             nf_exit_code = 0
@@ -794,8 +798,8 @@ Examples:
                 f = open(__file__, encoding='utf-8')
                 s = f.read()
 
-                cmdline_args = ['python', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
-                log('run external python:', cmdline_args)
+                cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
+                log('run external python:') # TO long to display cmdline_args
                 if sys.version_info >= (3, 5):
                     nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
                 else:
