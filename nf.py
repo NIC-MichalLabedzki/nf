@@ -807,18 +807,28 @@ Examples:
                 nf_win_file = wsl_to_windows_path('nf.py')
 
                 # NOTE great, but Win support 8192 argument length limit... lin probably has limit too
-                #f = open(__file__, encoding='utf-8')
-                #s = f.read()
-
+                s = None
+                #try:
+                #    with open(__file__, encoding='utf-8') as f:
+                #        s = f.read()
+                #except Exception as e:
+                #    log('cannot read nf.py', e)
                 #cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
-                cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});f = open({}, encoding='utf-8');s = f.read();exec(s);".format(repr(module_win_path), repr(nf_win_file))] + argv
+
+                #cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});f = open({}, encoding='utf-8');s = f.read();exec(s);".format(repr(module_win_path), repr(nf_win_file))] + argv
+                try:
+                    import inspect
+                    s = inspect.getsource(inspect.getmodule(nf))
+                except Exception as e:
+                    log('inspect exception:', e)
+
+                cmdline_args = ['python.exe', '-'] + argv
                 log('run external python:', cmdline_args) # TO long to display cmdline_args
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                else:
-                    import subprocess
-                    nf_exit_code = subprocess.call(cmdline_args, shell=False)
+                import subprocess
+                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE)
+                output, stderr_output  = p.communicate(s.encode())
+                print_stdout(output)
+                #"import site;site.addsitedir({})".format(repr(module_win_path)
                 if nf_exit_code == 0:
                     return nf_exit_code
                 else:
@@ -849,6 +859,10 @@ Examples:
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
+                module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
+                if os.path.exists(module_wsl_path):
+                    import site;
+                    site.addsitedir(os.path.abspath(module_wsl_path))
                 import win10toast
                 backend = 'win10toast-persist'
             except Exception as e:
