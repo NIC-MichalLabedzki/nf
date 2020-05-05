@@ -488,7 +488,7 @@ Examples:
             environ['PYTHONPATH'] = os.path.abspath(target_dir) + os.pathsep + environ['PYTHONPATH']
 
             target_dir = '.nfdir/wsl/win10toast-persist'
-            if not os.path.exists(target_dir) or 1:
+            if not os.path.exists(target_dir):
                 cmd_exit_code = 0
                 try:
                     cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', target_dir]
