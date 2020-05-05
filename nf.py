@@ -459,7 +459,9 @@ Examples:
                 except Exception as e:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot run external python, step lin 1')
-                sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
+                #sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
+                #import site
+                #site.addsitedir(os.path.abspath('.nfdir/wsl/pip'))
 
             #cmd_exit_code = 0
             #try:
@@ -480,17 +482,25 @@ Examples:
             #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/shims') + os.pathsep + os.environ["PATH"]
             #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/bin') + os.pathsep + os.environ["PATH"]
 
+            environ = os.environ.copy()
+            if 'PYTHONPATH' not in environ:
+                environ['PYTHONPATH'] = '\'\''
+            environ['PYTHONPATH'] = os.path.abspath(target_dir) + os.pathsep + environ['PYTHONPATH']
+
             target_dir = '.nfdir/wsl/win10toast-persist'
-            if not os.path.exists(target_dir):
+            if not os.path.exists(target_dir) or 1:
                 cmd_exit_code = 0
                 try:
                     cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', target_dir]
-                    if sys.version_info >= (3, 5):
-                        import subprocess
-                        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                    else:
-                        import subprocess
-                        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                    import subprocess
+                    p = subprocess.Popen(cmdline_args, env=environ)
+                    output, stderr_output  = p.communicate()
+                    #if sys.version_info >= (3, 5):
+                    #    import subprocess
+                    #    cmd_exit_code = subprocess.run(cmdline_args, shell=False, env=environ).returncode
+                    #else:
+                    #    import subprocess
+                    #    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
                 except Exception as e:
                     log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot run external python, step lin 3')
@@ -702,10 +712,14 @@ Examples:
                 f.write('import site\n')
             ###
             os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
+            sys.path.insert(0, os.path.abspath(new_python_dir))
 
             # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
             python_exe = which('python.exe')
             log('type python.exe after set', python_exe)
+            python_exe = os.path.abspath(os.path.join(new_python_dir, 'python.exe'))
+            os.chmod(python_exe, 0o777)
+            log('type python.exe after set ensure', python_exe)
             python_x = which('python')
             log('type python after set', python_x)
 
@@ -822,10 +836,10 @@ Examples:
                 except Exception as e:
                     log('inspect exception:', e)
 
-                cmdline_args = ['python.exe', '-'] + argv
+                cmdline_args = [python_exe, '-'] + argv
                 log('run external python:', cmdline_args) # TO long to display cmdline_args
                 import subprocess
-                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE)
+                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, env=environ)
                 output, stderr_output  = p.communicate(s.encode())
                 print_stdout(output)
                 #"import site;site.addsitedir({})".format(repr(module_win_path)
