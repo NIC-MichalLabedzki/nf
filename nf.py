@@ -260,6 +260,19 @@ Examples:
     log('argv {}'.format(sys.argv))
     log('args {}'.format(args))
 
+    NF_DIR = '.nfdir'
+    nf_dir = os.path.join(os.path.expanduser('~'), NF_DIR)
+    nf_wsl_win_dir = nf_dir # None? nf_dir for manual testing under linux
+    if is_wsl:
+        argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
+        python_process = subprocess.Popen(argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        output, stderr_output = python_process.communicate(data)
+        if output:
+            nf_wsl_win_dir = output.decode().rstrip('\n')
+
+    log('nf dir: {}'.format(nf_dir))
+    log('nf wsl win dir: {}'.format(nf_wsl_win_dir))
+
     def which(cmd):
         try:
             import shutil
@@ -444,7 +457,7 @@ Examples:
             log('type python.exe before', python_exe)
 
 
-            target_dir = '.nfdir/wsl/pip'
+            target_dir = os.path.join(nf_dir, 'wsl', 'pip')
             if not os.path.exists(target_dir):
                 cmd_exit_code = 0
                 try:
@@ -459,203 +472,24 @@ Examples:
                 except Exception as e:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot run external python, step lin 1')
-                #sys.path.insert(0, os.path.abspath('.nfdir/wsl/pip'))
-                #import site
-                #site.addsitedir(os.path.abspath('.nfdir/wsl/pip'))
-
-            #cmd_exit_code = 0
-            #try:
-# TODO %USERPROFILE%\.nf
-            #    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pyenv-win', '--platform', 'win32', '--only-binary=:all:', '--target', '.nfdir/wsl/pyenv-win']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('download pyenv-win failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step lin 2')
-            #
-            #sys.path.insert(0, os.path.abspath('.nfdir/wsl/pyenv-win'))
-            #import os
-            #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/shims') + os.pathsep + os.environ["PATH"]
-            #os.environ["PATH"] = os.path.abspath('.nfdir/wsl/pyenv-win/pyenv-win/bin') + os.pathsep + os.environ["PATH"]
 
             environ = os.environ.copy()
             if 'PYTHONPATH' not in environ:
-                environ['PYTHONPATH'] = '\'\''
-            environ['PYTHONPATH'] = os.path.abspath(target_dir) + os.pathsep + environ['PYTHONPATH']
+                environ['PYTHONPATH'] = os.path.abspath(target_dir)
+            else:
+                environ['PYTHONPATH'] = os.path.abspath(target_dir) + ':' + environ['PYTHONPATH']
 
-            target_dir = '.nfdir/wsl/win10toast-persist'
+            target_dir = os.path.join(nf_dir, 'wsl', 'win10toast-persist')
             if not os.path.exists(target_dir):
                 cmd_exit_code = 0
                 try:
                     cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', target_dir]
                     import subprocess
                     p = subprocess.Popen(cmdline_args, env=environ)
-                    output, stderr_output  = p.communicate()
-                    #if sys.version_info >= (3, 5):
-                    #    import subprocess
-                    #    cmd_exit_code = subprocess.run(cmdline_args, shell=False, env=environ).returncode
-                    #else:
-                    #    import subprocess
-                    #    cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                    output, stderr_output = p.communicate()
                 except Exception as e:
                     log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot run external python, step lin 3')
-
-
-            #sys.path.insert(0, os.path.abspath('.nfdir/wsl/win10toast-persist'))
-            #if 'PYTHONPATH' in os.environ:
-            #    os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist') + ':' + os.environ.get('PYTHONPATH')
-            #else:
-            #    os.environ["PYTHONPATH"] = os.path.abspath('.nfdir/wsl/win10toast-persist')
-
-
-
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', 'set PATH=".nfdir\wsl\pyenv-win\pyenv-win\bin;.nfdir\wsl\pyenv-win\pyenv-win\shims;%PATH%" && pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.0')
-            #log('wsl step 4.0 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', 'set PATH=".nfdir\\wsl\\pyenv-win\\pyenv-win\\bin;.nfdir\\wsl\\pyenv-win\\pyenv-win\\shims;%PATH%" && pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.1')
-            #log('wsl step 4.1 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', 'set PATH="C:\\Users\\travis\\build\\NIC-MichalLabedzki\\nf\\.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin;C:\\Users\\travis\\build\\NIC-MichalLabedzki\\nf\\.nfdir\\wsl\\pyenv-win\\pyenv-win\\shims;%PATH%" && pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.1.1')
-            #log('wsl step 4.1.1 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', 'cd C:\\Users\\travis\\build\\NIC-MichalLabedzki\\nf\\.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin && pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.1.2')
-            #log('wsl step 4.1.2 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.2')
-            #log('wsl step 4.2 exit code', cmd_exit_code, cmdline_args)
-            #
-            #
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --skip-existing --quiet 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4')
-            #log('wsl step 4 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --skip-existing --quiet 3.5.2-amd64']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.1')
-            #log('wsl step 4.1 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv install  --list']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win install python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 4.2')
-            #log('wsl step 4.1 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', '.nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv global 3.5.2']
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win set python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 5')
-            #log('wsl step 5 exit code', cmd_exit_code, cmdline_args)
-            #
-            #cmd_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/c', ".nfdir\\wsl\\pyenv-win\\pyenv-win\\bin\\pyenv global 3.5.2-amd64"]
-            #    if sys.version_info >= (3, 5):
-            #        import subprocess
-            #        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
-            #except Exception as e:
-            #    log('pyenv-win set python failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, step win 5.1')
-            #log('wsl step 5.1 exit code', cmd_exit_code, cmdline_args)
-
 
             def download_file(url, download_dir):
                 import ssl
@@ -684,7 +518,7 @@ Examples:
                 with open(downloaded_file, 'wb') as f:
                     f.write(data)
 
-            download_dir = '.nfdir/wsl/python/zip'
+            download_dir = os.path.join(nf_dir, 'wsl', 'python', 'zip')
             import os
             try:
                 os.makedirs(download_dir)
@@ -692,82 +526,35 @@ Examples:
                 pass
                 # TODO
 
+            new_python_dir = os.path.join(nf_wsl_win_dir, 'wsl', 'python', '3.8.2')
             #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
             if not os.path.exists(downloaded_file):
                 download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
 
-            new_python_dir = '.nfdir/wsl/python/3.8.2'
-            try:
-                os.makedirs(new_python_dir)
-            except:
-                pass
-                # TODO
-            import zipfile
-            with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
-                file_zip.extractall(new_python_dir)
+                try:
+                    os.makedirs(new_python_dir)
+                except:
+                    pass
+                    # TODO
+                import zipfile
+                with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
+                    file_zip.extractall(new_python_dir)
 
             # NOTE: Do nothing?
-            with open('.nfdir/wsl/python/3.8.2/python38._pth', 'a') as f:
+            with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
                 f.write('import site\n')
             ###
             os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
             sys.path.insert(0, os.path.abspath(new_python_dir))
 
-            # os.chmod(os.path.join(new_python_dir, 'python.exe'), 0o777)
             python_exe = which('python.exe')
             log('type python.exe after set', python_exe)
             python_exe = os.path.abspath(os.path.join(new_python_dir, 'python.exe'))
-            os.chmod(python_exe, 0o777)
+            #os.chmod(python_exe, 0o777)
             log('type python.exe after set ensure', python_exe)
             python_x = which('python')
             log('type python after set', python_x)
-
-            # TODO:
-            # python -m pip install pyenv-win --platform win32 --only-binary=:all: --target %USERPROFILE%/.nf/wsl/pyenv-win
-            # PATH += %USERPROFILE%\.pyenv\pyenv-win\bin;%USERPROFILE%\.pyenv\pyenv-win\shims
-            #
-            # (python or python.exe) -m pip install --platform win32 --only-binary=:all: --target win32_modules    win10toast-persist
-            # PYTHONPATH +=:win32_modules
-
-            #log('environment', os.environ)
-
-            #nf_exit_code = 0
-            #try:
-            #    cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;.nfdir\\wsl\\win10toast-persist" && set PYTHONPATH="%PYTHONPATH%;.nfdir\\wsl\\win10toast-persist" && python.exe ' + './nf.py ' + ' '.join(argv)]
-            #    log('run external python:', cmdline_args)
-            #    if sys.version_info >= (3, 5):
-            #        nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        nf_exit_code = subprocess.call(cmdline_args, shell=False)
-            #    if nf_exit_code == 0:
-            #        return nf_exit_code
-            #    else:
-            #        log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
-            #except Exception as e:
-            #    log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, last win step')
-            #
-            #nf_exit_code = 0
-            #try:
-            #    import ntpath
-            #    module_path = ntpath.abspath('.nfdir\\wsl\\win10toast-persist')
-            #    module_path = 'C:\\' + module_path[7:] # assume "/mnt/c/" # TODO: suppor c,d,e...a,b..
-            #    cmdline_args = ['cmd.exe', '/V', '/C', 'set PATH="%PATH%;{module_path}" && set PYTHONPATH="%PYTHONPATH%;{module_path}" && python.exe '.format(module_path=module_path) + './nf.py ' + ' '.join(argv)]
-            #    log('run external python:', cmdline_args)
-            #    if sys.version_info >= (3, 5):
-            #        nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        nf_exit_code = subprocess.call(cmdline_args, shell=False)
-            #    if nf_exit_code == 0:
-            #        return nf_exit_code
-            #    else:
-            #        log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
-            #except Exception as e:
-            #    log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, last2 win step')
 
             def wsl_to_windows_path(wsl_path):
                 import os
@@ -799,37 +586,9 @@ Examples:
                 log('wsl_to_windows_path return', win_path)
                 return win_path
 
-            #try:
-            #    import site
-            #    module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
-            #    site.addsitedir(os.path.abspath(module_wsl_path))
-            #    backend = 'win10toast-persist'
-            #    import sys
-            #    import os
-            #    sys.path.insert(0, os.path.abspath(module_wsl_path))
-            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32'))
-            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'win32', 'lib'))
-            #    sys.path.insert(0, os.path.join(os.path.abspath(module_wsl_path), 'Pythonwin'))
-            #    [sys.path.append(os.path.abspath(root)) for (root,dirs,files) in os.walk(module_wsl_path) if len(dirs) > 0]
-            #except Exception as e:
-            #    log('run local python with win10toast* module failed', e)
-
             nf_exit_code = 0
             try:
-                module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
-                module_win_path = wsl_to_windows_path(module_wsl_path)
-                nf_win_file = wsl_to_windows_path('nf.py')
-
-                # NOTE great, but Win support 8192 argument length limit... lin probably has limit too
                 s = None
-                #try:
-                #    with open(__file__, encoding='utf-8') as f:
-                #        s = f.read()
-                #except Exception as e:
-                #    log('cannot read nf.py', e)
-                #cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});exec({});".format(repr(module_win_path), repr(s))] + argv
-
-                #cmdline_args = ['python.exe', '-c', "import site;site.addsitedir({});f = open({}, encoding='utf-8');s = f.read();exec(s);".format(repr(module_win_path), repr(nf_win_file))] + argv
                 try:
                     import inspect
                     s = inspect.getsource(inspect.getmodule(nf))
@@ -837,12 +596,11 @@ Examples:
                     log('inspect exception:', e)
 
                 cmdline_args = [python_exe, '-'] + argv
-                log('run external python:', cmdline_args) # TO long to display cmdline_args
+                log('run external python:', cmdline_args)
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, env=environ)
                 output, stderr_output  = p.communicate(s.encode())
-                print_stdout(output)
-                #"import site;site.addsitedir({})".format(repr(module_win_path)
+                log('external python output:', output)
                 if nf_exit_code == 0:
                     return nf_exit_code
                 else:
@@ -853,30 +611,12 @@ Examples:
 
             log('wsl external python exit code ', nf_exit_code)
 
-            #nf_exit_code = 0
-            #try:
-            #    cmdline_args = ['python.exe', __file__] + argv
-            #    log('run external python:', cmdline_args)
-            #    if sys.version_info >= (3, 5):
-            #        nf_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-            #    else:
-            #        import subprocess
-            #        nf_exit_code = subprocess.call(cmdline_args, shell=False)
-            #    if nf_exit_code == 0:
-            #        return nf_exit_code
-            #    else:
-            #        log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
-            #except Exception as e:
-            #    log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
-            #    print_stdout('ERROR: Cannot run external python, last4 win step')
-
-
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
-                module_wsl_path = os.path.join('.nfdir', 'wsl', 'win10toast-persist')
-                if os.path.exists(module_wsl_path):
+                module_win_path = os.path.join(nf_dir, 'wsl', 'win10toast-persist')
+                if os.path.exists(module_win_path):
                     import site;
-                    site.addsitedir(os.path.abspath(module_wsl_path))
+                    site.addsitedir(os.path.abspath(module_win_path))
                 import win10toast
                 backend = 'win10toast-persist'
             except Exception as e:
