@@ -265,6 +265,7 @@ Examples:
     nf_wsl_win_dir = nf_dir # None? nf_dir for manual testing under linux
     if is_wsl:
         argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
+        import subprocess
         python_process = subprocess.Popen(argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         output, stderr_output = python_process.communicate(data)
         if output:
