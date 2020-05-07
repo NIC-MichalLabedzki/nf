@@ -278,12 +278,12 @@ Examples:
     nf_dir = os.path.join(os.path.expanduser('~'), NF_DIR)
     nf_dir_win_for_wsl = nf_dir # None? nf_dir for manual testing under linux
     if is_wsl:
-        argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
+        cmd_argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
         import subprocess
-        python_process = subprocess.Popen(argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        python_process = subprocess.Popen(cmd_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         output, stderr_output = python_process.communicate()
         if output:
-            nf_dir_win = output.decode().rstrip('\n')
+            nf_dir_win = output.decode().rstrip('\r\n')
             nf_dir_win_for_wsl = windows_to_wsl_path(nf_dir_win)
             if nf_dir_win_for_wsl is None:
                 nf_dir_win_for_wsl = nf_dir
@@ -568,7 +568,7 @@ Examples:
 
             python_exe = which('python.exe')
             log('type python.exe after set', python_exe)
-            python_exe = os.path.abspath(os.path.join(new_python_dir, 'python.exe'))
+            python_exe = os.path.join(new_python_dir, 'python.exe')
             #os.chmod(python_exe, 0o777)
             log('type python.exe after set ensure', python_exe)
             python_x = which('python')
