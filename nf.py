@@ -260,19 +260,36 @@ Examples:
     log('argv {}'.format(sys.argv))
     log('args {}'.format(args))
 
+    def windows_to_wsl_path(win_path):
+        import os
+
+        cmdline_args = ['wslpath', '-a', '-u', win_path]
+        import subprocess
+        try:
+            wsl_path = subprocess.check_output(cmdline_args).decode().strip('"\n')
+        except Exception as e:
+            log('wspath exit error', e)
+            return None
+
+        log('windows_to_wsl_path return', wsl_path)
+        return wsl_path
+
     NF_DIR = '.nfdir'
     nf_dir = os.path.join(os.path.expanduser('~'), NF_DIR)
-    nf_wsl_win_dir = nf_dir # None? nf_dir for manual testing under linux
+    nf_dir_win_for_wsl = nf_dir # None? nf_dir for manual testing under linux
     if is_wsl:
         argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
         import subprocess
         python_process = subprocess.Popen(argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        output, stderr_output = python_process.communicate(data)
+        output, stderr_output = python_process.communicate()
         if output:
-            nf_wsl_win_dir = output.decode().rstrip('\n')
+            nf_dir_win = output.decode().rstrip('\n')
+            nf_dir_win_for_wsl = windows_to_wsl_path(nf_dir_win)
+            if nf_dir_win_for_wsl is None:
+                nf_dir_win_for_wsl = nf_dir
 
     log('nf dir: {}'.format(nf_dir))
-    log('nf wsl win dir: {}'.format(nf_wsl_win_dir))
+    log('nf dir win for wsl: {}'.format(nf_dir_win_for_wsl))
 
     def which(cmd):
         try:
@@ -527,7 +544,7 @@ Examples:
                 pass
                 # TODO
 
-            new_python_dir = os.path.join(nf_wsl_win_dir, 'wsl', 'python', '3.8.2')
+            new_python_dir = os.path.join(nf_dir_win_for_wsl, 'wsl', 'python', '3.8.2')
             #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
             if not os.path.exists(downloaded_file):
