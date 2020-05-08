@@ -283,10 +283,12 @@ Examples:
         python_process = subprocess.Popen(cmd_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         output, stderr_output = python_process.communicate()
         if output:
-            nf_dir_win = output.decode().rstrip('\r\n')
-            nf_dir_win_for_wsl = windows_to_wsl_path(nf_dir_win)
-            if nf_dir_win_for_wsl is None:
+            user_dir_win = output.decode().rstrip('\r\n')
+            user_dir_win_for_wsl = windows_to_wsl_path(user_dir_win)
+            if user_dir_win_for_wsl is None:
                 nf_dir_win_for_wsl = nf_dir
+            else:
+                nf_dir_win_for_wsl = os.path.join(user_dir_win_for_wsl, NF_DIR)
 
     log('nf dir: {}'.format(nf_dir))
     log('nf dir win for wsl: {}'.format(nf_dir_win_for_wsl))
@@ -555,14 +557,22 @@ Examples:
                 except:
                     pass
                     # TODO
-                import zipfile
-                with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
-                    file_zip.extractall(new_python_dir)
 
-            # NOTE: Do nothing?
-            with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
-                f.write('import site\n')
-            ###
+            if not os.path.exists(os.path.join(new_python_dir, 'python.exe')):
+                try:
+                    import zipfile
+                    with zipfile.ZipFile(downloaded_file, 'r') as file_zip:
+                        file_zip.extractall(new_python_dir)
+                except Exception as e:
+                    log('cannot unzip custom python', e)
+
+            # NOTE: Not needed?
+            try:
+                with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
+                    f.write('import site\n')
+            except Exception as e:
+                log('cannot add site module to custom python', e)
+
             os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
             sys.path.insert(0, os.path.abspath(new_python_dir))
 
@@ -613,7 +623,22 @@ Examples:
                 except Exception as e:
                     log('inspect exception:', e)
 
-                cmdline_args = [python_exe, '-'] + argv
+                filtred_argv = []
+                skip_next = False
+                for arg in argv:
+                    if skip_next:
+                        skip_next = False
+                        continue
+                    if len(arg) >= 3 and arg[0:3] == '-b=':
+                        pass
+                    elif arg == '-b' or arg == '--b':
+                        pass
+                        skip_next = True
+                    else:
+                        filtred_argv.append(arg)
+# TODO: add --backend and inner like: "-dpb"
+
+                cmdline_args = [python_exe, '-'] + filtred_argv
                 log('run external python:', cmdline_args)
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, env=environ)
@@ -995,7 +1020,7 @@ Examples:
                 c = '/c'
             else:
                 c = '-c'
-            run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=cmdline.replace('"', '\\"'))
+            run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=repr(cmdline))
 
             if shell.endswith('cmd.exe'):
                 cmdline_args = run_cmd
