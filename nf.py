@@ -599,7 +599,7 @@ Examples:
             python_x = which('python')
             log('type python after set', python_x)
 
-            if sys.platform != 'win32': # NOTE: just for testing without Win
+            if sys.platform != 'win32' and is_wsl != True: # NOTE: just for testing without Win
                 python_exe = 'python'
 
             def wsl_to_windows_path(wsl_path):
