@@ -476,40 +476,56 @@ Examples:
             python_exe = which('python.exe')
             log('type python.exe before', python_exe)
 
+            environ = os.environ.copy()
 
-            target_dir = os.path.join(nf_dir, 'wsl', 'pip')
-            if not os.path.exists(target_dir):
+            nf_dependencies_dir = os.path.join(nf_dir, 'dependencies')
+            nf_current_deps_dir = os.path.join(nf_dependencies_dir, '{}.{}.{}'.format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro), 'platform_unknown')
+            pip_target_dir = os.path.join(nf_current_deps_dir, 'pip')
+            nf_pip_done = os.path.join(pip_target_dir, 'nf_done')
+            if not os.path.exists(nf_pip_done):
                 cmd_exit_code = 0
                 try:
-# TODO %USERPROFILE%\.nf
-                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pip', '--target', target_dir]
-                    if sys.version_info >= (3, 5):
-                        import subprocess
-                        cmd_exit_code = subprocess.run(cmdline_args, shell=False).returncode
-                    else:
-                        import subprocess
-                        cmd_exit_code = subprocess.call(cmdline_args, shell=False)
+                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pip', '--target', pip_target_dir]
+                    import subprocess
+                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+                        output, stderr_output = p.communicate()
+                        cmd_exit_code = p.returncode
+                        log('install pip stdout\n', output.decode())
+                        log('install pip stderr\n', stderr_output.decode())
+                        log('install pip exit code', cmd_exit_code)
+                        if cmd_exit_code == 0:
+                            os.mkdir(nf_pip_done)
                 except Exception as e:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-                    print_stdout('ERROR: Cannot run external python, step lin 1')
+                    print_stdout('ERROR: Cannot make notification under Windows - cannot download newer "pip"')
 
-            environ = os.environ.copy()
-            if 'PYTHONPATH' not in environ:
-                environ['PYTHONPATH'] = os.path.abspath(target_dir)
-            else:
-                environ['PYTHONPATH'] = os.path.abspath(target_dir) + ':' + environ['PYTHONPATH']
+            if os.path.exists(nf_pip_done):
+                if 'PYTHONPATH' not in environ:
+                    environ['PYTHONPATH'] = os.path.abspath(pip_target_dir)
+                else:
+                    environ['PYTHONPATH'] = os.path.abspath(pip_target_dir) + ':' + environ['PYTHONPATH']
+                import site;
+                site.addsitedir(os.path.abspath(pip_target_dir))
 
-            target_dir = os.path.join(nf_dir, 'wsl', 'win10toast-persist')
-            if not os.path.exists(target_dir):
+            nf_remote_deps_dir = os.path.join(nf_dir_win_for_wsl, 'dependencies', '3.8.2', 'win_amd64')
+            win_module_target_dir = os.path.join(nf_remote_deps_dir, 'win10toast-persist')
+            nf_win_module_done = os.path.join(win_module_target_dir, 'nf_done')
+            if not os.path.exists(win_module_target_dir):
                 cmd_exit_code = 0
                 try:
-                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', target_dir]
+                    cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', win_module_target_dir]
                     import subprocess
-                    p = subprocess.Popen(cmdline_args, env=environ)
-                    output, stderr_output = p.communicate()
+                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ) as p:
+                        output, stderr_output = p.communicate()
+                        cmd_exit_code = p.returncode
+                        log('install win10toast-persist stdout\n', output.decode())
+                        log('install win10toast-persist stderr\n', stderr_output.decode())
+                        log('install win10toast-persist exit code', cmd_exit_code)
+                        if cmd_exit_code == 0:
+                            os.mkdir(nf_win_module_done)
                 except Exception as e:
-                    log('install python backend failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
-                    print_stdout('ERROR: Cannot run external python, step lin 3')
+                    log('download win10toast-persist failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                    print_stdout('ERROR: Cannot make notification under Windows - cannot download backend module - win10toast-persist')
 
             def download_file(url, download_dir):
                 import ssl
@@ -547,16 +563,15 @@ Examples:
                 # TODO
 
             new_python_dir = os.path.join(nf_dir_win_for_wsl, 'wsl', 'python', '3.8.2')
-            #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
             downloaded_file = os.path.join(download_dir, 'python.zip')
             if not os.path.exists(downloaded_file):
                 download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
+                #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
 
                 try:
                     os.makedirs(new_python_dir)
-                except:
-                    pass
-                    # TODO
+                except Exception as e:
+                    log('cannot create dirs', new_python_dir)
 
             if not os.path.exists(os.path.join(new_python_dir, 'python.exe')):
                 try:
@@ -567,11 +582,11 @@ Examples:
                     log('cannot unzip custom python', e)
 
             # NOTE: Not needed?
-            try:
-                with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
-                    f.write('import site\n')
-            except Exception as e:
-                log('cannot add site module to custom python', e)
+            #try:
+            #    with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
+            #        f.write('import site\n')
+            #except Exception as e:
+            #    log('cannot add site module to custom python', e)
 
             os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
             sys.path.insert(0, os.path.abspath(new_python_dir))
@@ -583,6 +598,9 @@ Examples:
             log('type python.exe after set ensure', python_exe)
             python_x = which('python')
             log('type python after set', python_x)
+
+            if sys.platform != 'win32': # NOTE: just for testing without Win
+                python_exe = 'python'
 
             def wsl_to_windows_path(wsl_path):
                 import os
@@ -636,6 +654,8 @@ Examples:
                         skip_next = True
                     else:
                         filtred_argv.append(arg)
+                if sys.platform != 'win32': # NOTE: just for testing without Win
+                    filtred_argv.insert(1, '--backend=win10toast-persist')
 # TODO: add --backend and inner like: "-dpb"
 
                 cmdline_args = [python_exe, '-'] + filtred_argv
@@ -656,10 +676,17 @@ Examples:
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
-                module_win_path = os.path.join(nf_dir, 'wsl', 'win10toast-persist')
+# TODO: platform detect
+                module_win_path = os.path.join(nf_dir, 'dependencies', '{}.{}.{}'.format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro), 'win_amd64', 'win10toast-persist')
                 if os.path.exists(module_win_path):
                     import site;
                     site.addsitedir(os.path.abspath(module_win_path))
+
+                module_win_path = os.path.join(nf_dir, 'dependencies', '3.8.2', 'win_amd64', 'win10toast-persist')
+                if os.path.exists(module_win_path):
+                    import site;
+                    site.addsitedir(os.path.abspath(module_win_path))
+
                 import win10toast
                 backend = 'win10toast-persist'
             except Exception as e:
