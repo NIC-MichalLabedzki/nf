@@ -1047,7 +1047,7 @@ Examples:
                 c = '/c'
             else:
                 c = '-c'
-            run_cmd = shell + ' {c} "{cmdline}"'.format(c=c, cmdline=repr(cmdline))
+            run_cmd = shell + ' {c} {cmdline}'.format(c=c, cmdline=repr(cmdline))
 
             if shell.endswith('cmd.exe'):
                 cmdline_args = run_cmd
