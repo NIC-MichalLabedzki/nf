@@ -1191,7 +1191,13 @@ def test_debugfile(fixture_environment):
     import nf
     exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo'])
     import os
-    os.remove(test_file)
+
+    try:
+        os.remove(test_file)
+    except:
+        import time
+        time.sleep(1)
+        os.remove(test_file)
 
     assert exit_code == 0
 
@@ -1208,7 +1214,12 @@ def test_closed_stdout(fixture_environment):
     import os
     with open(test_file) as f:
         print(f.read())
-    os.remove(test_file)
+    try:
+        os.remove(test_file)
+    except:
+        import time
+        time.sleep(1)
+        os.remove(test_file)
 
     assert exit_code == 0
 
@@ -1219,7 +1230,13 @@ def test_wsl(fixture_environment):
     import nf
     exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'wsl', 'echo'])
     import os
-    os.remove(test_file)
+
+    try:
+        os.remove(test_file)
+    except:
+        import time
+        time.sleep(1)
+        os.remove(test_file)
 
     assert exit_code == 0
 

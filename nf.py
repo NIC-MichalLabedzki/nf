@@ -294,6 +294,7 @@ Examples:
     log('nf dir win for wsl: {}'.format(nf_dir_win_for_wsl))
 
     def which(cmd):
+        path = None
         try:
             import shutil
 
