@@ -308,10 +308,10 @@ def test_main_no_args(fixture_environment):
 
 def test_main_module_all_mock(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'ls']
+    sys.argv = ['nf', '-p', 'echo']
 
     module_backup = {}
-    modules = ['dbus', 'shutil']
+    modules = ['dbus', 'shutil', 'distutils.spawn']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -338,7 +338,7 @@ def test_main_module_all_mock(fixture_environment):
 def test_main_module_all_mock_custom_notification_title(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_title', my_text, 'ls']
+    sys.argv = ['nf', '-p', '--custom_notification_title', my_text, 'echo']
 
     module_backup = {}
     modules = ['dbus']
@@ -369,7 +369,7 @@ def test_main_module_all_mock_custom_notification_title(fixture_environment, cap
 def test_main_module_all_mock_custom_notification_text(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_text', my_text, 'ls']
+    sys.argv = ['nf', '-p', '--custom_notification_text', my_text, 'echo']
 
     module_backup = {}
     modules = ['dbus']
@@ -400,7 +400,7 @@ def test_main_module_all_mock_custom_notification_text(fixture_environment, caps
 def test_main_module_all_mock_custom_notification_exit_code(fixture_environment):
     my_exit_code = 13
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_exit_code', str(my_exit_code), 'ls']
+    sys.argv = ['nf', '-p', '--custom_notification_exit_code', str(my_exit_code), 'echo']
 
     module_backup = {}
     modules = ['dbus']
@@ -494,7 +494,7 @@ def test_main_module_all_mock_save(fixture_environment):
         pass
 
     sys_argv = sys.argv
-    sys.argv = ['nf', '-s', 'ls']
+    sys.argv = ['nf', '-s', 'echo']
 
     module_backup = {}
     modules = ['dbus']
@@ -518,7 +518,7 @@ def test_main_module_all_mock_save(fixture_environment):
 
     with open('.nf') as f:
         line = f.read().splitlines()
-        assert line[0] == 'ls'
+        assert line[0] == 'echo'
         assert line[1] =='Exit code: 0'
         assert line[2][:6] =='Start '
         assert line[3][:6] =='Stop  '
@@ -530,7 +530,7 @@ def test_main_module_all_mock_save(fixture_environment):
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'echo']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -577,7 +577,7 @@ def test_main_module_all_mock_backend(fixture_environment, backend, python_versi
 @pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label2', '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label2', '--backend={}'.format(backend), 'echo']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -589,7 +589,7 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
     sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
 
     module_backup = {}
-    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'plyer', 'getpass']
+    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -615,7 +615,7 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
 def test_main_module_all_mock_bad_functionality_backend(fixture_environment, backend, method_mock, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), 'ls']
+    sys.argv = ['nf', '--debug', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), 'echo']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -629,7 +629,7 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
 
     module_backup = {}
-    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'plyer', 'getpass']
+    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 

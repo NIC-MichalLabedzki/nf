@@ -663,7 +663,7 @@ Examples:
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, env=environ)
                 output, stderr_output  = p.communicate(s.encode())
-                log('external python output:', output)
+                # output is redirected on stdout
                 if nf_exit_code == 0:
                     return nf_exit_code
                 else:
@@ -1280,7 +1280,7 @@ Examples:
             sizes = shutil.get_terminal_size()
             columns = sizes.columns
         except Exception as e:
-            log('', e)
+            log('Cannot get terminal size', e)
 
         print_stdout('-' * columns)
         if notify__title != '':
@@ -1291,16 +1291,23 @@ Examples:
             print_stdout('\a')
 
     if args.save:
-        with open(".nf", 'a') as f:
-            print_stdout(cmdline, file=f)
-            print_stdout('Exit code: {}'.format(exit_code), file=f)
-            print_stdout('Start {}'.format(time_start.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
-            print_stdout('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
-            print_stdout('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
-            print_stdout('----------', file=f)
+        try:
+            with open(".nf", 'a') as f:
+                print_stdout(cmdline, file=f)
+                print_stdout('Exit code: {}'.format(exit_code), file=f)
+                print_stdout('Start {}'.format(time_start.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+                print_stdout('Stop  {}'.format(time_end.strftime("%Y-%m-%d %H:%M.%S.%f")), file=f)
+                print_stdout('Diff             {}'.format(time_elapsed.strftime('%H:%M.%S')), file=f)
+                print_stdout('----------', file=f)
+        except Exception as e:
+            print_stdout('Cannot save .nf file')
+            log('Cannot save .nf file', e)
     if logfile['handle'] is not None:
-        logfile['handle'].write('\n'.encode())
-        logfile['handle'].close()
+        try:
+            logfile['handle'].write('\n'.encode())
+            logfile['handle'].close()
+        except Exception as e:
+            pass
     return exit_code
 
 def main():
