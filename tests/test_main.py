@@ -793,19 +793,7 @@ def test_screen_support(fixture_remove_fake_apps, fixture_environment, capsys):
     def prepare():
         test_environment = {'modules': ['psutil'],
                             'module_backup': {}}
-        for module_name in test_environment['modules']:
-            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-            module_mock = mock.MagicMock()
-            process_mock = mock.MagicMock()
-            process_mock.exe.return_value = "exe_text"
-            process_mock.cmdline.return_value = "cmdline_text"
-            process_mock.name.return_value = 'name_text'
-            module_mock.Process.return_value = process_mock
-
-            setattr(module_mock, '__spec__', module_mock)
-
-            sys.modules[module_name] = module_mock
 
         os.environ['STY'] = '/dev/null'
 
@@ -833,6 +821,21 @@ else:
             os.chmod(app, 0o777)
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
+
+        for module_name in test_environment['modules']:
+            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            process_mock.exe.return_value = "exe_text"
+            process_mock.cmdline.return_value = "cmdline_text"
+            process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
 
         return test_environment
 
@@ -864,31 +867,6 @@ def test_tmux_support(fixture_remove_fake_apps, fixture_environment, capsys, is_
     def prepare():
         test_environment = {'modules': ['psutil', 'dbus'],
                             'module_backup': {}}
-        for module_name in test_environment['modules']:
-            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
-
-            module_mock = mock.MagicMock()
-            process_mock = mock.MagicMock()
-            if is_case_ppid:
-                parent_process_mock = mock.MagicMock()
-
-                parent_process_mock.exe.return_value = 'exe_text'
-                parent_process_mock.cmdline.return_value = 'cmdline_text'
-                parent_process_mock.name.return_value = 'tmux: server'
-
-                process_mock.exe.return_value = 'exe_text'
-                process_mock.cmdline.return_value = 'cmdline_text'
-                process_mock.name.return_value = 'nf_text'
-                process_mock.parents.return_value = [parent_process_mock]
-            else:
-                process_mock.exe.return_value = 'exe_text'
-                process_mock.cmdline.return_value = 'cmdline_text'
-                process_mock.name.return_value = 'name_text'
-            module_mock.Process.return_value = process_mock
-
-            setattr(module_mock, '__spec__', module_mock)
-
-            sys.modules[module_name] = module_mock
 
         os.environ['TMUX'] = '/dev/null'
 
@@ -923,6 +901,33 @@ else:
             os.chmod(app, 0o777)
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
+        for module_name in test_environment['modules']:
+            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            if is_case_ppid:
+                parent_process_mock = mock.MagicMock()
+
+                parent_process_mock.exe.return_value = 'exe_text'
+                parent_process_mock.cmdline.return_value = 'cmdline_text'
+                parent_process_mock.name.return_value = 'tmux: server'
+
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'nf_text'
+                process_mock.parents.return_value = [parent_process_mock]
+            else:
+                process_mock.exe.return_value = 'exe_text'
+                process_mock.cmdline.return_value = 'cmdline_text'
+                process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
 
         return test_environment
 
