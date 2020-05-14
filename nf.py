@@ -662,8 +662,11 @@ Examples:
                 cmdline_args = [python_exe, '-'] + filtred_argv
                 log('run external python:', cmdline_args)
                 import subprocess
-                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, env=environ)
+                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE env=environ)
                 output, stderr_output  = p.communicate(s.encode())
+                print_stdout(output)
+                log('stdout external python', output)
+                log('stderr external python', stderr_output)
                 # output is redirected on stdout
                 if nf_exit_code == 0:
                     return nf_exit_code
