@@ -280,7 +280,7 @@ Examples:
     if is_wsl:
         cmd_argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
         import subprocess
-        python_process = subprocess.Popen(cmd_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        python_process = subprocess.Popen(cmd_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, stderr_output = python_process.communicate()
         if output:
             user_dir_win = output.decode().rstrip('\r\n')
@@ -382,7 +382,7 @@ Examples:
             new_argv.insert(0, '-')
             new_argv.insert(0, sys.executable)
             log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
-            python_process = subprocess.Popen(new_argv, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            python_process = subprocess.Popen(new_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, stderr_output = python_process.communicate(data)
             if output:
                 print_stdout(output.decode().rstrip('\n'))
@@ -451,13 +451,13 @@ Examples:
                     import subprocess
 
                     try:
-                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=publickey', '-o', 'PubkeyAuthentication=yes'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'StrictHostKeyChecking=no', '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=publickey', '-o', 'PubkeyAuthentication=yes'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         time.sleep(1)
                         if ssh_process.poll() != None:
                             raise Exception('Public key not working')
                     except Exception as e:
                         log('backend={}'.format('ssh'), e)
-                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no'], stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                        ssh_process = subprocess.Popen(["ssh", ssh_ip , '-p', ssh_port, '-o', 'ConnectTimeout=2', '-o', 'PreferredAuthentications=password', '-o', 'PubkeyAuthentication=no'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                         ssh_process.stdout.readline()  # expect password prompt
                     if ssh_process.poll():
                         backend = 'stdout'
@@ -662,7 +662,7 @@ Examples:
                 cmdline_args = [python_exe, '-'] + filtred_argv
                 log('run external python:', cmdline_args)
                 import subprocess
-                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE env=environ)
+                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
                 output, stderr_output  = p.communicate(s.encode())
                 print_stdout(output)
                 log('stdout external python', output)
