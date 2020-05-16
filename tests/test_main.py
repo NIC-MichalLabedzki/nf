@@ -1218,7 +1218,7 @@ def test_wait_for_pid_no_psutil(fixture_environment, capsys):
 
 
 def test_debugfile(fixture_environment):
-    test_file = 'tmp_debugfile'
+    test_file = 'tmp_debugfile1'
 
     import nf
     exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo'])
@@ -1235,7 +1235,7 @@ def test_debugfile(fixture_environment):
 
 
 def test_closed_stdout(fixture_environment):
-    test_file = 'tmp_debugfile'
+    test_file = 'tmp_debugfile2'
     stdout = sys.stdout
     sys.stdout = 0 # cause AttributeError: 'int' object has no attribute 'write'
 
@@ -1257,7 +1257,7 @@ def test_closed_stdout(fixture_environment):
 
 
 def test_wsl(fixture_environment):
-    test_file = 'tmp_debugfile'
+    test_file = 'tmp_debugfile3'
 
     import nf
     exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'wsl', 'echo'])
@@ -1267,7 +1267,7 @@ def test_wsl(fixture_environment):
         os.remove(test_file)
     except:
         import time
-        time.sleep(1)
+        time.sleep(2)
         os.remove(test_file)
 
     assert exit_code == 0
