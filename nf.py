@@ -1057,7 +1057,10 @@ Examples:
                 cmdline_args = run_cmd
                 system_shell = True
             else:
-                cmdline_args = shlex.split(run_cmd)
+                if sys.platform == 'win32':
+                    cmdline_args = run_cmd
+                else:
+                    cmdline_args = shlex.split(run_cmd)
                 system_shell = False
     except Exception as e:
         log('backend={} cmd run'.format(backend), e)
