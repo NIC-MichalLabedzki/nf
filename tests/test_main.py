@@ -329,7 +329,10 @@ def test_main_module_all_mock(fixture_environment):
         nf.main()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     assert exit_e.value.code == 0
@@ -357,7 +360,10 @@ def test_main_module_all_mock_custom_notification_title(fixture_environment, cap
     captured = capsys.readouterr()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     stdout = captured.out.splitlines()
@@ -388,7 +394,10 @@ def test_main_module_all_mock_custom_notification_text(fixture_environment, caps
     captured = capsys.readouterr()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     stdout = captured.out.splitlines()
@@ -417,7 +426,10 @@ def test_main_module_all_mock_custom_notification_exit_code(fixture_environment)
         nf.main()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     assert exit_e.value.code == my_exit_code
@@ -483,7 +495,10 @@ def test_main_module_all_mock_ctrl_c_mock_signal(fixture_environment):
         nf.main()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     assert exit_e.value.code == 0
@@ -511,7 +526,10 @@ def test_main_module_all_mock_save(fixture_environment):
         nf.main()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     assert exit_e.value.code == 0
@@ -568,7 +586,10 @@ def test_main_module_all_mock_backend(fixture_environment, backend, python_versi
         del os.environ['SSH_CLIENT']
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
     sys.version_info = sys_version_info
 
@@ -604,7 +625,10 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
         nf.main()
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
     sys.version_info = sys_version_info
 
@@ -652,7 +676,10 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
         del os.environ['SSH_CLIENT']
 
     for module_name in modules:
-        sys.modules[module_name] = module_backup[module_name]
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
 
     sys.argv = sys_argv
     sys.version_info = sys_version_info
