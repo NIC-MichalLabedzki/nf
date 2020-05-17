@@ -282,6 +282,8 @@ Examples:
         import subprocess
         python_process = subprocess.Popen(cmd_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, stderr_output = python_process.communicate()
+        log('stdout for ', cmd_argv, output.decode())
+        log('stderr for ', cmd_argv, stderr_output.decode())
         if output:
             user_dir_win = output.decode().rstrip('\r\n')
             user_dir_win_for_wsl = windows_to_wsl_path(user_dir_win)
@@ -292,6 +294,8 @@ Examples:
 
     log('nf dir: {}'.format(nf_dir))
     log('nf dir win for wsl: {}'.format(nf_dir_win_for_wsl))
+
+# functions (used more than once) ----------------------------------------------
 
     def which(cmd):
         path = None
@@ -338,6 +342,67 @@ Examples:
         log('debug ssh: ', ssh_ip, ssh_port)
         return (ssh_ip, ssh_port)
 
+
+    def call_dbus(service_name, path, method, *arg):
+        import subprocess
+        app = which('qdbus')
+        if app is not None:
+            log('which qdbus: {}'.format(app))
+
+            xarg = []
+            for a in arg:
+                if a.startswith('int32:'):
+                    a = a[6:]
+                xarg.append(a)
+            tool_cmdline = [app, service_name, path, method]
+            tool_cmdline.extend(xarg)
+        else:
+            app = which('gdbus')
+            if app is not None:
+                log('which gdbus: {}'.format(app))
+
+                xarg = []
+                for a in arg:
+                    if a.startswith('int32:'):
+                        xarg.append(a[6:])
+                    else:
+                        xarg.append(a)
+                tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method)]
+                tool_cmdline.extend(xarg)
+            else:
+                app = which('dbus-send')
+                if app is not None:
+                    log('which dbus-send: {}'.format(app))
+                    tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method)]
+                    tool_cmdline.extend(xarg)
+                else:
+                    log('cannot find dbus backend')
+
+        log('dbus cmdline', tool_cmdline)
+
+        output = subprocess.check_output(tool_cmdline).decode().strip()
+        log('dbus backend output', output)
+
+        if app == which('gdbus'):
+            output = output.strip('(),')
+        if app == which('dbus-send'):
+            if 'int32' in output:
+                output = output.split(' ')[1]
+        log('dbus final output', output)
+
+        return output
+
+
+    def nf_cleanup():
+        if logfile['handle'] is not None:
+            try:
+                logfile['handle'].write('\n'.encode())
+                logfile['handle'].close()
+            except Exception as e:
+                print_stdout('nf error while saving debugfile', e)
+
+#-------------------------------------------------------------------------------
+
     if args.try_version:
         if args.try_version == 'list':
             url = 'https://api.github.com/repos/NIC-MichalLabedzki/nf/tags'
@@ -364,6 +429,7 @@ Examples:
                 log('urllib for python2 failed', e)
         if data == '':
             print_stdout('ERROR: Cannot download specified nf version for: {}'.format(args.try_version))
+            nf_cleanup()
             return 1
 
         if args.try_version == 'list':
@@ -384,11 +450,10 @@ Examples:
             log('run nf[{}] {}'.format(args.try_version, ' '.join(new_argv)))
             python_process = subprocess.Popen(new_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output, stderr_output = python_process.communicate(data)
-            if output:
-                print_stdout(output.decode().rstrip('\n'))
-            if stderr_output:
-                print(stderr_output.decode(), file=sys.stderr)
+            print_stdout(output.decode().rstrip('\n'))
+            print(stderr_output.decode(), file=sys.stderr)
 
+        nf_cleanup()
         return 0
 
     try:
@@ -656,25 +721,32 @@ Examples:
                     else:
                         filtred_argv.append(arg)
                 if sys.platform != 'win32': # NOTE: just for testing without Win
-                    filtred_argv.insert(1, '--backend=win10toast-persist')
+                    filtred_argv.insert(0, '--backend=win10toast-persist')
 # TODO: add --backend and inner like: "-dpb"
 
                 cmdline_args = [python_exe, '-'] + filtred_argv
                 log('run external python:', cmdline_args)
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
-                output, stderr_output  = p.communicate(s.encode())
-                print_stdout(output)
-                log('stdout external python', output)
-                log('stderr external python', stderr_output)
+                if sys.version_info.major == 2:
+                    nf_script = s[s.find('##'):].encode()
+                else:
+                    nf_script = s.encode()
+                output, stderr_output  = p.communicate(nf_script)
+                print_stdout(output.decode())
+                log('stdout external python', output.decode())
+                log('stderr external python', stderr_output.decode())
                 # output is redirected on stdout
                 if nf_exit_code == 0:
+                    nf_cleanup()
                     return nf_exit_code
                 else:
+                    backend = 'stdout'
                     log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
             except Exception as e:
                 log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
                 print_stdout('ERROR: Cannot run external python, last3 win step')
+                backend = 'stdout'
 
             log('wsl external python exit code ', nf_exit_code)
 
@@ -860,58 +932,6 @@ Examples:
              gui_app = 'unknown'
         log('gui_app {}'.format(gui_app))
 
-
-
-        def call_dbus(service_name, path, method, *arg):
-            import subprocess
-            app = which('qdbus')
-            if app is not None:
-                log('which qdbus: {}'.format(app))
-
-                xarg = []
-                for a in arg:
-                    if a.startswith('int32:'):
-                        a = a[6:]
-                    xarg.append(a)
-                tool_cmdline = [app, service_name, path, method]
-                tool_cmdline.extend(xarg)
-            else:
-                app = which('gdbus')
-                if app is not None:
-                    log('which gdbus: {}'.format(app))
-
-                    xarg = []
-                    for a in arg:
-                        if a.startswith('int32:'):
-                            xarg.append(a[6:])
-                        else:
-                            xarg.append(a)
-                    tool_cmdline = [app, 'call', '--session', '--dest', service_name, '--object-path', path, '--method', '{}.{}'.format(service_name, method)]
-                    tool_cmdline.extend(xarg)
-                else:
-                    app = which('dbus-send')
-                    if app is not None:
-                        log('which dbus-send: {}'.format(app))
-                        tool_cmdline = [app, '--session', '--print-reply=literal', '--dest={}'.format(service_name), path, '{}.{}'.format(service_name, method)]
-                        tool_cmdline.extend(xarg)
-                    else:
-                        log('cannot find dbus backend')
-
-            log('dbus cmdline', tool_cmdline)
-
-            output = subprocess.check_output(tool_cmdline).decode().strip()
-            log('dbus backend output', output)
-
-            if app == which('gdbus'):
-                output = output.strip('(),')
-            if app == which('dbus-send'):
-                if 'int32' in output:
-                    output = output.split(' ')[1]
-            log('dbus final output', output)
-
-            return output
-
-
         gui_app_tab_name = None
         if gui_app == 'yakuake':
             # SESSION_ID=$(qdbus org.kde.yakuake /yakuake/sessions activeSessionId)
@@ -1086,12 +1106,14 @@ Examples:
                 import subprocess
                 subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
                 exit_code = 0
+                nf_cleanup()
                 return exit_code
             else:
                 pid = os.fork()
                 if pid > 0:
                     log('parent pid={} exit'.format(os.getpid()))
 
+                    nf_cleanup()
                     return 'detached'
                 if pid == 0:
                     log('child pid={} start'.format(os.getpid()))
@@ -1185,6 +1207,7 @@ Examples:
     if args.custom_notification_text is not None:
         notify__body = args.custom_notification_text
 
+    log('no_notifty is {}, backend is {}'.format(args.no_notify, backend))
     if not args.no_notify:
         try:
             if backend == 'dbus':
@@ -1254,8 +1277,8 @@ Examples:
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
                     else:
                         output, stderr_output = ssh_process.communicate(cmd)
-                    log('stdout', output)
-                    log('stderr', stderr_output)
+                    log('stdout', output.decode())
+                    log('stderr', stderr_output.decode())
             elif backend == 'paramiko':
                 if ssh_client:
                     with open(__file__, 'r') as f:
@@ -1309,12 +1332,8 @@ Examples:
         except Exception as e:
             print_stdout('Cannot save .nf file')
             log('Cannot save .nf file', e)
-    if logfile['handle'] is not None:
-        try:
-            logfile['handle'].write('\n'.encode())
-            logfile['handle'].close()
-        except Exception as e:
-            pass
+
+    nf_cleanup()
     return exit_code
 
 def main():

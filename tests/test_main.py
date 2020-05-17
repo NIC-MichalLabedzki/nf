@@ -1267,7 +1267,7 @@ def test_wsl(fixture_environment):
         os.remove(test_file)
     except:
         import time
-        time.sleep(2)
+        time.sleep(1)
         os.remove(test_file)
 
     assert exit_code == 0
