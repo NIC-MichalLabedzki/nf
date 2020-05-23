@@ -17,6 +17,7 @@
 # for python2
 from __future__ import print_function as _print_function
 
+nf_stored_code = None
 
 def nf(argv=None):
     """
@@ -704,7 +705,14 @@ Examples:
                 try:
                     import inspect
                     s = inspect.getsource(inspect.getmodule(nf))
+
+                    if sys.version_info.major == 2:
+                        s = s[s.find('##'):]
+
+                    s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1)
                 except Exception as e:
+                    s = nf_stored_code
+                    s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1) # recover stored code variable
                     log('inspect exception:', e)
 
                 filtred_argv = []
@@ -718,6 +726,20 @@ Examples:
                     elif arg == '-b' or arg == '--b':
                         pass
                         skip_next = True
+                    elif arg == '--backend=win10toast-persist':
+                        pass
+                    elif arg[0] == '-' and len(arg) >= 2 and arg[1] != '-':
+                        a = arg.split('=')
+                        if 'b' in a[0]:
+                            if len(a) == 1:
+                                skip_next = True
+
+                            if len(a[0]) == 1:
+                                pass
+                            else:
+                                a[0] = a[0].strip('b')
+                                arg = a[0]
+                                filtred_argv.append(arg)
                     else:
                         filtred_argv.append(arg)
                 if sys.platform != 'win32': # NOTE: just for testing without Win
@@ -728,10 +750,7 @@ Examples:
                 log('run external python:', cmdline_args)
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
-                if sys.version_info.major == 2:
-                    nf_script = s[s.find('##'):].encode()
-                else:
-                    nf_script = s.encode()
+                nf_script = s.encode()
                 output, stderr_output  = p.communicate(nf_script)
                 print_stdout(output.decode())
                 log('stdout external python', output.decode())
@@ -845,7 +864,9 @@ Examples:
     log('choosen backend is {}'.format(backend))
     notify__title = args.cmd
 
-    cmdline = args.cmd + (' ' if len(args.args) > 0 else '') + ' '.join(args.args)
+    log('part cmdline cmd', args.cmd)
+    log('part cmdline args', args.args)
+    cmdline = args.cmd + ' ' + ' '.join(args.args) if len(args.args) > 0 else ''
     if args.label is not None:
         notify__title += ' (' + args.label + ')'
 
