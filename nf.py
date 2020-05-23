@@ -862,11 +862,22 @@ Examples:
         if backend == 'stdout' and args.backend != 'stdout':
             print_stdout("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
     log('choosen backend is {}'.format(backend))
-    notify__title = args.cmd
+
+    if args.cmd is None:
+        log('uuu', args.wait_for_pid)
+        if args.wait_for_pid is not None:
+            cmd= "wait for pids {}".format(args.wait_for_pid)
+# TODO: store on nf start and print here processes names
+        else:
+            cmd = 'nf'
+    else:
+        cmd = args.cmd
+
+    notify__title = cmd
 
     log('part cmdline cmd', args.cmd)
     log('part cmdline args', args.args)
-    cmdline = args.cmd + ' ' + ' '.join(args.args) if len(args.args) > 0 else ''
+    cmdline = cmd + ' ' + ' '.join(args.args) if len(args.args) > 0 else ''
     if args.label is not None:
         notify__title += ' (' + args.label + ')'
 
@@ -1182,18 +1193,19 @@ Examples:
     ############################################################################
     # core
     ############################################################################
-    log('before run cmd', cmdline_args)
-    try:
-        if sys.version_info >= (3, 5):
-            exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
-        else:
-            import subprocess
-            exit_code = subprocess.call(cmdline_args, shell=system_shell)
-    except Exception as e:
-        log('core run cmdline failed for: <{}>'.format(cmdline_args), e)
-    log('after run cmd', cmdline_args)
-        #exit_code = os.system(run_cmd)
-    # exit_code = os.system(cmdline) # works fine
+    if args.cmd is not None:
+        log('before run cmd', cmdline_args)
+        try:
+            if sys.version_info >= (3, 5):
+                exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
+            else:
+                import subprocess
+                exit_code = subprocess.call(cmdline_args, shell=system_shell)
+        except Exception as e:
+            log('core run cmdline failed for: <{}>'.format(cmdline_args), e)
+        log('after run cmd', cmdline_args)
+            #exit_code = os.system(run_cmd)
+        # exit_code = os.system(cmdline) # works fine
     ############################################################################
     # end of core
     ############################################################################
@@ -1204,9 +1216,9 @@ Examples:
 
     time_elapsed = datetime.datetime(1970, 1, 1, 0, 0, 0) +  (time_end - time_start)
 
-    notify__body = '"' + os.getcwd() + "$ " + args.cmd + '"'
+    notify__body = '"' + os.getcwd() + "$ " + cmd + '"'
 
-    notify__app_name = args.cmd
+    notify__app_name = cmd
     notify__timeout = 0
 
     if args.custom_notification_exit_code is not None:
