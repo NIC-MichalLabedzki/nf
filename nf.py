@@ -715,7 +715,7 @@ Examples:
                     s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1) # recover stored code variable
                     log('inspect exception:', e)
 
-                filtred_argv = []
+                filtered_argv = []
                 skip_next = False
                 for arg in argv:
                     if skip_next:
@@ -723,7 +723,7 @@ Examples:
                         continue
                     if len(arg) >= 3 and arg[0:3] == '-b=':
                         pass
-                    elif arg == '-b' or arg == '--b':
+                    elif arg == '-b' or arg == '--backend':
                         pass
                         skip_next = True
                     elif arg == '--backend=win10toast-persist':
@@ -739,14 +739,14 @@ Examples:
                             else:
                                 a[0] = a[0].strip('b')
                                 arg = a[0]
-                                filtred_argv.append(arg)
+                                filtered_argv.append(arg)
                     else:
-                        filtred_argv.append(arg)
+                        filtered_argv.append(arg)
                 if sys.platform != 'win32': # NOTE: just for testing without Win
-                    filtred_argv.insert(0, '--backend=win10toast-persist')
+                    filtered_argv.insert(0, '--backend=win10toast-persist')
 # TODO: add --backend and inner like: "-dpb"
 
-                cmdline_args = [python_exe, '-'] + filtred_argv
+                cmdline_args = [python_exe, '-'] + filtered_argv
                 log('run external python:', cmdline_args)
                 import subprocess
                 p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
