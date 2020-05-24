@@ -582,14 +582,14 @@ Examples:
                 try:
                     cmdline_args = [sys.executable, '-m', 'pip', 'install', 'pip', '--target', pip_target_dir]
                     import subprocess
-                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-                        output, stderr_output = p.communicate()
-                        cmd_exit_code = p.returncode
-                        log('install pip stdout\n', output.decode())
-                        log('install pip stderr\n', stderr_output.decode())
-                        log('install pip exit code', cmd_exit_code)
-                        if cmd_exit_code == 0:
-                            os.mkdir(nf_pip_done)
+                    p = subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    output, stderr_output = p.communicate()
+                    cmd_exit_code = p.returncode
+                    log('install pip stdout\n', output.decode())
+                    log('install pip stderr\n', stderr_output.decode())
+                    log('install pip exit code', cmd_exit_code)
+                    if cmd_exit_code == 0:
+                        os.mkdir(nf_pip_done)
                 except Exception as e:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot make notification under Windows - cannot download newer "pip"')
@@ -611,14 +611,14 @@ Examples:
                 try:
                     cmdline_args = [sys.executable, downloaded_file, 'pip', '--target', pip_target_dir]
                     import subprocess
-                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
-                        output, stderr_output = p.communicate()
-                        cmd_exit_code = p.returncode
-                        log('install pip stdout\n', output.decode())
-                        log('install pip stderr\n', stderr_output.decode())
-                        log('install pip exit code', cmd_exit_code)
-                        if cmd_exit_code == 0:
-                            os.mkdir(nf_pip_done)
+                    p = subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    output, stderr_output = p.communicate()
+                    cmd_exit_code = p.returncode
+                    log('install pip stdout\n', output.decode())
+                    log('install pip stderr\n', stderr_output.decode())
+                    log('install pip exit code', cmd_exit_code)
+                    if cmd_exit_code == 0:
+                        os.mkdir(nf_pip_done)
                 except Exception as e:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot make notification under Windows - cannot download newer "pip"')
@@ -640,14 +640,14 @@ Examples:
                 try:
                     cmdline_args = [sys.executable, '-m', 'pip', 'install', 'win10toast-persist', '--platform', 'win_amd64', '--python-version', '3.8.2', '--only-binary=:all:', '--target', win_module_target_dir]
                     import subprocess
-                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ) as p:
-                        output, stderr_output = p.communicate()
-                        cmd_exit_code = p.returncode
-                        log('install win10toast-persist stdout\n', output.decode())
-                        log('install win10toast-persist stderr\n', stderr_output.decode())
-                        log('install win10toast-persist exit code', cmd_exit_code)
-                        if cmd_exit_code == 0:
-                            os.mkdir(nf_win_module_done)
+                    p = subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
+                    output, stderr_output = p.communicate()
+                    cmd_exit_code = p.returncode
+                    log('install win10toast-persist stdout\n', output.decode())
+                    log('install win10toast-persist stderr\n', stderr_output.decode())
+                    log('install win10toast-persist exit code', cmd_exit_code)
+                    if cmd_exit_code == 0:
+                        os.mkdir(nf_win_module_done)
                 except Exception as e:
                     log('download win10toast-persist failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot make notification under Windows - cannot download backend module - win10toast-persist')
