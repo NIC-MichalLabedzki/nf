@@ -394,6 +394,34 @@ Examples:
         return output
 
 
+    def download_file(url, download_dir, output_filename):
+        import ssl
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        data = ''
+        try:
+            import urllib.request
+            request = urllib.request.urlopen(url, context=ctx)
+            data = request.read()
+        except Exception as e:
+            log('urllib for python3 failed', e)
+            try:
+                import urllib
+                request = urllib.urlopen(url, context=ctx)
+                data = request.read()
+            except Exception as e:
+                log('urllib for python2 failed', e)
+        if data == '':
+            print_stdout('ERROR: Cannot download file: {}'.format(url))
+            return 1
+
+        downloaded_file = os.path.join(download_dir, output_filename)
+        with open(downloaded_file, 'wb') as f:
+            f.write(data)
+
+
     def nf_cleanup():
         if logfile['handle'] is not None:
             try:
@@ -566,6 +594,36 @@ Examples:
                     log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot make notification under Windows - cannot download newer "pip"')
 
+            if not os.path.exists(nf_pip_done):
+                download_dir = os.path.join(nf_dir, 'downloaded')
+                import os
+                try:
+                    os.makedirs(download_dir)
+                except:
+                    pass
+                    # TODO
+
+                downloaded_file = os.path.join(download_dir, 'get-pip.py')
+                if not os.path.exists(downloaded_file):
+                    download_file('https://bootstrap.pypa.io/get-pip.py', download_dir, 'get-pip.py')
+
+                cmd_exit_code = 0
+                try:
+                    cmdline_args = [sys.executable, downloaded_file, 'pip', '--target', pip_target_dir]
+                    import subprocess
+                    with subprocess.Popen(cmdline_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+                        output, stderr_output = p.communicate()
+                        cmd_exit_code = p.returncode
+                        log('install pip stdout\n', output.decode())
+                        log('install pip stderr\n', stderr_output.decode())
+                        log('install pip exit code', cmd_exit_code)
+                        if cmd_exit_code == 0:
+                            os.mkdir(nf_pip_done)
+                except Exception as e:
+                    log('download pip failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
+                    print_stdout('ERROR: Cannot make notification under Windows - cannot download newer "pip"')
+# TODO
+
             if os.path.exists(nf_pip_done):
                 if 'PYTHONPATH' not in environ:
                     environ['PYTHONPATH'] = os.path.abspath(pip_target_dir)
@@ -594,33 +652,6 @@ Examples:
                     log('download win10toast-persist failed for: <{}> exit code {}'.format(cmdline_args, cmd_exit_code), e)
                     print_stdout('ERROR: Cannot make notification under Windows - cannot download backend module - win10toast-persist')
 
-            def download_file(url, download_dir):
-                import ssl
-                ctx = ssl.create_default_context()
-                ctx.check_hostname = False
-                ctx.verify_mode = ssl.CERT_NONE
-
-                data = ''
-                try:
-                    import urllib.request
-                    request = urllib.request.urlopen(url, context=ctx)
-                    data = request.read()
-                except Exception as e:
-                    log('urllib for python3 failed', e)
-                    try:
-                        import urllib
-                        request = urllib.urlopen(url, context=ctx)
-                        data = request.read()
-                    except Exception as e:
-                        log('urllib for python2 failed', e)
-                if data == '':
-                    print_stdout('ERROR: Cannot download file: {}'.format(url))
-                    return 1
-
-                downloaded_file = os.path.join(download_dir, 'python.zip')
-                with open(downloaded_file, 'wb') as f:
-                    f.write(data)
-
             download_dir = os.path.join(nf_dir, 'wsl', 'python', 'zip')
             import os
             try:
@@ -632,7 +663,7 @@ Examples:
             new_python_dir = os.path.join(nf_dir_win_for_wsl, 'wsl', 'python', '3.8.2')
             downloaded_file = os.path.join(download_dir, 'python.zip')
             if not os.path.exists(downloaded_file):
-                download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir)
+                download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-amd64.zip', download_dir, 'python.zip')
                 #download_file('https://www.python.org/ftp/python/3.8.2/python-3.8.2-embed-win32.zip', download_dir)
 
                 try:
