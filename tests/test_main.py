@@ -120,7 +120,7 @@ def get_method_mocks():
 @pytest.mark.real
 def test_main_ls(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', 'ls']
+    sys.argv = ['nf', '-d', 'ls']
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -134,7 +134,7 @@ def test_main_ls(fixture_environment):
 @pytest.mark.real
 def test_main_ls_not_exist(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', 'ls not_exist']
+    sys.argv = ['nf', '-d', 'ls not_exist']
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -148,7 +148,7 @@ def test_main_ls_not_exist(fixture_environment):
 @pytest.mark.real
 def test_main_ls_print(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'ls']
+    sys.argv = ['nf', '-d', '-p', 'ls']
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -162,7 +162,7 @@ def test_main_ls_print(fixture_environment):
 @pytest.mark.real
 def test_main_ls_label(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-l', 'this is label', 'ls']
+    sys.argv = ['nf', '-d', '-l', 'this is label', 'ls']
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -176,7 +176,7 @@ def test_main_ls_label(fixture_environment):
 @pytest.mark.real
 def test_main_ls_no_notify(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-n', 'ls']
+    sys.argv = ['nf', '-d', '-n', 'ls']
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -190,7 +190,7 @@ def test_main_ls_no_notify(fixture_environment):
 @pytest.mark.real
 def test_main_no_module_dbus(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', 'ls']
+    sys.argv = ['nf', '-d', 'ls']
 
     module_name = 'dbus'
     module_backup = sys.modules[module_name] if module_name in sys.modules else None
@@ -209,7 +209,7 @@ def test_main_no_module_dbus(fixture_environment):
 @pytest.mark.real
 def test_main_no_module_shutil(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'ls']
+    sys.argv = ['nf', '-d', '-p', 'ls']
 
     module_name = 'shutil'
     module_backup = sys.modules[module_name] if module_name in sys.modules else None
@@ -228,7 +228,7 @@ def test_main_no_module_shutil(fixture_environment):
 @pytest.mark.real
 def test_main_module_shutil_cannot_get_terminal_size(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'ls']
+    sys.argv = ['nf', '-d', '-p', 'ls']
 
     module_name = 'shutil'
     module_backup = sys.modules[module_name] if module_name in sys.modules else None
@@ -254,7 +254,7 @@ def test_main_module_shutil_cannot_get_terminal_size(fixture_environment):
 @pytest.mark.real
 def test_main_module_dbus_error(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'ls']
+    sys.argv = ['nf', '-d', '-p', 'ls']
 
     module_name = 'dbus'
     module_backup = sys.modules[module_name] if module_name in sys.modules else None
@@ -282,7 +282,7 @@ def test_main_module_dbus_error(fixture_environment):
 
 def test_tool_runable(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf']
+    sys.argv = ['nf', '-n']
 
     with pytest.raises(SystemExit) as exit_e:
         import runpy
@@ -292,23 +292,9 @@ def test_tool_runable(fixture_environment):
 
     assert exit_e.value.code == 0
 
-
-def test_main_no_args(fixture_environment):
-    sys_argv = sys.argv
-    sys.argv = ['nf']
-
-    with pytest.raises(SystemExit) as exit_e:
-        import nf
-        nf.main()
-
-    sys.argv = sys_argv
-
-    assert exit_e.value.code == 0
-
-
 def test_main_module_all_mock(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', 'echo', '-n']
 
     module_backup = {}
     modules = ['dbus', 'shutil', 'distutils.spawn']
@@ -341,7 +327,7 @@ def test_main_module_all_mock(fixture_environment):
 def test_main_module_all_mock_custom_notification_title(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_title', my_text, 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_title', my_text, 'echo', '-n']
 
     module_backup = {}
     modules = ['dbus']
@@ -366,7 +352,8 @@ def test_main_module_all_mock_custom_notification_title(fixture_environment, cap
             sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
-    stdout = captured.out.splitlines()
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
+    print(captured.out)
 
     assert exit_e.value.code == 0
     assert stdout[1] == my_text
@@ -375,7 +362,7 @@ def test_main_module_all_mock_custom_notification_title(fixture_environment, cap
 def test_main_module_all_mock_custom_notification_text(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_text', my_text, 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_text', my_text, 'echo', '-n']
 
     module_backup = {}
     modules = ['dbus']
@@ -400,7 +387,8 @@ def test_main_module_all_mock_custom_notification_text(fixture_environment, caps
             sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
-    stdout = captured.out.splitlines()
+    stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
+    print(captured.out)
 
     assert exit_e.value.code == 0
     assert stdout[2] == my_text
@@ -409,7 +397,7 @@ def test_main_module_all_mock_custom_notification_text(fixture_environment, caps
 def test_main_module_all_mock_custom_notification_exit_code(fixture_environment):
     my_exit_code = 13
     sys_argv = sys.argv
-    sys.argv = ['nf', '-p', '--custom_notification_exit_code', str(my_exit_code), 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_exit_code', str(my_exit_code), 'echo', '-n']
 
     module_backup = {}
     modules = ['dbus']
@@ -438,7 +426,7 @@ def test_main_module_all_mock_custom_notification_exit_code(fixture_environment)
 @pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_main_module_all_mock_ctrl_c(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-n', '-p', 'sleep 2']
+    sys.argv = ['nf', '-d', '-n', '-p', 'sleep 2']
 
     import os
     import signal
@@ -464,7 +452,7 @@ def test_main_module_all_mock_ctrl_c(fixture_environment):
 @pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_main_module_all_mock_ctrl_c_mock_signal(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-n', '-p', '-d', 'sleep 2']
+    sys.argv = ['nf', '-d', '-n', '-p', 'sleep 2']
 
     import os
     import signal
@@ -509,7 +497,7 @@ def test_main_module_all_mock_save(fixture_environment):
         pass
 
     sys_argv = sys.argv
-    sys.argv = ['nf', '-s', 'echo', '-n']
+    sys.argv = ['nf', '-d', '-s', 'echo', '-n']
 
     module_backup = {}
     modules = ['dbus']
@@ -548,7 +536,7 @@ def test_main_module_all_mock_save(fixture_environment):
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label1', '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), 'echo', '-n']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -598,7 +586,7 @@ def test_main_module_all_mock_backend(fixture_environment, backend, python_versi
 @pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label2', '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), 'echo', '-n']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -639,7 +627,7 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
 def test_main_module_all_mock_bad_functionality_backend(fixture_environment, backend, method_mock, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '--debug', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), 'echo', '-n']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
