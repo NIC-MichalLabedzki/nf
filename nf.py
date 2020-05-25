@@ -894,6 +894,7 @@ Examples:
             print_stdout("nf: WARNING: Could not get backend, notification will not work", file=sys.stderr)
     log('choosen backend is {}'.format(backend))
 
+    cmd = None
     if args.cmd is None:
         log('uuu', args.wait_for_pid)
         if args.wait_for_pid is not None:
@@ -908,7 +909,7 @@ Examples:
 
     log('part cmdline cmd', args.cmd)
     log('part cmdline args', args.args)
-    cmdline = cmd + ' ' + ' '.join(args.args) if len(args.args) > 0 else ''
+    cmdline = cmd + (' ' + ' '.join(args.args) if len(args.args) > 0 else '')
     if args.label is not None:
         notify__title += ' (' + args.label + ')'
 
