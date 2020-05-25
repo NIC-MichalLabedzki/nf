@@ -731,6 +731,7 @@ Examples:
                 return win_path
 
             nf_exit_code = 0
+            cmdline_args = None
             try:
                 s = None
                 try:
@@ -1378,8 +1379,7 @@ Examples:
             log('Cannot get terminal size', e)
 
         print_stdout('-' * columns)
-        if notify__title != '':
-            print_stdout(notify__title)
+        print_stdout(notify__title)
         print_stdout(notify__body)
         print_stdout('-' * columns)
         if not args.no_notify:

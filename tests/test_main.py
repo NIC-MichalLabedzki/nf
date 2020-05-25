@@ -294,7 +294,7 @@ def test_tool_runable(fixture_environment):
 
 def test_main_module_all_mock(fixture_environment):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '-p', 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '']
 
     module_backup = {}
     modules = ['dbus', 'shutil', 'distutils.spawn']
@@ -327,7 +327,7 @@ def test_main_module_all_mock(fixture_environment):
 def test_main_module_all_mock_custom_notification_title(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '-p', '--custom_notification_title', my_text, 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_title', my_text, '']
 
     module_backup = {}
     modules = ['dbus']
@@ -362,7 +362,7 @@ def test_main_module_all_mock_custom_notification_title(fixture_environment, cap
 def test_main_module_all_mock_custom_notification_text(fixture_environment, capsys):
     my_text = 'my text'
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '-p', '--custom_notification_text', my_text, 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_text', my_text, '']
 
     module_backup = {}
     modules = ['dbus']
@@ -397,7 +397,7 @@ def test_main_module_all_mock_custom_notification_text(fixture_environment, caps
 def test_main_module_all_mock_custom_notification_exit_code(fixture_environment):
     my_exit_code = 13
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '-p', '--custom_notification_exit_code', str(my_exit_code), 'echo', '-n']
+    sys.argv = ['nf', '-d', '-p', '--custom_notification_exit_code', str(my_exit_code), '']
 
     module_backup = {}
     modules = ['dbus']
@@ -497,7 +497,7 @@ def test_main_module_all_mock_save(fixture_environment):
         pass
 
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '-s', 'echo', '-n']
+    sys.argv = ['nf', '-d', '-s', '']
 
     module_backup = {}
     modules = ['dbus']
@@ -524,7 +524,7 @@ def test_main_module_all_mock_save(fixture_environment):
 
     with open('.nf') as f:
         line = f.read().splitlines()
-        assert line[0] == 'echo -n'
+        assert line[0] == ''
         assert line[1] =='Exit code: 0'
         assert line[2][:6] =='Start '
         assert line[3][:6] =='Stop  '
@@ -536,7 +536,7 @@ def test_main_module_all_mock_save(fixture_environment):
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), '']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -586,7 +586,7 @@ def test_main_module_all_mock_backend(fixture_environment, backend, python_versi
 @pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
 def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), '']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -627,7 +627,7 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
 def test_main_module_all_mock_bad_functionality_backend(fixture_environment, backend, method_mock, python_version):
     sys_argv = sys.argv
-    sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), 'echo', '-n']
+    sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), '']
 
     if sys.version_info < (3,5) and python_version >= (3,5):
         pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
@@ -716,7 +716,7 @@ def test_yakuake_support(fixture_environment, capsys):
     test_environment = prepare()
 
     import nf
-    exit_code = nf.nf(['-ndp', 'echo', '-n'])
+    exit_code = nf.nf(['-ndp', ''])
 
     post(test_environment)
 
@@ -726,7 +726,7 @@ def test_yakuake_support(fixture_environment, capsys):
     print(captured.out)
 
     assert exit_code == 0
-    assert stdout[1] == 'echo [yakuake_tab_title]'
+    assert stdout[1] == ' [yakuake_tab_title]'
 
 
 @pytest.mark.parametrize("is_case_ppid", [False, True])
@@ -789,7 +789,7 @@ def test_konsole_support(fixture_environment, capsys, is_case_ppid):
     test_environment = prepare()
 
     import nf
-    exit_code = nf.nf(['-ndp', 'echo', '-n'])
+    exit_code = nf.nf(['-ndp', ''])
 
     post(test_environment)
 
@@ -799,7 +799,7 @@ def test_konsole_support(fixture_environment, capsys, is_case_ppid):
     print(captured.out)
 
     assert exit_code == 0
-    assert stdout[1] == 'echo [konsole_tab_title]'
+    assert stdout[1] == ' [konsole_tab_title]'
 
 
 def test_screen_support(fixture_remove_fake_apps, fixture_environment, capsys):
@@ -862,7 +862,7 @@ else:
     test_environment = prepare()
 
     import nf
-    exit_code = nf.nf(['-ndp', 'echo', '-n'])
+    exit_code = nf.nf(['-ndp', ''])
 
     captured = capsys.readouterr()
 
@@ -872,7 +872,7 @@ else:
     post(test_environment)
 
     assert exit_code == 0
-    assert stdout[1] == 'echo [screen_window_title]'
+    assert stdout[1] == ' [screen_window_title]'
 
 
 @pytest.mark.parametrize("is_case_ppid", [False, True])
@@ -953,7 +953,7 @@ else:
     test_environment = prepare()
 
     import nf
-    exit_code = nf.nf(['-ndp', 'echo', '-n'])
+    exit_code = nf.nf(['-ndp', ''])
 
     captured = capsys.readouterr()
 
@@ -963,7 +963,7 @@ else:
     post(test_environment)
 
     assert exit_code == 0
-    assert stdout[1] == 'echo [session -> 1 window -> 1 pane]'
+    assert stdout[1] == ' [session -> 1 window -> 1 pane]'
 
 
 @pytest.mark.parametrize("ssh_script_index", [0, 1, 2])
@@ -1038,7 +1038,7 @@ else:
     test_environment = prepare()
 
     import nf
-    exit_code = nf.nf(['-dp', '--backend', 'ssh', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--backend', 'ssh', ''])
 
     captured = capsys.readouterr()
     stdout = [log for log in captured.out.splitlines() if not log.startswith('DEBUG')]
@@ -1047,7 +1047,7 @@ else:
     post(test_environment)
 
     assert exit_code == 0
-    assert stdout[1 + (1 if ssh_script_index == 1 else 0)] == 'echo'
+    assert stdout[1 + (1 if ssh_script_index == 1 else 0)] == ''
 
 
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh'])
@@ -1056,7 +1056,7 @@ def test_ssh_no_ssh_environment_variable(fixture_environment, backend):
     # import os
     # del os.environ['SSH_CLIENT']
     import nf
-    exit_code = nf.nf(['-dp', '--backend', backend, 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--backend', backend, ''])
 
     assert exit_code == 0
 
@@ -1076,7 +1076,7 @@ def test_no_psutil(fixture_environment):
 # TODO: stubs for: os.readlink, open, f.read(), and tmux fake app
 
     import nf
-    exit_code = nf.nf(['-dp', '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--backend', 'stdout', ''])
 
     if module_backup[module_name] is not None:
         sys.modules[module_name] = module_backup[module_name]
@@ -1096,7 +1096,7 @@ def test_detach_unix_parent(fixture_environment):
     os._exit = mock.Mock()
 
     import nf
-    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', ''])
 
     os.fork = fork
     os._exit = os_exit
@@ -1113,7 +1113,7 @@ def test_detach_unix_child(fixture_environment):
     os.fork.return_value = 0
 
     import nf
-    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', ''])
 
     os.fork = fork
 
@@ -1139,7 +1139,7 @@ def test_detach_win(fixture_environment, fixture_python_version, python_version)
     subprocess.DETACHED_PROCESS = -1
 
     import nf
-    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--detach', '--backend', 'stdout', ''])
 
     sys.platform = platform
     subprocess.Popen = popen
@@ -1159,7 +1159,7 @@ def test_wait_for_pid(fixture_environment, capsys):
 
     import nf
     start = time.time()
-    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', ''])
     end = time.time()
 
     captured = capsys.readouterr()
@@ -1192,7 +1192,7 @@ def test_wait_for_pid_no_psutil(fixture_environment, capsys):
 
     import nf
     start = time.time()
-    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--wait-for-pid', str(pid1), '--wait-for-pid', str(pid2), '--backend', 'stdout', ''])
     end = time.time()
 
     captured = capsys.readouterr()
@@ -1209,7 +1209,7 @@ def test_debugfile(fixture_environment):
     test_file = 'tmp_debugfile1'
 
     import nf
-    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', ''])
     import os
 
     try:
@@ -1228,7 +1228,7 @@ def test_closed_stdout(fixture_environment):
     sys.stdout = 0 # cause AttributeError: 'int' object has no attribute 'write'
 
     import nf
-    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'stdout', ''])
 
     sys.stdout = stdout
     import os
@@ -1248,7 +1248,7 @@ def test_wsl(fixture_environment):
     test_file = 'tmp_debugfile3'
 
     import nf
-    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'wsl', 'echo', '-n'])
+    exit_code = nf.nf(['-dp', '--debugfile', test_file, '--backend', 'wsl', ''])
     import os
 
     try:
