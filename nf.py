@@ -760,7 +760,7 @@ Examples:
                         skip_next = True
                     elif arg == '--backend=win10toast-persist':
                         pass
-                    elif arg[0] == '-' and len(arg) >= 2 and arg[1] != '-':
+                    elif (len(arg) > 0 and arg[0] == '-') or (len(arg) >= 2 and arg[1] != '-'):
                         a = arg.split('=')
                         if 'b' in a[0]:
                             if len(a) == 1:
