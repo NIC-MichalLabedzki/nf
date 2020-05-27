@@ -1021,12 +1021,32 @@ else:
 
         os.environ['SSH_CLIENT'] = '127.0.0.1 5555 6666'
 
-        ssh_app = os.path.join(tmp_fake_apps, 'ssh')
-        with open(ssh_app, 'w') as f:
-            f.write(ssh_script[ssh_script_index])
-        os.chmod(ssh_app, 0o777)
+#        ssh_app = os.path.join(tmp_fake_apps, 'ssh')
+#        with open(ssh_app, 'w') as f:
+#            f.write(ssh_script[ssh_script_index])
+#        os.chmod(ssh_app, 0o777)
 
-        os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+#        os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
+        test_app_name = 'ssh'
+        if sys.platform == "win32":
+            app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
+            with open(app_py, 'w') as f:
+                f.write(ssh_script[ssh_script_index])
+
+            import PyInstaller.__main__
+            PyInstaller.__main__.run(['--name=%s' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
+
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
+        else:
+            app = os.path.join(tmp_fake_apps, test_app_name)
+            with open(app, 'w') as f:
+                f.write(ssh_script[ssh_script_index])
+            os.chmod(app, 0o777)
+
+            os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
+
+
 
         return test_environment
 
