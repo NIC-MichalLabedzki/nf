@@ -679,13 +679,6 @@ Examples:
                 except Exception as e:
                     log('cannot unzip custom python', e)
 
-            # NOTE: Not needed?
-            #try:
-            #    with open(os.path.join(new_python_dir, 'python38._pth'), 'a') as f:
-            #        f.write('import site\n')
-            #except Exception as e:
-            #    log('cannot add site module to custom python', e)
-
             os.environ["PATH"] = os.path.abspath(new_python_dir) + os.pathsep + os.environ["PATH"]
             sys.path.insert(0, os.path.abspath(new_python_dir))
 
@@ -700,106 +693,7 @@ Examples:
             if sys.platform != 'win32' and is_wsl != True: # NOTE: just for testing without Win
                 python_exe = 'python'
 
-            def wsl_to_windows_path(wsl_path):
-                import os
-                abs_wsl_path = os.path.abspath(wsl_path)
-                log('wsl_to_windows_path', wsl_path, '->', abs_wsl_path)
-
-                cmdline_args = ['wslpath', '-a', '-w', abs_wsl_path]
-                import subprocess
-                try:
-                    win_path = subprocess.check_output(cmdline_args).decode().strip('"\n')
-                except Exception as e:
-                    log('wspath exit error', e)
-                    if abs_wsl_path.startswith('/mnt/'):
-                        win_path = 'C:\\' + abs_wsl_path[7:].replace('/', '\\')
-                    else:
-                        path = abs_wsl_path.split(os.path.sep)
-                        user = ''
-                        if path[0] == 'home':
-                            user = path[1]
-                            path = path[2:]
-                        else:
-                            import getpass
-                            user = getpass.getuser()
-                            path = path[1:]
-                        win_path = 'C:\\Users\\{}\\AppData\\Local\\Packages\\CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc\\LocalState\\rootfs\\'.format(user) + '\\'.join(path)
-                        if os.path.isdir(win_path):
-                            win_path += '\\'
-
-                log('wsl_to_windows_path return', win_path)
-                return win_path
-
-            nf_exit_code = 0
-            cmdline_args = None
-            try:
-                s = None
-                try:
-                    import inspect
-                    s = inspect.getsource(inspect.getmodule(nf))
-
-                    if sys.version_info.major == 2:
-                        s = s[s.find('##'):]
-
-                    s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1)
-                except Exception as e:
-                    s = nf_stored_code
-                    s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1) # recover stored code variable
-                    log('inspect exception:', e)
-
-                filtered_argv = []
-                skip_next = False
-                for arg in argv:
-                    if skip_next:
-                        skip_next = False
-                        continue
-                    if len(arg) >= 3 and arg[0:3] == '-b=':
-                        pass
-                    elif arg == '-b' or arg == '--backend':
-                        pass
-                        skip_next = True
-                    elif arg == '--backend=win10toast-persist':
-                        pass
-                    elif (len(arg) > 0 and arg[0] == '-') or (len(arg) >= 2 and arg[1] != '-'):
-                        a = arg.split('=')
-                        if 'b' in a[0]:
-                            if len(a) == 1:
-                                skip_next = True
-
-                            if len(a[0]) == 1:
-                                pass
-                            else:
-                                a[0] = a[0].strip('b')
-                                arg = a[0]
-                                filtered_argv.append(arg)
-                    else:
-                        filtered_argv.append(arg)
-                if sys.platform != 'win32': # NOTE: just for testing without Win
-                    filtered_argv.insert(0, '--backend=win10toast-persist')
-# TODO: add --backend and inner like: "-dpb"
-
-                cmdline_args = [python_exe, '-'] + filtered_argv
-                log('run external python:', cmdline_args)
-                import subprocess
-                p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
-                nf_script = s.encode()
-                output, stderr_output  = p.communicate(nf_script)
-                print_stdout(output.decode())
-                log('stdout external python', output.decode())
-                log('stderr external python', stderr_output.decode())
-                # output is redirected on stdout
-                if nf_exit_code == 0:
-                    nf_cleanup()
-                    return nf_exit_code
-                else:
-                    backend = 'stdout'
-                    log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
-            except Exception as e:
-                log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
-                print_stdout('ERROR: Cannot run external python, last3 win step')
-                backend = 'stdout'
-
-            log('wsl external python exit code ', nf_exit_code)
+            backend = 'wsl'
 
         if (sys.platform == 'win32' and backend in ['stdout', 'win10toast-persist'] and args.backend == None) or args.backend == 'win10toast-persist':
             try:
@@ -1276,7 +1170,45 @@ Examples:
     log('no_notifty is {}, backend is {}'.format(args.no_notify, backend))
     if not args.no_notify:
         try:
-            if backend == 'dbus':
+            if backend == 'wsl':
+
+                nf_exit_code = 0
+                cmdline_args = None
+                try:
+                    s = None
+                    try:
+                        import inspect
+                        s = inspect.getsource(inspect.getmodule(nf))
+
+                        if sys.version_info.major == 2:
+                            s = s[s.find('##'):]
+
+                        s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1)
+                    except Exception as e:
+                        s = nf_stored_code
+                        s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1) # recover stored code variable
+                        log('inspect exception:', e)
+
+                    cmdline_args = [python_exe, '-', '--custom_notification_title=\"{}\"'.format(notify__title), '--custom_notification_text=\"{}\"'.format(notify__body),  '--custom_notification_exit_code={}'.format(exit_code)]
+
+                    log('run external python:', cmdline_args)
+                    import subprocess
+                    p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
+                    nf_script = s.encode()
+                    output, stderr_output  = p.communicate(nf_script)
+                    print_stdout(output.decode())
+                    log('stdout external python', output.decode())
+                    log('stderr external python', stderr_output.decode())
+                    # output is redirected on stdout
+                    if nf_exit_code != 0:
+                        log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
+                except Exception as e:
+                    log('run external python failed for: <{}> exit code {}'.format(cmdline_args, nf_exit_code), e)
+                    print_stdout('ERROR: Cannot run external python, last3 win step')
+                    backend = 'stdout'
+
+                log('wsl external python exit code ', nf_exit_code)
+            elif backend == 'dbus':
                 notify__replaces_id = dbus.UInt32(time.time() * 1000000 % 2 ** 32)
                 notify__actions = dbus.Array(signature='s')
                 notify__hints = dbus.Dictionary(signature='sv')
