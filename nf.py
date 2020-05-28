@@ -231,7 +231,7 @@ Examples:
             if args.debug is True:
                 argss = []
                 for a in arg:
-                    argss.append(str(a))
+                    argss.append(str(a).replace('\n', '\nDEBUG:    '))
                 try:
                     print('DEBUG {}: {}'.format(current_time, ' '.join(argss)))
                 except:
@@ -239,7 +239,7 @@ Examples:
             if args.debugfile is not None:
                 argss = []
                 for a in arg:
-                    argss.append(str(a))
+                    argss.append(str(a).replace('\n', '\nDEBUG:    '))
                 if logfile['handle'] is None:
                     logfile['handle'] = open(args.debugfile, 'a+b', 0)
                 logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
