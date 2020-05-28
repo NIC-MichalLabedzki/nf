@@ -1189,7 +1189,7 @@ Examples:
                         s = s.replace('nf_stored_code = None', 'nf_stored_code = {}'.format(repr(s)), 1) # recover stored code variable
                         log('inspect exception:', e)
 
-                    cmdline_args = [python_exe, '-', '--custom_notification_title=\"{}\"'.format(notify__title), '--custom_notification_text=\"{}\"'.format(notify__body),  '--custom_notification_exit_code={}'.format(exit_code)]
+                    cmdline_args = [python_exe, '-', '--custom_notification_title={}'.format(notify__title), '--custom_notification_text={}'.format(notify__body),  '--custom_notification_exit_code={}'.format(exit_code)]
 
                     log('run external python:', cmdline_args)
                     import subprocess
