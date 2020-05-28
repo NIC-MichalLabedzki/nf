@@ -279,19 +279,22 @@ Examples:
     nf_dir = os.path.join(os.path.expanduser('~'), NF_DIR)
     nf_dir_win_for_wsl = nf_dir # None? nf_dir for manual testing under linux
     if is_wsl:
-        cmd_argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
-        import subprocess
-        python_process = subprocess.Popen(cmd_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, stderr_output = python_process.communicate()
-        log('stdout for ', cmd_argv, output.decode())
-        log('stderr for ', cmd_argv, stderr_output.decode())
-        if output:
-            user_dir_win = output.decode().rstrip('\r\n')
-            user_dir_win_for_wsl = windows_to_wsl_path(user_dir_win)
-            if user_dir_win_for_wsl is None:
-                nf_dir_win_for_wsl = nf_dir
-            else:
-                nf_dir_win_for_wsl = os.path.join(user_dir_win_for_wsl, NF_DIR)
+        try:
+            cmd_argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
+            import subprocess
+            python_process = subprocess.Popen(cmd_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output, stderr_output = python_process.communicate()
+            log('stdout for ', cmd_argv, output.decode())
+            log('stderr for ', cmd_argv, stderr_output.decode())
+            if output:
+                user_dir_win = output.decode().rstrip('\r\n')
+                user_dir_win_for_wsl = windows_to_wsl_path(user_dir_win)
+                if user_dir_win_for_wsl is None:
+                    nf_dir_win_for_wsl = nf_dir
+                else:
+                    nf_dir_win_for_wsl = os.path.join(user_dir_win_for_wsl, NF_DIR)
+        except Exception as e:
+            log('cannot get user directory', e)
 
     log('nf dir: {}'.format(nf_dir))
     log('nf dir win for wsl: {}'.format(nf_dir_win_for_wsl))
