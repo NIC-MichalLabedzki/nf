@@ -974,7 +974,7 @@ def test_backend_ssh(capsys, fixture_remove_fake_apps, fixture_environment, fixt
     import sys
     if sys.version_info < (3, 0):
         pytest.skip("Test unfortunately does not work with python < 3.0, python hangs anf this is related to sys.exit() in fake app script".format((3, 0), sys.version_info))
-    fixture_python_version(python_version)
+
     import os
 
     ssh_script = []
@@ -1027,7 +1027,6 @@ else:
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
-
         for module_name in test_environment['modules']:
             test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
@@ -1052,6 +1051,7 @@ else:
 
 
     test_environment = prepare()
+    fixture_python_version(python_version)
 
     import nf
     exit_code = nf.nf(['-dp', '--backend', 'ssh', ''])
