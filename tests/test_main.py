@@ -1063,7 +1063,7 @@ else:
     post(test_environment)
 
     assert exit_code == 0
-    assert stdout[1 + (1 if ssh_script_index == 1 else 0)] == ''
+    assert stdout[1] == ''
 
 
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh'])
