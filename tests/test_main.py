@@ -1005,28 +1005,7 @@ else:
     def prepare():
         test_environment = {'modules': ['psutil'],
                             'module_backup': {}}
-        for module_name in test_environment['modules']:
-            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-            module_mock = mock.MagicMock()
-            process_mock = mock.MagicMock()
-            process_mock.exe.return_value = "exe_text"
-            process_mock.cmdline.return_value = "cmdline_text"
-            process_mock.name.return_value = 'name_text'
-            module_mock.Process.return_value = process_mock
-
-            setattr(module_mock, '__spec__', module_mock)
-
-            sys.modules[module_name] = module_mock
-
-        os.environ['SSH_CLIENT'] = '127.0.0.1 5555 6666'
-
-#        ssh_app = os.path.join(tmp_fake_apps, 'ssh')
-#        with open(ssh_app, 'w') as f:
-#            f.write(ssh_script[ssh_script_index])
-#        os.chmod(ssh_app, 0o777)
-
-#        os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
         test_app_name = 'ssh'
         if sys.platform == "win32":
@@ -1047,6 +1026,21 @@ else:
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ':' + os.environ['PATH']
 
 
+        for module_name in test_environment['modules']:
+            test_environment['module_backup'][module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+            module_mock = mock.MagicMock()
+            process_mock = mock.MagicMock()
+            process_mock.exe.return_value = "exe_text"
+            process_mock.cmdline.return_value = "cmdline_text"
+            process_mock.name.return_value = 'name_text'
+            module_mock.Process.return_value = process_mock
+
+            setattr(module_mock, '__spec__', module_mock)
+
+            sys.modules[module_name] = module_mock
+
+        os.environ['SSH_CLIENT'] = '127.0.0.1 5555 6666'
 
         return test_environment
 
