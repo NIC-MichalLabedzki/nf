@@ -1127,11 +1127,15 @@ Examples:
     if args.cmd is not None:
         log('before run cmd', cmdline_args)
         try:
-            if sys.version_info >= (3, 5):
-                exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
-            else:
-                import subprocess
-                exit_code = subprocess.call(cmdline_args, shell=system_shell)
+            import subprocess
+            p = subprocess.Popen(cmdline_args, shell=system_shell)
+            p.communicate()
+            exit_code = p.returncode
+            #if sys.version_info >= (3, 5):
+            #    exit_code = subprocess.run(cmdline_args, shell=system_shell).returncode
+            #else:
+            #    import subprocess
+            #    exit_code = subprocess.call(cmdline_args, shell=system_shell)
         except Exception as e:
             log('core run cmdline failed for: <{}>'.format(cmdline_args), e)
         log('after run cmd', cmdline_args)
