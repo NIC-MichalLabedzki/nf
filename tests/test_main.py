@@ -44,7 +44,11 @@ def fixture_python_version(request):
     def python_version(version):
         if sys.version_info < version:
             pytest.skip("Test require python {}, but you are {}".format(version, sys.version_info))
-        sys.version_info = version
+
+        from collections import namedtuple
+        fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
+
+        sys.version_info = fake_python_version(version[0], version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
 
     yield python_version
 
@@ -534,19 +538,11 @@ def test_main_module_all_mock_save(fixture_environment):
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
-def test_main_module_all_mock_backend(fixture_environment, backend, python_version):
+def test_main_module_all_mock_backend(fixture_environment, fixture_python_version, backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), '']
 
-    if sys.version_info < (3,5) and python_version >= (3,5):
-        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
-
-    sys_version_info = sys.version_info
-
-    from collections import namedtuple
-    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
-    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
-
+    fixture_python_version(python_version)
 
     module_backup = {}
     modules = ['dbus', 'win10toast-persist', 'win10toast', 'subprocess', 'getpass', 'paramiko']
@@ -579,30 +575,22 @@ def test_main_module_all_mock_backend(fixture_environment, backend, python_versi
         else:
             sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
-    sys.version_info = sys_version_info
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
-def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, python_version):
+def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_python_version, backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), '']
 
-    if sys.version_info < (3,5) and python_version >= (3,5):
-        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
-
-    sys_version_info = sys.version_info
-
-    from collections import namedtuple
-    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
-    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
+    fixture_python_version(python_version)
 
     module_backup = {}
     modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-        if sys_version_info.major == 3 and sys_version_info.minor >= 9 and module_name == 'shutil':
+        if sys.version_info.major == 3 and sys.version_info.minor >= 9 and module_name == 'shutil':
             # shutil is used by argparse in python 3.10
             # TODO: better solution?
             pass
@@ -619,24 +607,17 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, backend, p
         else:
             sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
-    sys.version_info = sys_version_info
 
     assert exit_e.value.code == 0
 
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
-def test_main_module_all_mock_bad_functionality_backend(fixture_environment, backend, method_mock, python_version):
+def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fixture_python_version, backend, method_mock, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), '']
 
-    if sys.version_info < (3,5) and python_version >= (3,5):
-        pytest.skip("Test require python {}, but you are {}".format(python_version, sys.version_info))
-    sys_version_info = sys.version_info
-
-    from collections import namedtuple
-    fake_python_version = namedtuple('version_info', 'major minor micro releaselevel serial')
-    sys.version_info = fake_python_version(python_version[0], python_version[1], sys.version_info.micro, sys.version_info.releaselevel, sys.version_info.serial)
+    fixture_python_version(python_version)
 
     import os
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
@@ -646,7 +627,7 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
     for module_name in modules:
         module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
 
-        if sys_version_info.major == 3 and sys_version_info.minor >= 9 and module_name == 'shutil':
+        if sys.version_info.major == 3 and sys.version_info.minor >= 9 and module_name == 'shutil':
             # shutil is used by argparse in python 3.10
             # TODO: better solution?
             pass
@@ -672,7 +653,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, bac
             sys.modules[module_name] = module_backup[module_name]
 
     sys.argv = sys_argv
-    sys.version_info = sys_version_info
 
     assert exit_e.value.code == 0
 
@@ -973,7 +953,7 @@ else:
 def test_backend_ssh(capsys, fixture_remove_fake_apps, fixture_environment, fixture_python_version, ssh_script_index, python_version):
     import sys
     if sys.version_info < (3, 0):
-        pytest.skip("Test unfortunately does not work with python < 3.0, python hangs anf this is related to sys.exit() in fake app script".format((3, 0), sys.version_info))
+        pytest.skip("Test unfortunately does not work with python < 3.0, python hangs and this is related to sys.exit() in fake app script".format((3, 0), sys.version_info))
 
     import os
 
@@ -1120,6 +1100,7 @@ def test_detach_unix_parent(fixture_environment):
     assert exit_code == 'detached'
 
 
+@pytest.mark.skipif(sys.version_info.major == 2, reason="It seems subprocess.Popen use os.fork() internally on python 2.7")
 @pytest.mark.skipif(sys.platform == "win32", reason="Linux specific test")
 def test_detach_unix_child(fixture_environment):
     import os

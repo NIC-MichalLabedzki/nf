@@ -29,5 +29,3 @@ omit =
     x*
     y*
     z*
-
-include = nf.py
