@@ -1204,9 +1204,11 @@ Examples:
                     p = subprocess.Popen(cmdline_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environ)
                     nf_script = s.encode()
                     output, stderr_output  = p.communicate(nf_script)
-                    print_stdout(output.decode())
-                    log('stdout external python', output.decode())
-                    log('stderr external python', stderr_output.decode())
+                    o = output.decode()
+                    log('stdout external python', output)
+                    log('stderr external python', stderr_output)
+                    if o != '':
+                        print_stdout(o)
                     # output is redirected on stdout
                     if nf_exit_code != 0:
                         log('run external python exit with error: <{}> exit code {}'.format(cmdline_args, nf_exit_code))
