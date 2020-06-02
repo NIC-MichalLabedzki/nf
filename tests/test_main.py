@@ -583,8 +583,6 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_py
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), '']
 
-    fixture_python_version(python_version)
-
     module_backup = {}
     modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
     for module_name in modules:
@@ -596,6 +594,8 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_py
             pass
         else:
             sys.modules[module_name] = None
+
+    fixture_python_version(python_version)
 
     with pytest.raises(SystemExit) as exit_e:
         import nf
@@ -617,8 +617,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fix
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), '']
 
-    fixture_python_version(python_version)
-
     import os
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
 
@@ -635,6 +633,8 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fix
             module_mock = method_mock
             setattr(module_mock, '__spec__', module_mock)
             sys.modules[module_name] = module_mock
+
+    fixture_python_version(python_version)
 
     if backend == 'ssh' or backend == 'paramiko':
         os.environ['SSH_CLIENT'] = '127.0.0.1 1234 5678'
