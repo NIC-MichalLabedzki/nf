@@ -188,7 +188,7 @@ install:
 
 script:
   - $PYTHONNIC -m pytest
-  - $PYTHONNIC -m coveralls
+  - $PYTHONNIC -m coveralls || true
 
 notifications:
   email:
