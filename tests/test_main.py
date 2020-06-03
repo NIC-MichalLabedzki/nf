@@ -34,6 +34,35 @@ def fixture_environment():
 
     os.environ.update(environ_backup)
 
+@pytest.fixture(scope='function')
+def fixture_modules(module_list, module_mock_mode, method_mock):
+    import sys
+    module_backup = {}
+
+    #def mock_module(modules, method_mock=None):
+    for module_name in module_list:
+        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
+
+        if sys.version_info.major == 3 and sys.version_info.minor >= 9 and module_name == 'shutil':
+            # shutil is used by argparse in python 3.10
+            # TODO: better solution?
+            pass
+        else:
+            if module_mock_mode == 'method_mock':
+                module_mock = method_mock
+                setattr(module_mock, '__spec__', module_mock)
+                sys.modules[module_name] = module_mock
+            elif module_mock_mode == 'none':
+                sys.modules[module_name] = None
+
+    yield
+
+    for module_name in module_list:
+        if module_backup[module_name] is None:
+            sys.modules.pop(module_name)
+        else:
+            sys.modules[module_name] = module_backup[module_name]
+
 
 @pytest.fixture(scope='function')
 def fixture_python_version(request):
@@ -542,8 +571,6 @@ def test_main_module_all_mock_backend(fixture_environment, fixture_python_versio
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), '']
 
-    fixture_python_version(python_version)
-
     module_backup = {}
     modules = ['dbus', 'win10toast-persist', 'win10toast', 'subprocess', 'getpass', 'paramiko']
     for module_name in modules:
@@ -556,6 +583,8 @@ def test_main_module_all_mock_backend(fixture_environment, fixture_python_versio
             module_mock.SSHClient.return_value.exec_command.return_value = (mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
 
         sys.modules[module_name] = module_mock
+
+    fixture_python_version(python_version)
 
     if backend == 'ssh' or backend == 'paramiko':
         import os
@@ -579,21 +608,12 @@ def test_main_module_all_mock_backend(fixture_environment, fixture_python_versio
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend", ['paramiko', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
-def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_python_version, backend, python_version):
+@pytest.mark.parametrize("module_list", [['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']])
+@pytest.mark.parametrize("module_mock_mode", ['none'])
+@pytest.mark.parametrize("method_mock", [None])
+def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_modules, fixture_python_version, backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label2', '--backend={}'.format(backend), '']
-
-    module_backup = {}
-    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
-    for module_name in modules:
-        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
-
-        if sys.version_info.major == 3 and sys.version_info.minor >= 9 and module_name == 'shutil':
-            # shutil is used by argparse in python 3.10
-            # TODO: better solution?
-            pass
-        else:
-            sys.modules[module_name] = None
 
     fixture_python_version(python_version)
 
@@ -601,11 +621,6 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_py
         import nf
         nf.main()
 
-    for module_name in modules:
-        if module_backup[module_name] is None:
-            sys.modules.pop(module_name)
-        else:
-            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
     assert exit_e.value.code == 0
@@ -613,27 +628,16 @@ def test_main_module_all_mock_bad_import_backend(fixture_environment, fixture_py
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend, method_mock", get_method_mocks())
-def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fixture_python_version, backend, method_mock, python_version):
+@pytest.mark.parametrize("module_list", [['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']])
+@pytest.mark.parametrize("module_mock_mode", ['method_mock'])
+def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fixture_modules, fixture_python_version, backend, method_mock, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label3_{}'.format(backend), '--backend={}'.format(backend), '']
 
     import os
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
 
-    module_backup = {}
-    modules = ['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass']
-    for module_name in modules:
-        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
-
-        if sys.version_info.major == 3 and sys.version_info.minor >= 9 and module_name == 'shutil':
-            # shutil is used by argparse in python 3.10
-            # TODO: better solution?
-            pass
-        else:
-            module_mock = method_mock
-            setattr(module_mock, '__spec__', module_mock)
-            sys.modules[module_name] = module_mock
-
+    #fixture_modules(['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass'], method_mock)
     fixture_python_version(python_version)
 
     if backend == 'ssh' or backend == 'paramiko':
@@ -645,12 +649,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fix
 
     if backend == 'ssh' or backend == 'paramiko':
         del os.environ['SSH_CLIENT']
-
-    for module_name in modules:
-        if module_backup[module_name] is None:
-            sys.modules.pop(module_name)
-        else:
-            sys.modules[module_name] = module_backup[module_name]
 
     sys.argv = sys_argv
 
