@@ -54,6 +54,10 @@ def fixture_modules(module_list, module_mock_mode, method_mock):
                 sys.modules[module_name] = module_mock
             elif module_mock_mode == 'none':
                 sys.modules[module_name] = None
+            elif module_mock_mode =='mock':
+                module_mock = mock.MagicMock()
+                setattr(module_mock, '__spec__', module_mock)
+                sys.modules[module_name] = module_mock
 
     yield
 
@@ -567,22 +571,14 @@ def test_main_module_all_mock_save(fixture_environment):
 
 @pytest.mark.parametrize("python_version", [(3, 4), (3,7)])
 @pytest.mark.parametrize("backend", ['paramiko', 'ssh', 'dbus', 'gdbus', 'notify-send', 'termux-notification', 'win10toast-persist', 'win10toast', 'plyer', 'plyer_toast', 'stdout'])
-def test_main_module_all_mock_backend(fixture_environment, fixture_python_version, backend, python_version):
+@pytest.mark.parametrize("module_list", [['dbus', 'win10toast-persist', 'win10toast', 'subprocess', 'getpass', 'paramiko']])
+@pytest.mark.parametrize("module_mock_mode", ['mock'])
+@pytest.mark.parametrize("method_mock", [None])
+def test_main_module_all_mock_backend(fixture_environment, fixture_modules, fixture_python_version, backend, python_version):
     sys_argv = sys.argv
     sys.argv = ['nf', '-d', '--label', 'test_label1', '--backend={}'.format(backend), '']
 
-    module_backup = {}
-    modules = ['dbus', 'win10toast-persist', 'win10toast', 'subprocess', 'getpass', 'paramiko']
-    for module_name in modules:
-        module_backup[module_name] = sys.modules[module_name] if module_name in sys.modules else None
-
-        module_mock = mock.MagicMock()
-        setattr(module_mock, '__spec__', module_mock)
-
-        if module_name == 'paramiko':
-            module_mock.SSHClient.return_value.exec_command.return_value = (mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
-
-        sys.modules[module_name] = module_mock
+    sys.modules['paramiko'].SSHClient.return_value.exec_command.return_value = (mock.MagicMock(), mock.MagicMock(), mock.MagicMock())
 
     fixture_python_version(python_version)
 
@@ -598,11 +594,6 @@ def test_main_module_all_mock_backend(fixture_environment, fixture_python_versio
     if backend == 'ssh' or backend == 'paramiko':
         del os.environ['SSH_CLIENT']
 
-    for module_name in modules:
-        if module_backup[module_name] is None:
-            sys.modules.pop(module_name)
-        else:
-            sys.modules[module_name] = module_backup[module_name]
     sys.argv = sys_argv
 
 
@@ -637,7 +628,6 @@ def test_main_module_all_mock_bad_functionality_backend(fixture_environment, fix
     import os
     os.environ['PATH'] = os.path.abspath('tests/fake_apps/') + ':' + os.environ['PATH']
 
-    #fixture_modules(['dbus', 'win10toast-persist', 'win10toast', 'shutil', 'distutils.spawn', 'plyer', 'getpass'], method_mock)
     fixture_python_version(python_version)
 
     if backend == 'ssh' or backend == 'paramiko':
