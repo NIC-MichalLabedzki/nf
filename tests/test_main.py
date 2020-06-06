@@ -789,8 +789,18 @@ if sys.argv[1:] == ['-q', '-Q', 'title']:
 else:
     sys.exit(2)
 '''
+
+        is_wsl = False
+        try:
+            if sys.platform.startswith('linux'):
+                with open('/proc/version') as f:
+                    v = f.read()
+                    is_wsl = True if 'Microsoft' in v else False
+        except Exception as e:
+            pass
+
         test_app_name = 'screen'
-        if sys.platform == "win32":
+        if sys.platform == "win32" or is_wsl:
             app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
             with open(app_py, 'w') as f:
                 f.write(my_app)
