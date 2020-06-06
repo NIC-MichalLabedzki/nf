@@ -107,6 +107,7 @@ jobs:
         - $PYTHONNIC -c 'import os,sys,fcntl; flags = fcntl.fcntl(sys.stdout, fcntl.F_GETFL); fcntl.fcntl(sys.stdout, fcntl.F_SETFL, flags&~os.O_NONBLOCK);'
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
+        - $PYTHONNIC -m pip install PyInstaller==3.6
     - name: "Python 3 on WSL Windows"
       os: windows
       language: shell
@@ -136,6 +137,7 @@ jobs:
         - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
+        - $PYTHONNIC -m pip install PyInstaller==3.6
     - name: "nf on python 3 on WSL Windows"
       os: windows
       language: shell
