@@ -790,7 +790,7 @@ else:
     sys.exit(2)
 '''
         test_app_name = 'screen'
-        if sys.platform == "win32" or is_wsl:
+        if sys.platform == "win32":
             app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
             with open(app_py, 'w') as f:
                 f.write(my_app)
@@ -800,6 +800,7 @@ else:
             PyInstaller.__main__.run(['--name=%s.exe' % test_app_name, '--onefile', '--distpath=%s' % tmp_fake_apps, app_py])
 
             os.environ['PATH'] = os.path.abspath(tmp_fake_apps) + ';' + os.environ['PATH']
+            sys.path.insert(0, tmp_fake_apps)
         else:
             app = os.path.join(tmp_fake_apps, test_app_name)
             with open(app, 'w') as f:

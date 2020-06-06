@@ -250,7 +250,7 @@ Examples:
     log('nf version={}'.format(VERSION))
     log('python {}'.format(sys.version_info))
     log('platform {}'.format(sys.platform))
-    is_wsl = None
+    is_wsl = False
     try:
         if sys.platform.startswith('linux'):
             with open('/proc/version') as f:
@@ -694,7 +694,7 @@ Examples:
             python_x = which('python')
             log('type python after set', python_x)
 
-            if sys.platform != 'win32' and is_wsl != True: # NOTE: just for testing without Win
+            if sys.platform != 'win32' and is_wsl is not True: # NOTE: just for testing without Win
                 python_exe = 'python'
 
             backend = 'wsl'
