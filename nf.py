@@ -426,6 +426,23 @@ Examples:
             f.write(data)
 
 
+    def process_exec(cmdline):
+        p_stdout = ''
+        p_stderr = None
+        exit_code = None
+        try:
+            import subprocess
+            p = subprocess.Popen(cmdline, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p_stdout, p_stderr = p.communicate()
+            exit_code = p.returncode
+            log('process{} - exit code:{} stdout={} stderr={}:'.format(cmdline, exit_code, p_stdout, p_stderr))
+
+        except Exception as e:
+            log('screen - exit code:{} stdout={} stderr={}  exception:'.format(exit_code, p_stdout, p_stderr), e)
+
+        return p_stdout
+
+
     def nf_cleanup():
         if logfile['handle'] is not None:
             try:
@@ -969,33 +986,43 @@ Examples:
         multiplexer_pane_name = None
         multiplexer_way = None
         if multiplexer_app == 'screen':
-            sty = os.environ['STY']
-            log('multiplexer_app {} STY {}'.format(multiplexer_app, sty))
-            screen_cmdline = ['screen', '-q', '-Q', 'title']
-            import subprocess
-            screen_output = subprocess.check_output(screen_cmdline)
-            multiplexer_window_name = screen_output.decode().rstrip('\n\r')
-            if multiplexer_window_name == '':
-                multiplexer_window_name = None
-            log('multiplexer_app {} title {}'.format(multiplexer_app, multiplexer_window_name))
-        if multiplexer_app == 'tmux':
-            tmux_cmdline = ['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"']
-            tmux_output = subprocess.check_output(tmux_cmdline)
-            tmux_windows = tmux_output.decode()[0:-1].splitlines()
-            [multiplexer_window_name] = [tmux_window.strip('"')[0:-2] for tmux_window in tmux_windows if tmux_window.strip('"')[-1] == '1']
-            if multiplexer_window_name == '':
-                multiplexer_window_name = None
-            log('multiplexer_app {} window {}'.format(multiplexer_app, multiplexer_window_name))
+            try:
+                sty = os.environ.get('STY')
+                log('multiplexer_app: {}, STY: {}'.format(multiplexer_app, sty))
 
-            tmux_cmdline = ['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"']
-            tmux_output = subprocess.check_output(tmux_cmdline)
-            tmux_panes = tmux_output.decode()[0:-1].splitlines()
-            [multiplexer_pane_name] = [tmux_pane.strip('"')[0:-2] for tmux_pane in tmux_panes if tmux_pane.strip('"')[-1] == '1']
-            log('multiplexer_app {} pane {}'.format(multiplexer_app, multiplexer_pane_name))
+                screen_output = process_exec(['screen', '-q', '-Q', 'title'])
 
-            tmux_cmdline = ['tmux', 'display-message', '-p', '"#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"']
-            multiplexer_way = subprocess.check_output(tmux_cmdline).decode()[0:-1].strip('"').strip()
-            log('multiplexer_app {} way {}'.format(multiplexer_app, multiplexer_way))
+                multiplexer_window_name = screen_output.decode().rstrip('\n\r')
+                if multiplexer_window_name == '':
+                    multiplexer_window_name = None
+                log('multiplexer_app: {}, title: {}'.format(multiplexer_app, multiplexer_window_name))
+            except Exception as e:
+                log('screen multiplexer_window_name - exception:', e)
+        if multiplexer_app  == 'tmux':
+            try:
+                tmux_output = process_exec(['tmux', 'display-message', '-p', '"#{session_name} -> #{window_index} #{window_name} -> #{pane_index} #{pane_title}"'])
+                multiplexer_way = tmux_output.decode()[0:-1].strip('"').strip()
+                log('multiplexer_app: {}, way: {}'.format(multiplexer_app, multiplexer_way))
+            except Exception as e:
+                log('tmux multiplexer_way - exception:', e)
+
+            try:
+                tmux_output = process_exec(['tmux', 'list-window', '-F', '"#{window_name} #{window_active}"'])
+                tmux_windows = tmux_output.decode()[0:-1].splitlines()
+                [multiplexer_window_name] = [tmux_window.strip('"')[0:-2] for tmux_window in tmux_windows if tmux_window.strip('"')[-1] == '1']
+                if multiplexer_window_name == '':
+                    multiplexer_window_name = None
+                log('multiplexer_app: {}, window: {}'.format(multiplexer_app, multiplexer_window_name))
+            except Exception as e:
+                log('tmux multiplexer_window_name - exception:', e)
+
+            try:
+                tmux_output = process_exec(['tmux', 'list-pane', '-F', '"#{pane_title} #{pane_active}"'])
+                tmux_panes = tmux_output.decode()[0:-1].splitlines()
+                [multiplexer_pane_name] = [tmux_pane.strip('"')[0:-2] for tmux_pane in tmux_panes if tmux_pane.strip('"')[-1] == '1']
+                log('multiplexer_app: {}, pane: {}'.format(multiplexer_app, multiplexer_pane_name))
+            except Exception as e:
+                log('tmux multiplexer_pane_name - exception:', e)
 
         console_names = []
         if gui_app_tab_name is not None:
