@@ -782,13 +782,13 @@ def test_screen_support(fixture_remove_fake_apps, fixture_environment, capsys):
 
         os.environ['STY'] = '/dev/null'
 
-        my_app = '''#!/usr/bin/env python
+        my_app = '''#!{shebang}
 import sys
 if sys.argv[1:] == ['-q', '-Q', 'title']:
     print('screen_window_title')
 else:
     sys.exit(2)
-'''
+'''.format(shebang=sys.executable)
 
         is_wsl = False
         try:
@@ -867,7 +867,7 @@ def test_tmux_support(fixture_remove_fake_apps, fixture_environment, capsys, is_
 
         os.environ['TMUX'] = '/dev/null'
 
-        my_app = '''#!/usr/bin/env python
+        my_app = '''#!{shebang}
 import sys
 if sys.argv[1] == 'list-window':
     print('window 1')
@@ -880,7 +880,8 @@ elif sys.argv[1] == 'display-message':
 else:
     sys.exit(2)
 
-'''
+'''.format(shebang=sys.executable)
+
         test_app_name = 'tmux'
         if sys.platform == "win32":
             app_py = os.path.abspath(os.path.join(tmp_fake_apps, '{}.py'.format(test_app_name)))
@@ -959,20 +960,20 @@ def test_backend_ssh(capsys, fixture_remove_fake_apps, fixture_environment, fixt
 
     ssh_script = []
 
-    ssh_script.append('''#!/usr/bin/env python
+    ssh_script.append('''#!{shebang}
 import sys
 sys.exit(2)
-''')
+'''.format(shebang=sys.executable))
 
-    ssh_script.append('''#!/usr/bin/env python
+    ssh_script.append('''#!{shebang}
 import time
 import sys
 print('password')
 time.sleep(2)
 sys.exit(0)
-''')
+'''.format(shebang=sys.executable))
 
-    ssh_script.append('''#!/usr/bin/env python
+    ssh_script.append('''#!{shebang}
 import sys
 
 if 'PreferredAuthentications=publickey' in sys.argv[1:]:
@@ -982,7 +983,7 @@ else:
     import time
     time.sleep(2)
     sys.exit(0)
-''')
+'''.format(shebang=sys.executable))
 
     def prepare():
         test_environment = {'modules': ['psutil'],
