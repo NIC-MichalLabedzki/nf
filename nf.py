@@ -263,12 +263,8 @@ Examples:
     log('args {}'.format(args))
 
     def windows_to_wsl_path(win_path):
-        import os
-
-        cmdline_args = ['wslpath', '-a', '-u', win_path]
-        import subprocess
         try:
-            wsl_path = subprocess.check_output(cmdline_args).decode().strip('"\n')
+            wsl_path = process_exec(['wslpath', '-a', '-u', win_path]).decode().strip('"\n')
         except Exception as e:
             log('wspath exit error', e)
             return None
@@ -281,12 +277,7 @@ Examples:
     nf_dir_win_for_wsl = nf_dir # None? nf_dir for manual testing under linux
     if is_wsl:
         try:
-            cmd_argv = ['cmd.exe', '/c', 'echo %USERPROFILE%']
-            import subprocess
-            python_process = subprocess.Popen(cmd_argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, stderr_output = python_process.communicate()
-            log('stdout for ', cmd_argv, output.decode())
-            log('stderr for ', cmd_argv, stderr_output.decode())
+            output = process_exec(['cmd.exe', '/c', 'echo %USERPROFILE%'])
             if output:
                 user_dir_win = output.decode().rstrip('\r\n')
                 user_dir_win_for_wsl = windows_to_wsl_path(user_dir_win)
@@ -326,9 +317,8 @@ Examples:
         if 'TMUX' in os.environ:
             output = None
             try:
-                import subprocess
                 cmdline_args = ['tmux', 'show-environment', 'SSH_CLIENT']
-                output = subprocess.check_output(cmdline_args, shell=False).decode().strip()
+                output = process_exec(cmdline_args, shell=False).decode().strip()
                 log('cmd: {} output'.format(cmdline_args), output)
                 if output == '-SSH_CLIENT':
                     log('no ssh in tmux')
@@ -349,7 +339,6 @@ Examples:
 
 
     def call_dbus(service_name, path, method, *arg):
-        import subprocess
         app = which('qdbus')
         if app is not None:
             log('which qdbus: {}'.format(app))
@@ -385,7 +374,7 @@ Examples:
 
         log('dbus cmdline', tool_cmdline)
 
-        output = subprocess.check_output(tool_cmdline).decode().strip()
+        output = process_exec(tool_cmdline).decode().strip()
         log('dbus backend output', output)
 
         if app == which('gdbus'):
@@ -852,7 +841,7 @@ Examples:
 
         if 'tmux: server' in parent_names:
             tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
-            multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
+            multiplexer_client_pid = int(process_exec(tmux_cmdline).decode().strip('"\n'))
             log('tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
             tmux_process_info = psutil.Process(multiplexer_client_pid)
             tmux_parents = tmux_process_info.parents()
@@ -881,7 +870,7 @@ Examples:
                 parent_name = os.path.basename(pid_exe)
                 if 'tmux: server' == parent_name:
                     tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
-                    multiplexer_client_pid = int(subprocess.check_output(tmux_cmdline).decode().strip('"\n'))
+                    multiplexer_client_pid = int(process_exec(tmux_cmdline).decode().strip('"\n'))
                     log('tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
                     pid = multiplexer_client_pid
                 parent_names.append(parent_name)
@@ -1093,7 +1082,6 @@ Examples:
                 else:
                     DETACHED_PROCESS = 0x08
 
-                import subprocess
                 subprocess.Popen(not_detached_sys_argv, creationflags=DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, stdout=subprocess.PIPE, close_fds=True)
                 exit_code = 0
                 nf_cleanup()
@@ -1257,7 +1245,7 @@ Examples:
                     notify_interface = dbus.Interface(dbus_notification, dbus_interface='org.freedesktop.Notifications')
                     notify_interface.Notify(notify__app_name, notify__replaces_id, notify__app_icon, notify__title, notify__body, notify__actions, notify__hints, notify__timeout)
             elif backend == 'gdbus':
-                notify_cmdline = [gdbus_app, 'call', '--session', '--dest', 'org.freedesktop.Notifications', '--object-path', '/org/freedesktop/Notifications', '--method', 'org.freedesktop.Notifications.Notify',
+                process_exec([gdbus_app, 'call', '--session', '--dest', 'org.freedesktop.Notifications', '--object-path', '/org/freedesktop/Notifications', '--method', 'org.freedesktop.Notifications.Notify',
                                   notify__app_name,
                                   str(int(time.time() * 1000000 % 2 ** 32)),
                                   notify__app_icon,
@@ -1265,29 +1253,11 @@ Examples:
                                   notify__body,
                                   "[]",
                                   "{}",
-                                  str(notify__timeout)]
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    notify_exit_code = subprocess.run(notify_cmdline).returncode
-                else:
-                    import subprocess
-                    notify_exit_code = subprocess.call(notify_cmdline)
+                                  str(notify__timeout)])
             elif backend == 'notify-send':
-                notify_cmdline = [notify_send_app, notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name]
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    notify_exit_code = subprocess.run(notify_cmdline).returncode
-                else:
-                    import subprocess
-                    notify_exit_code = subprocess.call(notify_cmdline)
+                process_exec([notify_send_app, notify__title, notify__body, '--expire-time', str(notify__timeout), '--icon', notify__app_icon, '--app-name', notify__app_name])
             elif backend == 'termux-notification':
-                notify_cmdline = [termux_notification_app, '--title', notify__title, '--content', notify__body, '--sound', '--vibrate', '500,100,200', '--action', '"am start com.termux/.app.TermuxActivity"']
-                if sys.version_info >= (3, 5):
-                    import subprocess
-                    notify_exit_code = subprocess.run(notify_cmdline).returncode
-                else:
-                    import subprocess
-                    notify_exit_code = subprocess.call(notify_cmdline)
+                process_exec([termux_notification_app, '--title', notify__title, '--content', notify__body, '--sound', '--vibrate', '500,100,200', '--action', '"am start com.termux/.app.TermuxActivity"'])
             elif backend == 'win10toast-persist':
                 import win10toast
                 toaster = win10toast.ToastNotifier()
