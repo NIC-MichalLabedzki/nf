@@ -161,6 +161,22 @@ Examples:
             except:
                 pass
 
+    def process_exec(cmdline):
+        p_stdout = ''
+        p_stderr = None
+        exit_code = None
+        try:
+            import subprocess
+            p = subprocess.Popen(cmdline, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p_stdout, p_stderr = p.communicate()
+            exit_code = p.returncode
+            log('process{} - exit code:{} stdout={} stderr={}:'.format(cmdline, exit_code, p_stdout, p_stderr))
+
+        except Exception as e:
+            log('screen - exit code:{} stdout={} stderr={}  exception:'.format(exit_code, p_stdout, p_stderr), e)
+
+        return p_stdout
+
     parser = argparse.ArgumentParser(description='Simple command line tool to make notification after target program finished work', epilog=EXAMPLES, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=False)
 
     parser.add_argument('-h', '--help', action="store_true", help='show this help message and exit')
@@ -317,8 +333,7 @@ Examples:
         if 'TMUX' in os.environ:
             output = None
             try:
-                cmdline_args = ['tmux', 'show-environment', 'SSH_CLIENT']
-                output = process_exec(cmdline_args, shell=False).decode().strip()
+                output = process_exec(['tmux', 'show-environment', 'SSH_CLIENT'], shell=False).decode().strip()
                 log('cmd: {} output'.format(cmdline_args), output)
                 if output == '-SSH_CLIENT':
                     log('no ssh in tmux')
@@ -328,7 +343,7 @@ Examples:
                     ssh_ip = ssh_connection[0]
                     ssh_port = ssh_connection[2]
             except Exception as e:
-                log('{} failed: {}'.format(cmdline_args, output), e)
+                log('{} failed: {}'.format('tmux show-environment SSH_CLIENT', output), e)
 
         if (ssh_ip is None or ssh_port is None) and 'SSH_CLIENT' in os.environ:
             ssh_connection = os.environ['SSH_CLIENT'].split(' ')
@@ -413,24 +428,6 @@ Examples:
         downloaded_file = os.path.join(download_dir, output_filename)
         with open(downloaded_file, 'wb') as f:
             f.write(data)
-
-
-    def process_exec(cmdline):
-        p_stdout = ''
-        p_stderr = None
-        exit_code = None
-        try:
-            import subprocess
-            p = subprocess.Popen(cmdline, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            p_stdout, p_stderr = p.communicate()
-            exit_code = p.returncode
-            log('process{} - exit code:{} stdout={} stderr={}:'.format(cmdline, exit_code, p_stdout, p_stderr))
-
-        except Exception as e:
-            log('screen - exit code:{} stdout={} stderr={}  exception:'.format(exit_code, p_stdout, p_stderr), e)
-
-        return p_stdout
-
 
     def nf_cleanup():
         if logfile['handle'] is not None:
@@ -869,8 +866,7 @@ Examples:
                 pid_exe = os.readlink('/proc/{}/exe'.format(pid))
                 parent_name = os.path.basename(pid_exe)
                 if 'tmux: server' == parent_name:
-                    tmux_cmdline = ['tmux', 'display-message', '-p', '"#{client_pid}"']
-                    multiplexer_client_pid = int(process_exec(tmux_cmdline).decode().strip('"\n'))
+                    multiplexer_client_pid = int(process_exec(['tmux', 'display-message', '-p', '"#{client_pid}"']).decode().strip('"\n'))
                     log('tmux multiplexer_client_pid {}'.format(multiplexer_client_pid))
                     pid = multiplexer_client_pid
                 parent_names.append(parent_name)

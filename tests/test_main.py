@@ -880,7 +880,7 @@ elif sys.argv[1] == 'display-message':
 else:
     sys.exit(2)
 
-'''.format(shebang=sys.executable)
+'''.format(shebang=sys.executable, client_pid='{client_pid}')
 
         test_app_name = 'tmux'
         if sys.platform == "win32":
