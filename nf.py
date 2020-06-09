@@ -248,7 +248,7 @@ Examples:
             if args.debug is True:
                 argss = []
                 for a in arg:
-                    argss.append('{}{}'.format(debug_prefix, a).replace('\n', '\n{}'.format(debug_prefix)))
+                    argss.append('{}'.format(a).replace('\n', '\n{}'.format(debug_prefix)))
                 try:
                     print('DEBUG {}: {}'.format(current_time, ' '.join(argss)))
                 except:
@@ -256,11 +256,12 @@ Examples:
             if args.debugfile is not None:
                 argss = []
                 for a in arg:
-                    argss.append('{}{}'.format(debug_prefix, a).replace('\n', '\n{}'.format(debug_prefix)))
+                    argss.append('{}'.format(a).replace('\n', '\n{}'.format(debug_prefix)))
                 if logfile['handle'] is None:
                     logfile['handle'] = open(args.debugfile, 'a+b', 0)
                 logfile['handle'].write('DEBUG {}: {}\n'.format(current_time, ' '.join(argss)).encode())
-        except:
+        except Exception as e:
+            # print(e)
             pass
 
     log('nf version={}'.format(VERSION))
