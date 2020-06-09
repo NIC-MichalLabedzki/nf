@@ -127,7 +127,7 @@ jobs:
 #        - wsl -s Ubuntu-18.04 || true
 #        - wslconfig //setdefault Ubuntu-18.04 || true
         - wsl sudo apt-get update
-        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3-minimal python3-pip
+        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3.7-minimal python3-pip
         - wsl python --version || true
         - wsl python2 --version || true
         - wsl python3 --version || true
