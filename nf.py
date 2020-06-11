@@ -276,6 +276,17 @@ Examples:
     except Exception as e:
         log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
+
+    import sysconfig
+    abi = sysconfig.get_config_var('SOABI')
+    if abi is None:
+        abi = '{}-{}'.format(sysconfig.get_python_version(), sysconfig.get_platform())
+        if sys.version_info.major >= 3 and sys.version_info.minor >= 2:
+         abi = 'abi_{}-{}'.format(sys.abiflags, abi)
+        if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
+            abi = '{}-{}'.format(sys.implementation.name, abi)
+    log('abi {}'.format(abi))
+
     log('argv {}'.format(sys.argv))
     log('args {}'.format(args))
 
