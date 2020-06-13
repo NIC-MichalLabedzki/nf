@@ -278,13 +278,17 @@ Examples:
     log('is_wsl {}'.format(is_wsl))
 
     import sysconfig
-    abi = sysconfig.get_config_var('SOABI')
-    if abi is None:
+    try:
         abi = '{}-{}'.format(sysconfig.get_python_version(), sysconfig.get_platform())
-        if sys.version_info.major >= 3 and sys.version_info.minor >= 2:
-         abi = 'abi_{}-{}'.format(sys.abiflags, abi)
+        try:
+            if sys.version_info.major >= 3 and sys.version_info.minor >= 2:
+                abi = 'abi_{}-{}'.format(sys.abiflags, abi)
+        except Exception as e:
+            log('abiabiflags error', e)
         if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
             abi = '{}-{}'.format(sys.implementation.name, abi)
+    except Exception as e:
+        log('abi general error', e)
     log('abi {}'.format(abi))
 
     log('argv {}'.format(sys.argv))
