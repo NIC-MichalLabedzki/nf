@@ -114,7 +114,7 @@ jobs:
       env:
         - PYTHONIOENCODING=utf8
         - PYTHONUTF8=1
-        - PYTHONNIC="wsl python3"
+        - PYTHONNIC="wsl python3.7"
         - PATH=/c/Users/travis/build/NIC-MichalLabedzki/nf/tests/tmp_fake_apps:$PATH
       before_install:
         - curl -L -o ubuntu-1804.zip https://aka.ms/wsl-ubuntu-1804
@@ -133,6 +133,7 @@ jobs:
         - wsl python3 --version || true
         - wsl type -p python || true
         - wsl type -p python3 || true
+        - wsl type -p python3.7 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
         - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC --version || true
