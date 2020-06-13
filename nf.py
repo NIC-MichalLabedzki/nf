@@ -1289,7 +1289,7 @@ Examples:
                         while line != '##\n':
                             line = f.readline()
                         myself = f.read()
-                    cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+                    cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={}".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
                     if sys.version_info >= (3, 3):
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
                     else:
