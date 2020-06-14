@@ -127,7 +127,7 @@ jobs:
 #        - wsl -s Ubuntu-18.04 || true
 #        - wslconfig //setdefault Ubuntu-18.04 || true
         - wsl sudo apt-get update
-        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3.7-minimal python3-pip
+        - wsl sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y python3.7-minimal python3.7-dev python3-pip
         - wsl python --version || true
         - wsl python2 --version || true
         - wsl python3 --version || true
@@ -135,7 +135,7 @@ jobs:
         - wsl type -p python3 || true
         - wsl type -p python3.7 || true
 #        - wsl sudo update-alternatives --install "C:/program files/git/usr/bin/python" python "C:/program files/git/usr/bin/python3" 10
-        - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
+#        - $PYTHONNIC -c 'import os,sys; os.set_blocking(sys.stdout.fileno(), True)'
         - $PYTHONNIC --version || true
         - $PYTHONNIC -m pip install --upgrade pip
         - $PYTHONNIC -m pip install PyInstaller==3.6
