@@ -1289,6 +1289,13 @@ Examples:
                         while line != '##\n':
                             line = f.readline()
                         myself = f.read()
+# TODO: unbash ssh cmd: remove unset SSH_CLIENT)
+# TODO: detect DISPLAY=:0 
+# ps -fC X
+# UID        PID  PPID  C STIME TTY          TIME CMD
+# xxxx yyy   zzz  eee fff ttyaaa         aa:aa:aa X :0
+# so CMD is X :0 <-= ":0"
+# TODO: detect DBUS_SESSION_BUS_ADDRESS if possible
                     cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={}".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
                     if sys.version_info >= (3, 3):
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
