@@ -195,6 +195,9 @@ Examples:
     parser.add_argument('--custom_notification_title', type=str, help='Custom notification title')
     parser.add_argument('--custom_notification_exit_code', type=int, help='Custom notification exit code')
 
+    parser.add_argument('--env-unset', type=str, help='Modify environment - unset variable')
+    parser.add_argument('--env-set-default', type=str, help='Modify environment - set variable if not set; KEY=value')
+
     parser.add_argument('--try-version', type=str, help='Download and run specific nf version: tag, branch, commit hash or "list" to display possible tags/versions. Try "master" for latest development version.')
     parser.add_argument('cmd', nargs='?')
     parser.add_argument('args', nargs=argparse.REMAINDER)
@@ -276,6 +279,13 @@ Examples:
     except Exception as e:
         log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
+
+    if args.env_unset and args.env_unset in os.environ:
+        del os.environ[args.env_unset]
+    if args.env_set_default:
+        s = args.env_set_default.split('=')
+        if s[0] not in os.environ:
+            os.environ[s[0]] = s[1]
 
     import sysconfig
     try:
@@ -1296,7 +1306,7 @@ Examples:
 # xxxx yyy   zzz  eee fff ttyaaa         aa:aa:aa X :0
 # so CMD is X :0 <-= ":0"
 # TODO: detect DBUS_SESSION_BUS_ADDRESS if possible
-                    cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={}".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
+                    cmd = "python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} --env-unset=SSH_CLIENT --env-set-default=DISPLAY=:0".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
                     if sys.version_info >= (3, 3):
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
                     else:
@@ -1310,7 +1320,7 @@ Examples:
                         while line != '##\n':
                             line = f.readline()
                         myself = f.read()
-                    cmd = "unset SSH_CLIENT; python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} echo << 'EOF'".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\nEOF\n"
+                    cmd = "python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} --env-unset=SSH_CLIENT --env-set-default=DISPLAY=:0".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
                     stdin, output, stderr_output = ssh_client.exec_command(cmd)
                     log('stdout', output.read().decode())
                     log('stderr', stderr_output.read().decode())
