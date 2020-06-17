@@ -281,24 +281,25 @@ Examples:
     log('is_wsl {}'.format(is_wsl))
 
 
-    nf_used_environ_var = [
-        # non-direct
-        'DBUS_SESSION_BUS_ADDRESS',
-        'DISPLAY',
+    if args.debug:
+        environ_var_used_by_nf = [
+            # non-direct
+            'DBUS_SESSION_BUS_ADDRESS',
+            'DISPLAY',
 
-        'KONSOLE_DBUS_SERVICE',
-        'KONSOLE_DBUS_SESSION',
-        'KONSOLE_VERSION',
-        'SSH_CLIENT',
-        'STY',
-        'TMUX',
+            'KONSOLE_DBUS_SERVICE',
+            'KONSOLE_DBUS_SESSION',
+            'KONSOLE_VERSION',
+            'SSH_CLIENT',
+            'STY',
+            'TMUX',
 
-        # nothing special, all programs using environment/OS subtools use it
-        'PATH'
-    ]
+            # nothing special, all programs using environment/OS subtools use it
+            'PATH'
+        ]
 
     if args.debug:
-        for env in nf_used_environ_var:
+        for env in environ_var_used_by_nf:
             log('env var: {}={}'.format(env, repr(os.environ.get(env))))
 
     if args.env_unset and args.env_unset in os.environ:
@@ -309,7 +310,7 @@ Examples:
             os.environ[s[0]] = s[1]
 
     if args.debug:
-        for env in nf_used_environ_var:
+        for env in environ_var_used_by_nf:
             log('final env var: {}={}'.format(env, repr(os.environ.get(env))))
 
 # TODO
@@ -494,8 +495,8 @@ Examples:
 #-------------------------------------------------------------------------------
 
     if args.debug:
-        tools = ['python', 'ssh', 'tmux', 'screen', 'dbus-send', 'cmd.exe', 'gdbus', 'notify-send', 'termux-notification']
-        for tool in tools:
+        tools_used_by_nf = ['python', 'ssh', 'tmux', 'screen', 'dbus-send', 'cmd.exe', 'gdbus', 'notify-send', 'termux-notification']
+        for tool in tools_used_by_nf:
             log('tool {}: {}'.format(tool, which(tool)))
 
     log('tool this python:', sys.executable)
