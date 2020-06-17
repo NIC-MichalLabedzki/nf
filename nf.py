@@ -280,12 +280,38 @@ Examples:
         log('cannot detect wsl: ', e)
     log('is_wsl {}'.format(is_wsl))
 
+
+    nf_used_environ_var = [
+        # non-direct
+        'DBUS_SESSION_BUS_ADDRESS',
+        'DISPLAY',
+
+        'KONSOLE_DBUS_SERVICE',
+        'KONSOLE_DBUS_SESSION',
+        'KONSOLE_VERSION',
+        'SSH_CLIENT',
+        'STY',
+        'TMUX',
+
+        # nothing special, all programs using environment/OS subtools use it
+        'PATH'
+    ]
+
+    for env in nf_used_environ_var:
+        log('env var: {}={}'.format(env, repr(os.environ.get(env))))
+
     if args.env_unset and args.env_unset in os.environ:
         del os.environ[args.env_unset]
     if args.env_set_default:
         s = args.env_set_default.split('=')
         if s[0] not in os.environ:
             os.environ[s[0]] = s[1]
+
+    for env in nf_used_environ_var:
+        log('final env var: {}={}'.format(env, repr(os.environ.get(env))))
+
+# TODO
+# find ls -t ~/.dbus/session-bus/ | head -n 1
 
     import sysconfig
     try:
@@ -824,7 +850,6 @@ Examples:
 
     cmd = None
     if args.cmd is None:
-        log('uuu', args.wait_for_pid)
         if args.wait_for_pid is not None:
             cmd= "wait for pids {}".format(args.wait_for_pid)
 # TODO: store on nf start and print here processes names
@@ -1306,7 +1331,16 @@ Examples:
 # xxxx yyy   zzz  eee fff ttyaaa         aa:aa:aa X :0
 # so CMD is X :0 <-= ":0"
 # TODO: detect DBUS_SESSION_BUS_ADDRESS if possible
-                    cmd = "python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} --env-unset=SSH_CLIENT --env-set-default=DISPLAY=:0".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code).encode() + b"\n" + myself.encode() + b"\n"
+                    new_args = []
+                    for arg,value in vars(args).items():
+                        arg = arg.replace('_', '-')
+                        if value is not None and value is not False and arg != 'cmd' and arg != 'args':
+                            if value == True:
+                                new_args.append('--{}'.format(arg))
+                            else:
+                                new_args.append('--{}={}'.format(arg,value))
+                    log('new_args', new_args)
+                    cmd = "python - --custom_notification_title=\"{}\" --custom_notification_text=\"{}\" --custom_notification_exit_code={} --env-unset=SSH_CLIENT --env-set-default=DISPLAY=:0 {rest}".format(notify__title.replace("\"", "\\\""), notify__body.replace("\"", "\\\""), exit_code, rest=' '.join(new_args)).encode() + b"\n" + myself.encode() + b"\n"
                     if sys.version_info >= (3, 3):
                         output, stderr_output = ssh_process.communicate(cmd, timeout=5)
                     else:
