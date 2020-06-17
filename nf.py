@@ -297,8 +297,9 @@ Examples:
         'PATH'
     ]
 
-    for env in nf_used_environ_var:
-        log('env var: {}={}'.format(env, repr(os.environ.get(env))))
+    if args.debug:
+        for env in nf_used_environ_var:
+            log('env var: {}={}'.format(env, repr(os.environ.get(env))))
 
     if args.env_unset and args.env_unset in os.environ:
         del os.environ[args.env_unset]
@@ -307,8 +308,9 @@ Examples:
         if s[0] not in os.environ:
             os.environ[s[0]] = s[1]
 
-    for env in nf_used_environ_var:
-        log('final env var: {}={}'.format(env, repr(os.environ.get(env))))
+    if args.debug:
+        for env in nf_used_environ_var:
+            log('final env var: {}={}'.format(env, repr(os.environ.get(env))))
 
 # TODO
 # find ls -t ~/.dbus/session-bus/ | head -n 1
@@ -490,6 +492,13 @@ Examples:
                 print_stdout('nf error while saving debugfile', e)
 
 #-------------------------------------------------------------------------------
+
+    if args.debug:
+        tools = ['python', 'ssh', 'tmux', 'screen', 'dbus-send', 'cmd.exe', 'gdbus', 'notify-send', 'termux-notification']
+        for tool in tools:
+            log('tool {}: {}'.format(tool, which(tool)))
+
+    log('tool this python:', sys.executable)
 
     if args.try_version:
         if args.try_version == 'list':
