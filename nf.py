@@ -495,7 +495,7 @@ Examples:
 #-------------------------------------------------------------------------------
 
     if args.debug:
-        tools_used_by_nf = ['python', 'ssh', 'tmux', 'screen', 'dbus-send', 'cmd.exe', 'gdbus', 'notify-send', 'termux-notification']
+        tools_used_by_nf = ['python', 'python.exe', 'ssh', 'tmux', 'screen', 'dbus-send', 'cmd.exe', 'gdbus', 'notify-send', 'termux-notification']
         for tool in tools_used_by_nf:
             log('tool {}: {}'.format(tool, which(tool)))
 
